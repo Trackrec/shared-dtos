@@ -55,7 +55,6 @@ import {
 
     @Column({default:false})
     isExperienceImported: boolean
-
   
     @CreateDateColumn()
     created_at: Date;

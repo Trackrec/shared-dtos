@@ -18,6 +18,7 @@ export class PositionService {
 
       return await this.positionRepository.save(position);
     } catch (error) {
+      //todo: add logger here
       throw new Error(`Error creating position: ${error.message}`);
     }
   }
@@ -34,26 +35,33 @@ export class PositionService {
 
       return position;
     } catch (error) {
+      //todo: add logger here
       throw new Error(`Error getting position by ID: ${error.message}`);
     }
   }
 
   async updatePosition(positionId: number, positionData: Partial<Position>): Promise<Position> {
     try {
+      //todo: remove
       await this.getPositionById(positionId);
 
+      //todo: use return true so you dont have to do a db call to get latest details
       await this.positionRepository.update(positionId, positionData);
 
+      //todo: remove
       return await this.getPositionById(positionId);
     } catch (error) {
+      //todo: add logger here
       throw new Error(`Error updating position: ${error.message}`);
     }
   }
 
   async deletePosition(positionId: number): Promise<void> {
     try {
+      //todo: remove
       await this.getPositionById(positionId);
 
+      //todo: add logger here, evaluate response and send appropriate object back
       await this.positionRepository.delete(positionId);
     } catch (error) {
       throw new Error(`Error deleting position: ${error.message}`);
@@ -64,6 +72,7 @@ export class PositionService {
     try {
       return await this.positionRepository.find({ where: { user: { id: userId } } });
     } catch (error) {
+      //todo: add logger here
       throw new Error(`Error getting positions by user ID: ${error.message}`);
     }
   }

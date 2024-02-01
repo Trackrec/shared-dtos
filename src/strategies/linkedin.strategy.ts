@@ -30,6 +30,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
 
       // Create user object
       const user = {
+        //todo: remove linkedin id since it is not being used
         linkedinId: id,
         displayName: displayName,
         email: emails[0].value,

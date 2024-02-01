@@ -16,6 +16,7 @@ import { TokenMiddleware } from './middlewares/token.middleware';
     loggerConfig,
     AuthModule,
     PassportModule,
+    //todo: remove unused code
     SessionModule.forRoot({
       session: {
         secret: 'your-secret-key',
@@ -32,7 +33,8 @@ export class AppModule implements NestModule {
     consumer
       .apply(TokenMiddleware)
       .forRoutes(
-        "getMe", "positions"
+        //todo: rename to "GetUserDetails/Me"
+        "get_me", "positions"
       );
   }
 }

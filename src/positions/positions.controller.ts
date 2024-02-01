@@ -15,6 +15,7 @@ export class PositionController {
       return { error: false, position: createdPosition };
     } catch (error) {
       return { error: true, message: error.message };
+      //todo: add logger here
     }
   }
 
@@ -24,6 +25,7 @@ export class PositionController {
       const position = await this.positionService.getPositionById(positionId);
       return { error: false, position };
     } catch (error) {
+      //todo: add logger here
       return { error: true, message: error.message };
     }
   }
@@ -34,6 +36,7 @@ export class PositionController {
       const updatedPosition = await this.positionService.updatePosition(positionId, positionData);
       return { error: false, position: updatedPosition };
     } catch (error) {
+      //todo: add logger here
       return { error: true, message: error.message };
     }
   }
@@ -44,6 +47,7 @@ export class PositionController {
       await this.positionService.deletePosition(positionId);
       return { error: false, message: 'Position deleted successfully' };
     } catch (error) {
+      //todo: add logger here
       return { error: true, message: error.message };
     }
   }
@@ -54,6 +58,7 @@ export class PositionController {
       const positions = await this.positionService.getAllPositionsByUserId(req.user_id);
       return { error: false, positions };
     } catch (error) {
+      //todo: add logger here
       return { error: true, message: error.message };
     }
   }

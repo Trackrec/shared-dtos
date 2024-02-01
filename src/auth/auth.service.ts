@@ -15,6 +15,9 @@ export class AuthService {
 
     try {
      
+      /** todo: Create a condition here that if email is present then 
+       * search based on email, otherwise search based on username for old data
+      */
       let user = await this.userRepository.findOne({
         where: [{ email }, { username }], 
       });
@@ -37,6 +40,7 @@ export class AuthService {
       return { error: false, user };
     } catch (error) {
 
+      //todo: look for a better way to do this, check how TypeOrm gives status codes for each type, + Add pino logger to see logs later on
       if (error.code === '23505') {
         if (error.detail.includes('email')) {
           return { error: true, message: 'User with this email already exists.' };
@@ -51,6 +55,9 @@ export class AuthService {
 
   async getMe(username: string): Promise<{ error: boolean; user?: UserAccounts; message?: string }> {
     try {
+       /** todo: Create a condition here that if email is present then 
+       * search based on email, otherwise search based on username for old data
+      */
       const user = await this.userRepository.findOne({where:{username: username}});
 
       if (!user) {
@@ -59,7 +66,7 @@ export class AuthService {
 
       return { error: false, user };
     } catch (error) {
-      // Handle database errors or other exceptions
+      // Handle database errors or other exceptions, add logger 
       return { error: true, message: `Error retrieving user details: ${error.message}` };
     }
   }

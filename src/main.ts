@@ -14,6 +14,7 @@ async function bootstrap() {
   //Pine Logger
   app.useLogger(app.get(Logger));
   
+  //todo: move this to .env
   await app.listen(4000);
 }
 bootstrap();
