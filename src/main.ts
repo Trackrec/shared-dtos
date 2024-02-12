@@ -11,7 +11,11 @@ async function bootstrap() {
    const document = SwaggerModule.createDocument(app, swaggerConfig);
    SwaggerModule.setup("api", app, document);
 
-   app.enableCors()
+   app.enableCors( {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+     })
   //Pine Logger
   app.useLogger(app.get(Logger));
   
