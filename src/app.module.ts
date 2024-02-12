@@ -9,7 +9,18 @@ import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { SessionModule } from 'nestjs-session';
 import { TokenMiddleware } from './middlewares/token.middleware';
-
+import { PositionController } from './positions/positions.controller';
+import { PositionDetailsController } from './position_details/position-details.controller';
+import { PositionService } from './positions/positions.service';
+import { PositionDetailsService } from './position_details/position-details.service';
+import { Position } from './positions/positions.entity';
+import { PositionDetails } from './position_details/position_details.entity';
+import { Company } from './company/company.entity';
+import { CompanyService } from './company/company.service';
+import { CompanyController } from './company/company.controller';
+import { UserAccounts } from './auth/User.entity';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -17,16 +28,18 @@ import { TokenMiddleware } from './middlewares/token.middleware';
     AuthModule,
     PassportModule,
     //todo: remove unused code
-    SessionModule.forRoot({
-      session: {
-        secret: 'your-secret-key',
-      },
-    }),
-   
+    TypeOrmModule.forFeature([UserAccounts]),
+    TypeOrmModule.forFeature([Position]),
+
+    TypeOrmModule.forFeature([Position, UserAccounts]),
+    TypeOrmModule.forFeature([PositionDetails]),
+    TypeOrmModule.forFeature([Company]),
+
+
 
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController],
+  providers: [AuthService,AppService, PositionService,PositionDetailsService, CompanyService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
@@ -34,7 +47,7 @@ export class AppModule implements NestModule {
       .apply(TokenMiddleware)
       .forRoutes(
         //todo: rename to "GetUserDetails/Me"
-        "get_me", "positions"
+        "me", "positions"
       );
   }
 }

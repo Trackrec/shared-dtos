@@ -3,13 +3,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { PositionService } from './positions.service';
 import { Position } from './positions.entity';
 @Controller('positions')
-@UseGuards(AuthGuard())
 export class PositionController {
   constructor(private readonly positionService: PositionService) {}
 
   @Post()
   async createPosition(@Req() req, @Body() positionData: Partial<Position>) {
     try {
+      console.log("Here")
       const userId = req.user_id;
       const createdPosition = await this.positionService.createPosition(userId, positionData);
       return { error: false, position: createdPosition };
