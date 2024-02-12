@@ -11,6 +11,7 @@ async function bootstrap() {
    const document = SwaggerModule.createDocument(app, swaggerConfig);
    SwaggerModule.setup("api", app, document);
 
+   app.enableCors()
   //Pine Logger
   app.useLogger(app.get(Logger));
   
