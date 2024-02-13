@@ -24,7 +24,8 @@ export class PositionDetails {
   @Column({ type: 'integer', nullable: true })
   segment_id: number;
 
-  // Continue with the remaining fields...
+  @Column({ type: 'bigint', nullable: true })
+  revenue_generated: number;
 
   @Column({ type: 'boolean', nullable: true })
   is_booking_meeting: boolean;
