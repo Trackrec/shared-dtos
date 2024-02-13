@@ -80,6 +80,18 @@ export class PositionDetails {
   average_deal_size: number;
 
   @Column({ type: 'bigint', nullable: true })
+  new_business: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  existing_business: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  outbound: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  inbound: number;
+
+  @Column({ type: 'bigint', nullable: true })
   long_deal_size: number;
 
   @Column('simple-array', { nullable: true })
