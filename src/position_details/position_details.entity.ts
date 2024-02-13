@@ -48,14 +48,14 @@ export class PositionDetails {
   @Column('simple-array', { nullable: true })
   worked_in_ids: string[];
 
-  @Column({ type: 'bigint', nullable: true })
-  short_sales_cycle: number;
+  @Column({ nullable: true })
+  short_sales_cycle: string;
 
-  @Column({ type: 'bigint', nullable: true })
-  average_sales_cycle: number;
+  @Column({  nullable: true })
+  average_sales_cycle: string;
 
-  @Column({ type: 'bigint', nullable: true })
-  long_sales_cycle: number;
+  @Column({ nullable: true })
+  long_sales_cycle: string;
 
   @Column({ type: 'boolean', nullable: true })
   disable_prospecting: boolean;
