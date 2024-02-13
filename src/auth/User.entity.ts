@@ -7,9 +7,13 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
   } from 'typeorm';
-  import { IsEmail, IsNotEmpty, IsString, Length } from "class-validator";
+  import { IsEmail, IsNotEmpty, IsString, Length, IsIn, ArrayNotEmpty } from "class-validator";
   import { Position } from 'src/positions/positions.entity';
-  
+  export enum LocationPreference {
+    ONSITE = 'onsite',
+    REMOTE = 'remote',
+    HYBRID = 'hybrid',
+  }
   @Entity({ name: 'accounts_users' })
   export class UserAccounts {
     @PrimaryGeneratedColumn()
@@ -31,12 +35,20 @@ import {
   
     @Column({default:null})
     has_avatar: boolean;
+
+    @Column({default:true})
+    open_to_work: boolean;
   
     @Column({default:null,  type:"longtext"})
     linkedin_access_token: string;
   
     @Column({default:null})
-    ote_expectation_id: number;
+    ote_expectation: number;
+
+    @Column({ type: 'enum', enum: LocationPreference, default: LocationPreference.HYBRID }) 
+    @IsNotEmpty()
+    @IsIn([LocationPreference.ONSITE, LocationPreference.REMOTE, LocationPreference.HYBRID]) 
+    location_preferences: LocationPreference;
 
     @Column({default:null})
     password: string;
@@ -52,6 +64,13 @@ import {
 
     @Column({default:null, unique: true})
     username: string
+
+    @Column({default:null})
+    city: string;
+
+    @ArrayNotEmpty()
+    @Column("simple-array", { nullable: true })
+    languages: string[];
 
     @Column({default:false})
     isExperienceImported: boolean

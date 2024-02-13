@@ -21,6 +21,9 @@ import { CompanyController } from './company/company.controller';
 import { UserAccounts } from './auth/User.entity';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
+import { CityController } from './location/city.controller';
+import { CityService } from './location/city.service';
+import { City } from './location/city.entity';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -34,12 +37,14 @@ import { AuthService } from './auth/auth.service';
     TypeOrmModule.forFeature([Position, UserAccounts]),
     TypeOrmModule.forFeature([PositionDetails]),
     TypeOrmModule.forFeature([Company]),
+    TypeOrmModule.forFeature([City]),
+
 
 
 
   ],
-  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController],
-  providers: [AuthService,AppService, PositionService,PositionDetailsService, CompanyService],
+  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController],
+  providers: [AuthService,AppService, PositionService,PositionDetailsService, CompanyService, CityService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

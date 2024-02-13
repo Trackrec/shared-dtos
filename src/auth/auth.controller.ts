@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, Res, Logger } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 
@@ -47,5 +47,10 @@ export class AuthController {
       this.logger.error(`Error in getMe: ${error.message}`);
       return { error: true, message: `Error processing user details: ${error.message}` };
     }
+  }
+
+  @Put('profile/:id')
+  async updateUser(@Param('id') id: number, @Body() updateUserPayload: any) {
+    return this.authService.updateUser(id, updateUserPayload);
   }
 }

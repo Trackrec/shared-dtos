@@ -64,6 +64,23 @@ export class AuthService {
     }
   }
 
+  async updateUser(id: number, updateUserPayload: any): Promise<{ error: boolean, message: string }> {
+    const user = await this.userRepository.findOne({where:{id}});
+    if (!user) {
+      return { error: true, message: 'User not found' };
+    }
+
+    try {
+      // Update user properties based on the payload
+      Object.assign(user, updateUserPayload);
+
+      await this.userRepository.save(user);
+
+      return { error: false, message: 'User updated successfully' };
+    } catch (error) {
+      return { error: true, message: 'Failed to update user' };
+    }
+  }
   async getMe(username: string, user_id:number): Promise<{ error: boolean; user?: UserAccounts; message?: string }> {
     try {
        /** todo: Create a condition here that if email is present then 
