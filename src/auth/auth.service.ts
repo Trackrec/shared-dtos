@@ -86,8 +86,11 @@ export class AuthService {
        /** todo: Create a condition here that if email is present then 
        * search based on email, otherwise search based on username for old data
       */
-      const user = await this.userRepository.findOne({where:{username: username},
-        relations: ['positions'] });
+       const user = await this.userRepository.findOne({
+        where: { username: username },
+        relations: ['positions', 'positions.company']
+      });
+      
 
       if (!user) {
         return { error: true, message: 'User not found' };
@@ -133,11 +136,8 @@ export class AuthService {
               end_month :experiences[i].ends_at ? experiences[i].ends_at.month : null,
               end_year :experiences[i].ends_at ? experiences[i].ends_at.year : null,
               role: experiences[i].title,
-              company_id: !newCompany.error ? parseInt(newCompany.createdCompany.id) : null,
-             // user: {id:userId}
              }
-             console.log(positionData)
-             this.positionService.createPosition(userId, positionData)
+             this.positionService.createPosition(newCompany?.createdCompany?.id,userId, positionData)
         }
 
 

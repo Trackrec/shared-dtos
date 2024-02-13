@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Position } from './positions.entity';
+import { Company } from 'src/company/company.entity';
 @Injectable()
 export class PositionService {
   constructor(
@@ -9,12 +10,14 @@ export class PositionService {
     private readonly positionRepository: Repository<Position>,
   ) {}
 
-  async createPosition(userId: number, positionData: Partial<Position>): Promise<Position> {
+  async createPosition(companyId:string, userId: number, positionData: Partial<Position>): Promise<Position> {
     try {
       const position = this.positionRepository.create({
         ...positionData,
         user: { id: userId },
+        company: { id: companyId } 
       });
+      
 
       return await this.positionRepository.save(position);
     } catch (error) {

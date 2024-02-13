@@ -11,7 +11,7 @@ export class PositionController {
     try {
       console.log("Here")
       const userId = req.user_id;
-      const createdPosition = await this.positionService.createPosition(userId, positionData);
+      const createdPosition = await this.positionService.createPosition(null,userId, positionData);
       return { error: false, position: createdPosition };
     } catch (error) {
       return { error: true, message: error.message };

@@ -3,6 +3,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { PositionDetails } from 'src/position_details/position_details.entity';
+import { Company } from 'src/company/company.entity';
 @Entity('positions')
 export class Position {
   @PrimaryGeneratedColumn({ type: 'bigint' })
@@ -37,7 +38,8 @@ export class Position {
   @Column({ nullable: true })
   alternative_brand_icon_url: string;
 
-  @Column({ nullable: true, type:'bigint' })
-  company_id: number;
+  @ManyToOne(() => Company, company => company.positions)
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
 
 }
