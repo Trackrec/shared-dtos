@@ -34,7 +34,7 @@ export class PositionDetails {
   meeting_booked: number;
 
   @Column('simple-array', { nullable: true })
-  sold_to_ids: number[];
+  sold_to_ids: string[];
 
   @Column({ type: 'integer', nullable: true })
   segment_smb: number;
@@ -48,10 +48,13 @@ export class PositionDetails {
   @Column('simple-array', { nullable: true })
   worked_in_ids: string[];
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'bigint', nullable: true })
   short_sales_cycle: number;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'bigint', nullable: true })
+  average_sales_cycle: number;
+
+  @Column({ type: 'bigint', nullable: true })
   long_sales_cycle: number;
 
   @Column({ type: 'boolean', nullable: true })
@@ -66,10 +69,13 @@ export class PositionDetails {
   @Column('simple-array', { nullable: true })
   achievements_ids: number[];
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'bigint', nullable: true })
   short_deal_size: number;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'bigint', nullable: true })
+  average_deal_size: number;
+
+  @Column({ type: 'bigint', nullable: true })
   long_deal_size: number;
 
   @Column('simple-array', { nullable: true })
