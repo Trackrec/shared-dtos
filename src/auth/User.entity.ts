@@ -72,6 +72,10 @@ import {
     @Column("simple-array", { nullable: true })
     languages: string[];
 
+    @ArrayNotEmpty()
+    @Column("simple-array", { nullable: true })
+    next_desired_titles: string[];
+
     @Column({default:false})
     isExperienceImported: boolean
   
