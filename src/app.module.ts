@@ -38,13 +38,15 @@ import { City } from './location/city.entity';
     TypeOrmModule.forFeature([PositionDetails]),
     TypeOrmModule.forFeature([Company]),
     TypeOrmModule.forFeature([City]),
+    TypeOrmModule.forFeature([Position, Company]),
+
 
 
 
 
   ],
   controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController],
-  providers: [AuthService,AppService, PositionService,PositionDetailsService, CompanyService, CityService],
+  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

@@ -31,9 +31,7 @@ export class Position {
   @Column({ type: 'json', nullable: true })
   achievements: any;
 
-//   @ManyToOne(() => Company, (company) => company.positions)
-//   @JoinColumn({ name: 'company_id' })
-//   company: Company;
+
 
   @Column({ nullable: true })
   alternative_brand_icon_url: string;

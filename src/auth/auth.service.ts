@@ -127,8 +127,7 @@ export class AuthService {
       if(response && response.data && response.data.experiences.length>0){
         const {experiences} =response.data;
         for(let i=0;i<experiences.length;i++){
-        //  console.log(userId)
-          //console.log(experiences[i])
+        
             let newCompany=await this.companyService.createCompany({name:experiences[i].company, logo_url: experiences[i].logo_url ? experiences[i].logo_url : null})
              let positionData={
               start_month:experiences[i].starts_at ? experiences[i].starts_at.month : null,
