@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Position } from 'src/positions/positions.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity()
 export class PositionDetails {
@@ -44,7 +45,7 @@ export class PositionDetails {
   segment_enterprise_id: number;
 
   @Column('simple-array', { nullable: true })
-  worked_in_ids: number[];
+  worked_in_ids: string[];
 
   @Column({ type: 'integer', nullable: true })
   short_sales_cycle_id: number;
@@ -55,8 +56,11 @@ export class PositionDetails {
   @Column({ type: 'boolean', nullable: true })
   disable_prospecting: boolean;
 
-  @Column('json', { nullable: true })
-  notable_clients: Record<string, any>;
+  @Column('simple-array', { nullable: true })
+  notable_clients: string[];
+
+  @Column('simple-array', { nullable: true })
+  persona: string[];
 
   @Column('simple-array', { nullable: true })
   achievements_ids: number[];
@@ -67,18 +71,22 @@ export class PositionDetails {
   @Column({ type: 'integer', nullable: true })
   long_deal_size_id: number;
 
-  @Column('json', { nullable: true })
-  worked_in: Record<string, any>;
+  @Column('simple-array', { nullable: true })
+  worked_in: string[];
 
-  @Column('json', { nullable: true })
-  sold_to: Record<string, any>;
+  @Column('simple-array', { nullable: true })
+  sold_to: string[];
 
-  @Column('json', { nullable: true })
-  territories: Record<string, any>;
+  @Column('simple-array', { nullable: true })
+  territories: string[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
+
+  @OneToOne(type => Position, position => position.details)
+  @JoinColumn()
+  position: Position;
 }

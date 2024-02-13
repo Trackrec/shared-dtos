@@ -40,4 +40,7 @@ export class Position {
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
+  @OneToOne(type => PositionDetails, positionDetails => positionDetails.position)
+  @JoinColumn()
+  details: PositionDetails;
 }

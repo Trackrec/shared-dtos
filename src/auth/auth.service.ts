@@ -88,7 +88,7 @@ export class AuthService {
       */
        const user = await this.userRepository.findOne({
         where: { username: username },
-        relations: ['positions', 'positions.company']
+        relations: ['positions', 'positions.details', 'positions.company'],
       });
       
 
