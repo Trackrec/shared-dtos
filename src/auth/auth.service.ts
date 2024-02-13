@@ -99,7 +99,12 @@ export class AuthService {
       if(!user.isExperienceImported){
         await this.importExperiences(user_id, user.username)
         user.isExperienceImported=true;
-        let updatedUser = await this.userRepository.save(user);
+        await this.userRepository.save(user);
+        let updatedUser = await this.userRepository.findOne({
+          where: { username: username },
+          relations: ['positions', 'positions.details', 'positions.company'],
+        });
+        
         delete updatedUser.password;
         delete updatedUser.linkedin_access_token;
         return { error: false, user:updatedUser };
