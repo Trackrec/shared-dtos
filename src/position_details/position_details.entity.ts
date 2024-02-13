@@ -16,10 +16,10 @@ export class PositionDetails {
   is_individual_contributor: boolean;
 
   @Column({ type: 'integer', nullable: true })
-  industry_worked_in_id: number;
+  industry_worked_in: number;
 
   @Column({ type: 'integer', nullable: true })
-  industory_sold_to_id: number;
+  industory_sold_to: number;
 
   @Column({ type: 'integer', nullable: true })
   segment_id: number;
@@ -31,28 +31,28 @@ export class PositionDetails {
   is_booking_meeting: boolean;
 
   @Column({ type: 'integer', nullable: true })
-  meeting_booked_id: number;
+  meeting_booked: number;
 
   @Column('simple-array', { nullable: true })
   sold_to_ids: number[];
 
   @Column({ type: 'integer', nullable: true })
-  segment_smb_id: number;
+  segment_smb: number;
 
   @Column({ type: 'integer', nullable: true })
-  segment_mid_market_id: number;
+  segment_mid_market: number;
 
   @Column({ type: 'integer', nullable: true })
-  segment_enterprise_id: number;
+  segment_enterprise: number;
 
   @Column('simple-array', { nullable: true })
   worked_in_ids: string[];
 
   @Column({ type: 'integer', nullable: true })
-  short_sales_cycle_id: number;
+  short_sales_cycle: number;
 
   @Column({ type: 'integer', nullable: true })
-  long_sales_cycle_id: number;
+  long_sales_cycle: number;
 
   @Column({ type: 'boolean', nullable: true })
   disable_prospecting: boolean;
@@ -67,10 +67,10 @@ export class PositionDetails {
   achievements_ids: number[];
 
   @Column({ type: 'integer', nullable: true })
-  short_deal_size_id: number;
+  short_deal_size: number;
 
   @Column({ type: 'integer', nullable: true })
-  long_deal_size_id: number;
+  long_deal_size: number;
 
   @Column('simple-array', { nullable: true })
   worked_in: string[];
