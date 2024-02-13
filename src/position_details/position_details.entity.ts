@@ -64,10 +64,14 @@ export class PositionDetails {
   notable_clients: string[];
 
   @Column('simple-array', { nullable: true })
+  management: string[];
+
+
+  @Column('simple-array', { nullable: true })
   persona: string[];
 
   @Column('simple-array', { nullable: true })
-  achievements_ids: number[];
+  achievements: string[];
 
   @Column({ type: 'bigint', nullable: true })
   short_deal_size: number;
