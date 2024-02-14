@@ -80,6 +80,9 @@ export class PositionDetails {
   people_rolling_up: number;
 
   @Column({ type: 'int', nullable: true })
+  average_booked_meeting: number;
+
+  @Column({ type: 'int', nullable: true })
   linkedin_percentage: number;
 
   @Column({ type: 'int', nullable: true })
