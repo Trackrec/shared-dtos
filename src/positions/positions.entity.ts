@@ -1,4 +1,3 @@
-// src/positions/position.entity.ts
 
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne, OneToMany, ManyToMany } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';

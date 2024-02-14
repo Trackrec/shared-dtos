@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { PositionDetails } from './position_details.entity';
 import { Position } from 'src/positions/positions.entity';
+import { Company } from 'src/company/company.entity';
+import { CompanyService } from 'src/company/company.service';
 @Injectable()
 export class PositionDetailsService {
   constructor(
@@ -10,58 +12,70 @@ export class PositionDetailsService {
     private readonly positionDetailsRepository: Repository<PositionDetails>,
     @InjectRepository(Position)
     private readonly positionRepository: Repository<Position>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
+    private readonly companyService: CompanyService
 
     
   ) {}
 
-  async createOrUpdatePositionDetails(data: { position_id: string, [key: string]: any }): Promise<{ error: boolean, message?: string, data?: PositionDetails }> {
+  async createOrUpdatePositionDetails(data: { position_id: any, positionData: any, companyData: any, [key: string]: any }): Promise<{ error: boolean, message?: string, data?: any }> {
     try {
-      const { position_id, ...restData } = data;
+        const { position_id, positionData, companyData, ...restData } = data;
 
-      if (!position_id) {
-        return { error: true, message: 'Position ID is required.' };
-      }
-      let position = await this.positionRepository.findOne({ where: { id: parseInt(position_id) } });
-      if(!position){
-        return { error: true, message: 'Position not found.' };
-      }
-      
-      let positionDetails = await this.positionDetailsRepository.findOne({ where: { position_id: position_id } });
+        if (!position_id) {
+            return { error: true, message: 'Position ID is required.' };
+        }
 
-      if (!positionDetails) {
-       // If positionDetails doesn't exist, create a new one
-        const positionDetails = this.positionDetailsRepository.create({
-        position_id: position_id,
-       ...restData,
-       });
+        // Find or create company
+        let company
+        company = await this.companyRepository.findOne({ where: [{ name: companyData.company_name }, { domain: companyData.domain }] });
 
-       // Save the new positionDetails record to obtain its ID
-       const savedPositionDetails = await this.positionDetailsRepository.save(positionDetails);
+        if (!company) {
+            const newCompany = await this.companyService.createCompany({
+                name: companyData?.name,
+                logo_url: companyData.logo_url ? companyData.logo_url : null,
+                domain: companyData.domain ? companyData.domain : null
+            });
 
-        // Find the corresponding Position entity
-      
-      // Update the Position entity with the new positionDetails ID
-       position.details = savedPositionDetails;
+            if (newCompany.error) {
+                return { error: true, message: 'Error creating company.' };
+            }
 
-        // Save the updated Position entity
+            company = { id: newCompany.createdCompany.id };
+        }
+
+        // Find position
+        let position = await this.positionRepository.findOne({ where: { id: parseInt(position_id) } });
+        if (!position) {
+            return { error: true, message: 'Position not found.' };
+        }
+
+        // Merge position data
+        positionData.company = { id: company.id };
+        position = this.positionRepository.merge(position, positionData);
         await this.positionRepository.save(position);
-        
-        // Save the updated Position entity
-      } else {
-        // Update existing positionDetails with the provided data
-        positionDetails = this.positionDetailsRepository.merge(positionDetails, restData);
+
+        // Find or create position details
+        let positionDetails = await this.positionDetailsRepository.findOne({ where: { position_id: position_id } });
+
+        if (!positionDetails) {
+            positionDetails = this.positionDetailsRepository.create({
+                position_id: position_id,
+                ...restData,
+            });
+        } else {
+            positionDetails = this.positionDetailsRepository.merge(positionDetails, restData);
+        }
+
         await this.positionDetailsRepository.save(positionDetails);
 
-      }
-
-
-      return { error: false, message: 'Position details saved successfully.' };
+        return { error: false, message: 'Position details saved successfully.' };
     } catch (error) {
-      console.log(error)
-      // Handle specific error types if needed
-      return { error: true, message: 'Internal server error.' };
+        console.error(error);
+        return { error: true, message: 'Internal server error.' };
     }
-  }
+}
 
   async getPositionDetails(position_id: string): Promise<{ error: boolean, message?: string, data?: PositionDetails }> {
     try {

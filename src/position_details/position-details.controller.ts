@@ -6,7 +6,7 @@ export class PositionDetailsController {
   constructor(private readonly positionDetailsService: PositionDetailsService) {}
 
   @Post('/create-or-update')
-  async createOrUpdatePositionDetails(@Body() data: { position_id: string, [key: string]: any }): Promise<{ error: boolean, message?: string, data?: PositionDetails }> {
+  async createOrUpdatePositionDetails(@Body() data:{ position_id: any, positionData: any, companyData: any, [key: string]: any }): Promise<{ error: boolean, message?: string, data?: any }> {
     try {
       if (!data.position_id) {
         return { error: true, message: 'Position ID is required.' };
