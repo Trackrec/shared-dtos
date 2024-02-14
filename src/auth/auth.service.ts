@@ -7,6 +7,7 @@ import { PositionService } from 'src/positions/positions.service';
 import { CompanyService } from 'src/company/company.service';
 import { Console } from 'console';
 import { Position } from 'src/positions/positions.entity';
+import { Company } from 'src/company/company.entity';
 @Injectable()
 export class AuthService {
   constructor(
@@ -14,6 +15,8 @@ export class AuthService {
     private readonly userRepository: Repository<UserAccounts>,
     @InjectRepository(Position)
     private readonly positionRepository: Repository<Position>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
     private readonly positionService: PositionService,
     private readonly companyService: CompanyService
   ) {}
@@ -135,11 +138,16 @@ export class AuthService {
       if(response && response.data && response.data.experiences.length>0){
         const {experiences} =response.data;
         const positionsPromises = experiences.map(async (experience) => {
-          const newCompany = await this.companyService.createCompany({ 
-              name: experience.company, 
-              logo_url: experience.logo_url ? experience.logo_url : null 
-          });
-          
+
+          let company=await this.companyRepository.findOne({
+            where: [
+                { name:experience.company },
+            ],
+        });
+        let newCompany=null;
+        if(!company)
+        newCompany=await this.companyService.createCompany({name:experience.company, logo_url: experience.logo_url ? experience.logo_url : null, domain: experience.domain ? experience.domain : null})
+              
           const positionData = {
               start_month: experience.starts_at ? experience.starts_at.month : null,
               start_year: experience.starts_at ? experience.starts_at.year : null,
@@ -150,7 +158,7 @@ export class AuthService {
       
           const position = this.positionRepository.create({
               ...positionData,
-              company: newCompany ? { id: newCompany.createdCompany.id } : null,
+              company: newCompany ? { id: newCompany.createdCompany.id } : company,
               user: user, 
           });
       
