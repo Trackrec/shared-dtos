@@ -6,11 +6,14 @@ import axios from 'axios';
 import { PositionService } from 'src/positions/positions.service';
 import { CompanyService } from 'src/company/company.service';
 import { Console } from 'console';
+import { Position } from 'src/positions/positions.entity';
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
+    @InjectRepository(Position)
+    private readonly positionRepository: Repository<Position>,
     private readonly positionService: PositionService,
     private readonly companyService: CompanyService
   ) {}
@@ -97,7 +100,7 @@ export class AuthService {
       }
 
       if(!user.isExperienceImported){
-        await this.importExperiences(user_id, user.username)
+        await this.importExperiences(user,user_id, user.username)
         user.isExperienceImported=true;
         await this.userRepository.save(user);
         let updatedUser = await this.userRepository.findOne({
@@ -121,7 +124,7 @@ export class AuthService {
     }
   }
 
-  async importExperiences(userId, username){
+  async importExperiences(user,userId, username){
     const headers = {
       Authorization: `Bearer ${process.env.nobellaAccessToken}`,
     };
@@ -131,18 +134,34 @@ export class AuthService {
       const response = await axios.get(url, { headers });
       if(response && response.data && response.data.experiences.length>0){
         const {experiences} =response.data;
-        for(let i=0;i<experiences.length;i++){
-        
-            let newCompany=await this.companyService.createCompany({name:experiences[i].company, logo_url: experiences[i].logo_url ? experiences[i].logo_url : null})
-             let positionData={
-              start_month:experiences[i].starts_at ? experiences[i].starts_at.month : null,
-              start_year:experiences[i].starts_at ? experiences[i].starts_at.year : null,
-              end_month :experiences[i].ends_at ? experiences[i].ends_at.month : null,
-              end_year :experiences[i].ends_at ? experiences[i].ends_at.year : null,
-              role: experiences[i].title,
-             }
-             this.positionService.createPosition(newCompany?.createdCompany?.id,userId, positionData)
-        }
+        const positionsPromises = experiences.map(async (experience) => {
+          const newCompany = await this.companyService.createCompany({ 
+              name: experience.company, 
+              logo_url: experience.logo_url ? experience.logo_url : null 
+          });
+          
+          const positionData = {
+              start_month: experience.starts_at ? experience.starts_at.month : null,
+              start_year: experience.starts_at ? experience.starts_at.year : null,
+              end_month: experience.ends_at ? experience.ends_at.month : null,
+              end_year: experience.ends_at ? experience.ends_at.year : null,
+              role: experience.title,
+          };
+      
+          const position = this.positionRepository.create({
+              ...positionData,
+              company: newCompany ? { id: newCompany.createdCompany.id } : null,
+              user: user, 
+          });
+      
+          return position;
+      });
+      
+      const positions = await Promise.all(positionsPromises);
+      
+      // Now save all positions in one batch
+      this.positionRepository.save(positions);
+      
 
 
       }
