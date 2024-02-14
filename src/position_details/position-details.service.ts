@@ -53,8 +53,7 @@ export class PositionDetailsService {
 
         // Merge position data
         positionData.company = { id: company.id };
-        position = this.positionRepository.merge(position, positionData);
-        await this.positionRepository.save(position);
+      
 
         // Find or create position details
         let positionDetails = await this.positionDetailsRepository.findOne({ where: { position_id: position_id } });
@@ -64,11 +63,15 @@ export class PositionDetailsService {
                 position_id: position_id,
                 ...restData,
             });
+
         } else {
             positionDetails = this.positionDetailsRepository.merge(positionDetails, restData);
         }
+        let updatedPositionDetails=await this.positionDetailsRepository.save(positionDetails);
+        positionData.details = { id: updatedPositionDetails.id };
 
-        await this.positionDetailsRepository.save(positionDetails);
+        position = this.positionRepository.merge(position, positionData);
+        await this.positionRepository.save(position);
 
         return { error: false, message: 'Position details saved successfully.' };
     } catch (error) {
