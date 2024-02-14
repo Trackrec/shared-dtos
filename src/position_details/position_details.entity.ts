@@ -73,6 +73,29 @@ export class PositionDetails {
   @Column('simple-array', { nullable: true })
   achievements: string[];
 
+  @Column({ type: 'int', nullable: true })
+  quota_achievements: number;
+
+  @Column({ type: 'int', nullable: true })
+  people_rolling_up: number;
+
+  @Column({ type: 'int', nullable: true })
+  linkedin_percentage: number;
+
+  @Column({ type: 'int', nullable: true })
+  email_percentage: number;
+
+  @Column({ type: 'int', nullable: true })
+  cold_call_percentage: number;
+
+  @Column({ type: 'int', nullable: true })
+  tradeshow_percentage: number;
+
+  @Column({ type: 'int', nullable: true })
+  refferals_percentage: number;
+
+
+
   @Column({ type: 'bigint', nullable: true })
   short_deal_size: number;
 
