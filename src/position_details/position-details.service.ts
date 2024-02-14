@@ -29,7 +29,7 @@ export class PositionDetailsService {
 
         // Find or create company
         let company
-        company = await this.companyRepository.findOne({ where: [{ name: companyData.company_name }, { domain: companyData.domain }] });
+        company = await this.companyRepository.findOne({ where: [{ name: companyData.company_name }, { domain: companyData?.domain }] });
 
         if (!company) {
             const newCompany = await this.companyService.createCompany({

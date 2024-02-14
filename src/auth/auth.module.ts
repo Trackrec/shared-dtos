@@ -9,6 +9,7 @@ import { UserAccounts } from './User.entity';
 import { PositionService } from 'src/positions/positions.service';
 import { Position } from 'src/positions/positions.entity';
 import { CompanyService } from 'src/company/company.service';
+import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { Company } from 'src/company/company.entity';
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { Company } from 'src/company/company.entity';
 
 
   ],
-  providers: [LinkedinStrategy, AuthService, PositionService, CompanyService],
+  providers: [LinkedinStrategy, AuthService, PositionService, CompanyService, S3UploadService],
   controllers: [AuthController]
 })
 export class AuthModule {}

@@ -1,7 +1,8 @@
-import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer';
 @Controller()
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -48,9 +49,14 @@ export class AuthController {
       return { error: true, message: `Error processing user details: ${error.message}` };
     }
   }
-
   @Put('profile/:id')
-  async updateUser(@Param('id') id: number, @Body() updateUserPayload: any) {
-    return this.authService.updateUser(id, updateUserPayload);
+  @UseInterceptors(FileInterceptor('image')) // Interceptor to handle file upload with name 'image'
+  async updateUser(
+    @Param('id') id: number,
+    @Body() updateUserPayload: any,
+    @UploadedFile() image: Multer.File, // Use UploadedFile decorator for image upload
+  ) {
+    // Pass image along with other payload data to service for update
+    return this.authService.updateUser(id, updateUserPayload, image.buffer);
   }
 }

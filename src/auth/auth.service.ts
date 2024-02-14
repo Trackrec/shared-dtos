@@ -5,6 +5,7 @@ import { UserAccounts } from './User.entity';
 import axios from 'axios';
 import { PositionService } from 'src/positions/positions.service';
 import { CompanyService } from 'src/company/company.service';
+import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { Console } from 'console';
 import { Position } from 'src/positions/positions.entity';
 import { Company } from 'src/company/company.entity';
@@ -18,7 +19,8 @@ export class AuthService {
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
     private readonly positionService: PositionService,
-    private readonly companyService: CompanyService
+    private readonly companyService: CompanyService,
+    private readonly uploadService: S3UploadService
   ) {}
 
   async findOrCreate(userDto: any): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
@@ -42,11 +44,11 @@ export class AuthService {
 
         return { error: false, user };
       }
-
+      let imageName=await this.uploadService.uploadImageFromURL(profilePicture)
       user = this.userRepository.create({
         email,
         full_name: displayName,
-        profile_image: profilePicture,
+        profile_image: imageName?imageName:"",
         linkedin_access_token: accessToken,
         username,
         role: 'Applicant',
@@ -70,13 +72,16 @@ export class AuthService {
     }
   }
 
-  async updateUser(id: number, updateUserPayload: any): Promise<{ error: boolean, message: string }> {
+  async updateUser(id: number, updateUserPayload: any, image): Promise<{ error: boolean, message: string }> {
     const user = await this.userRepository.findOne({where:{id}});
     if (!user) {
       return { error: true, message: 'User not found' };
     }
 
     try {
+      let storedImage=await this.uploadService.uploadNewImage(image)
+      if(storedImage)
+      updateUserPayload.profile_image=storedImage;
       // Update user properties based on the payload
       Object.assign(user, updateUserPayload);
 
