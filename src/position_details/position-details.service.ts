@@ -72,11 +72,13 @@ export class PositionDetailsService {
         let updatedPositionDetails=await this.positionDetailsRepository.save(positionDetails);
         let positionUpdate={details:null, company:null};
         if(positionData){
+          if(positionData && companyData)
           positionData.company = { id: company.id };
 
         positionData.details = { id: updatedPositionDetails.id };
         }
         else{
+          if(companyData)
           positionUpdate.company = { id: company.id };
 
          positionUpdate.details= {id: updatedPositionDetails.id}
