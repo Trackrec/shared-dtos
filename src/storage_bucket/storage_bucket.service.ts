@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid'; // Import uuidv4 for generating random image names
+import { v4 as uuidv4 } from 'uuid'; 
 
 @Injectable()
 export class S3UploadService {
   private s3: AWS.S3;
   private bucketName: string = 'trackrec';
-  private folderName: string = 'profile_images';
 
   constructor() {
     this.s3 = new AWS.S3({
@@ -17,14 +16,14 @@ export class S3UploadService {
     });
   }
 
-  async uploadNewImage(imageBuffer: Buffer): Promise<any> {
+  async uploadNewImage(imageBuffer: Buffer, folderName: string): Promise<any> {
     const randomImageName = `${Date.now()}-${uuidv4()}.jpg`;
 
     const uploadParams: AWS.S3.PutObjectRequest = {
       Bucket: this.bucketName,
-      Key: `${this.folderName}/${randomImageName}`,
+      Key: `${folderName}/${randomImageName}`,
       Body: imageBuffer,
-      ACL: 'public-read', // Set appropriate ACL
+      ACL: 'public-read', 
     };
 
     try {
@@ -36,13 +35,13 @@ export class S3UploadService {
     }
   }
 
-  async deleteImage(previousImageName: string): Promise<{ error: boolean; message: string }> {
+  async deleteImage(previousImageName: string, folderName: string): Promise<{ error: boolean; message: string }> {
     try {
       // Delete previous image
       await this.s3
         .deleteObject({
           Bucket: this.bucketName,
-          Key: `${this.folderName}/${previousImageName}`,
+          Key: `${folderName}/${previousImageName}`,
         })
         .promise();
 
@@ -62,7 +61,7 @@ export class S3UploadService {
       const randomImageName = `${Date.now()}-${uuidv4()}.jpg`;
 
       // Upload image to S3 with the random image name
-      await this.uploadNewImage(imageBuffer);
+      await this.uploadNewImage(imageBuffer, "profile_images");
 
       return randomImageName;
     } catch (error) {

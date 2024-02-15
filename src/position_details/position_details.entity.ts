@@ -15,11 +15,6 @@ export class PositionDetails {
   @Column({ type: 'boolean', nullable: true })
   is_individual_contributor: boolean;
 
-  @Column({ type: 'integer', nullable: true })
-  industry_worked_in: number;
-
-  @Column({ type: 'integer', nullable: true })
-  industory_sold_to: number;
 
   @Column({ type: 'integer', nullable: true })
   segment_id: number;

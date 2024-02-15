@@ -79,7 +79,7 @@ export class AuthService {
     }
 
     try {
-      let storedImage=await this.uploadService.uploadNewImage(image)
+      let storedImage=await this.uploadService.uploadNewImage(image, "profile_images")
       if(storedImage)
       updateUserPayload.profile_image=storedImage;
       // Update user properties based on the payload
@@ -92,12 +92,12 @@ export class AuthService {
       return { error: true, message: 'Failed to update user' };
     }
   }
-  async getMe(username: string, user_id:number): Promise<{ error: boolean; user?: UserAccounts; message?: string }> {
+  async getMe(username: string, user_id:number): Promise<{ error: boolean; user?: any; message?: string }> {
     try {
        /** todo: Create a condition here that if email is present then 
        * search based on email, otherwise search based on username for old data
       */
-       const user = await this.userRepository.findOne({
+       let user = await this.userRepository.findOne({
         where: { username: username },
         relations: ['positions', 'positions.details', 'positions.company'],
       });
@@ -118,11 +118,43 @@ export class AuthService {
         
         delete updatedUser.password;
         delete updatedUser.linkedin_access_token;
+        if(updatedUser && updatedUser.positions && updatedUser.positions.length>0){
+          let updated_positions=[]
+          let totalRevenue=0;
+          for(let i=0;i<updatedUser.positions.length;i++){
+            let is_completed: boolean= updatedUser.positions[i].details ? this.isProfileCompleted(updatedUser.positions[i].details) : false
+            updated_positions.push({
+              ...updatedUser.positions[i],
+              is_completed: is_completed
+            })
+            if(is_completed){
+              totalRevenue+=updatedUser.positions[i].details.revenue_generated;
+            }
+          }
+          (updatedUser as any).total_revenue=totalRevenue;
+          updatedUser.positions=updated_positions
+        }
         return { error: false, user:updatedUser };
 
       }
       delete user.password;
       delete user.linkedin_access_token;
+      if(user && user.positions && user.positions.length>0){
+        let updated_positions=[]
+        let totalRevenue=0;
+        for(let i=0;i<user.positions.length;i++){
+          let is_completed: boolean= user.positions[i].details ? this.isProfileCompleted(user.positions[i].details) : false
+          updated_positions.push({
+            ...user.positions[i],
+            is_completed: is_completed
+          })
+          if(is_completed){
+            totalRevenue+=user.positions[i].details.revenue_generated;
+          }
+        }
+        (user as any).total_revenue=totalRevenue;
+        user.positions=updated_positions
+      }
       return { error: false, user };
 
 
@@ -185,4 +217,29 @@ export class AuthService {
       console.error('API Error:', error.message);
     }
   }
+
+  isProfileCompleted(details) {
+    return ((details.is_leadership || details.is_individual_contributor || details.is_booking_meeting) &&
+           details.outbound != null && 
+           details.inbound != null && 
+           details.revenue_generated != null && 
+           details.segment_smb != null && 
+           details.segment_mid_market != null &&
+           details.segment_enterprise != null && 
+           details.new_business != null && 
+           details.existing_business != null && 
+           details.worked_in != null && 
+           details.sold_to != null &&
+           details.territories != null && 
+           details.short_deal_size != null && 
+           details.average_deal_size != null && 
+           details.long_deal_size != null && 
+           details.short_sales_cycle != null && 
+           details.average_sales_cycle != null && 
+           details.long_sales_cycle != null && 
+           details.persona != null && 
+           details.quota_achievements != null);
+}
+
+
 }
