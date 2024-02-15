@@ -57,13 +57,10 @@ export class S3UploadService {
       // Download image from URL
       const imageBuffer = await this.downloadImageFromURL(imageUrl);
 
-      // Generate a random image name
-      const randomImageName = `${Date.now()}-${uuidv4()}.jpg`;
-
       // Upload image to S3 with the random image name
-      await this.uploadNewImage(imageBuffer, "profile_images");
+      let imageName=await this.uploadNewImage(imageBuffer, "profile_images");
 
-      return randomImageName;
+      return imageName;
     } catch (error) {
       console.error('Upload from URL error:', error);
       return false;
