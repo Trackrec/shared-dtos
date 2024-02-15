@@ -28,8 +28,9 @@ export class PositionDetailsService {
         }
 
         // Find or create company
-        let company
-        company = await this.companyRepository.findOne({ where: [{ name: companyData.company_name }, { domain: companyData?.domain }] });
+        let company;
+        if(companyData){
+        company = await this.companyRepository.findOne({ where: [{ name: companyData.name }, { domain: companyData?.domain }] });
 
         if (!company) {
             const newCompany = await this.companyService.createCompany({
@@ -44,7 +45,7 @@ export class PositionDetailsService {
 
             company = { id: newCompany.createdCompany.id };
         }
-
+       }
         // Find position
         let position = await this.positionRepository.findOne({ where: { id: parseInt(position_id) } });
         if (!position) {
@@ -52,6 +53,7 @@ export class PositionDetailsService {
         }
 
         // Merge position data
+        if(companyData && positionData)
         positionData.company = { id: company.id };
       
 
@@ -68,9 +70,18 @@ export class PositionDetailsService {
             positionDetails = this.positionDetailsRepository.merge(positionDetails, restData);
         }
         let updatedPositionDetails=await this.positionDetailsRepository.save(positionDetails);
-        positionData.details = { id: updatedPositionDetails.id };
+        let positionUpdate={details:null, company:null};
+        if(positionData){
+          positionData.company = { id: company.id };
 
-        position = this.positionRepository.merge(position, positionData);
+        positionData.details = { id: updatedPositionDetails.id };
+        }
+        else{
+          positionUpdate.company = { id: company.id };
+
+         positionUpdate.details= {id: updatedPositionDetails.id}
+        }
+        position = this.positionRepository.merge(position, positionData? positionData:positionUpdate);
         await this.positionRepository.save(position);
 
         return { error: false, message: 'Position details saved successfully.' };
