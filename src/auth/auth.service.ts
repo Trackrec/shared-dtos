@@ -163,9 +163,11 @@ export class AuthService {
         let totalRevenue=0;
         for(let i=0;i<user.positions.length;i++){
           let is_completed: boolean= user.positions[i].details ? this.isProfileCompleted(user.positions[i].details) : false
+          let completion_percentage=user.positions[i].details ? this.calculateCompletionPercentage(user.positions[i]) : 0
           updated_positions.push({
             ...user.positions[i],
-            is_completed: is_completed
+            is_completed: is_completed,
+            completion_percentage
           })
           if(is_completed){
             totalRevenue+=user.positions[i].details.revenue_generated;
@@ -248,6 +250,69 @@ export class AuthService {
     );
     return this.calculateYearsAndMonths(result.totalDays);
    }
+
+   calculateCompletionPercentage(position) {
+    const totalFields = 23;
+    const filledFields = this.calculateFilledFields(position);
+
+    const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
+    return completionPercentage;
+}
+
+calculateFilledFields(position) {
+    const detail = position.details;
+    if (detail !== null && detail !== undefined) {
+        const roleFilled = detail.is_individual_contributor || detail.is_leadership || detail.is_booking_meeting ? 1 : 0;
+
+        const segmentsSum =
+            (detail.segment_smb !== null && detail.segment_mid_market !== null && detail.segment_enterprise !== null &&
+                detail.segment_smb + detail.segment_mid_market + detail.segment_enterprise === 100) ? 1 : 0;
+
+        const businessSum =
+            (detail.new_business !== null && detail.existing_business !== null &&
+                detail.new_business + detail.existing_business === 100) ? 1 : 0;
+
+        const outboundSum =
+            (detail.outbound !== null && detail.inbound !== null &&
+                detail.inbound + detail.outbound === 100) ? 1 : 0;
+
+        const salesCyclesFilled =
+            ((detail.average_sales_cycle !== null ? 1 : 0) +
+                (detail.short_sales_cycle !== null ? 1 : 0) +
+                (detail.long_sales_cycle !== null ? 1 : 0));
+
+        const industryFieldsFilled =
+            ((detail.worked_in !== null ? 1 : 0) +
+                (detail.sold_to !== null ? 1 : 0) +
+                (detail.revenue_generated !== null ? 1 : 0) +
+                (position.role !== null ? 1 : 0) +
+                (position.company_id !== null ? 1 : 0) +
+                (detail.quota_achievement !== null ? 1 : 0) +
+                (detail.people_rolling_up !== null ? 1 : 0) +
+                (detail.average_deal_size !== null ? 1 : 0) +
+                (detail.short_deal_size !== null ? 1 : 0) +
+                (detail.long_deal_size !== null ? 1 : 0) +
+                (detail.notable_clients !== null ? 1 : 0));
+
+        const personasFilled = (detail.persona !== null && detail.persona.length > 0) ? 1 : 0;
+
+        const territoryFilled = (detail.territories !== null && detail.territories.length > 0) ? 1 : 0;
+
+        // const teamsManagedFilled = (detail.teams_managed_ids !== null && detail.teams_managed_ids.length > 0) ? 1 : 0;
+
+        const achievementsFilled = (detail.achievements !== null && detail.achievements.length > 0) ? 1 : 0;
+
+        return segmentsSum + salesCyclesFilled + industryFieldsFilled + personasFilled +
+            territoryFilled  + businessSum + outboundSum +
+            achievementsFilled + roleFilled;
+    } else {
+        return 0;
+    }
+}
+
+
+
+
 
   calculatePositionDays(position, { totalDays, maxEndDate }) {
     const startDate:any = new Date(position.start_year, position.start_month - 1, 1);
