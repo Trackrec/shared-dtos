@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param, UseInterceptors, UploadedFile, Post } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -50,13 +50,21 @@ export class AuthController {
     }
   }
   @Put('profile/:id')
-  @UseInterceptors(FileInterceptor('image')) // Interceptor to handle file upload with name 'image'
   async updateUser(
     @Param('id') id: number,
     @Body() updateUserPayload: any,
-    @UploadedFile() image: Multer.File, // Use UploadedFile decorator for image upload
   ) {
     // Pass image along with other payload data to service for update
-    return this.authService.updateUser(id, updateUserPayload, image.buffer);
+    return this.authService.updateUser(id, updateUserPayload);
+  }
+
+  @Post('update_profile_picture/:id')
+  @UseInterceptors(FileInterceptor('image')) 
+  async updateProfilePicture(
+    @Param('id') id: number,
+    @UploadedFile() image: Multer.File, 
+  ) {
+    // Pass image along with other payload data to service for update
+    return this.authService.updateProfilePciture(id, image.buffer);
   }
 }

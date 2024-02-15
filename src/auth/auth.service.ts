@@ -72,7 +72,7 @@ export class AuthService {
     }
   }
 
-  async updateUser(id: number, updateUserPayload: any, image): Promise<{ error: boolean, message: string }> {
+  async updateProfilePciture(id: number, image): Promise<{ error: boolean, message: string }> {
     const user = await this.userRepository.findOne({where:{id}});
     if (!user) {
       return { error: true, message: 'User not found' };
@@ -81,7 +81,25 @@ export class AuthService {
     try {
       let storedImage=await this.uploadService.uploadNewImage(image, "profile_images")
       if(storedImage)
-      updateUserPayload.profile_image=storedImage;
+      user.profile_image=storedImage;
+      
+
+      await this.userRepository.save(user);
+
+      return { error: false, message: 'Profile Image updated successfully' };
+    } catch (error) {
+      return { error: true, message: 'Failed to update user' };
+    }
+  }
+
+
+
+  async updateUser(id: number, updateUserPayload: any): Promise<{ error: boolean, message: string }> {
+    const user = await this.userRepository.findOne({where:{id}});
+    if (!user) {
+      return { error: true, message: 'User not found' };
+    }
+    try {
       // Update user properties based on the payload
       Object.assign(user, updateUserPayload);
 
