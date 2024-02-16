@@ -139,11 +139,15 @@ export class AuthService {
         if(updatedUser && updatedUser.positions && updatedUser.positions.length>0){
           let updated_positions=[]
           let totalRevenue=0;
+          
           for(let i=0;i<updatedUser.positions.length;i++){
-            let is_completed: boolean= updatedUser.positions[i].details ? this.isProfileCompleted(updatedUser.positions[i].details) : false
+            let completion_percentage=user.positions[i].details ? this.calculateCompletionPercentage(user.positions[i]) : 0.0
+
+            let is_completed: boolean= completion_percentage==100.0? true : false
             updated_positions.push({
               ...updatedUser.positions[i],
-              is_completed: is_completed
+              is_completed: is_completed,
+              completion_percentage
             })
             if(is_completed){
               totalRevenue+=+updatedUser.positions[i].details.revenue_generated;
@@ -162,8 +166,9 @@ export class AuthService {
         let updated_positions=[]
         let totalRevenue=0;
         for(let i=0;i<user.positions.length;i++){
-          let is_completed: boolean= user.positions[i].details ? this.isProfileCompleted(user.positions[i].details) : false
           let completion_percentage=user.positions[i].details ? this.calculateCompletionPercentage(user.positions[i]) : 0.0
+          let is_completed: boolean= completion_percentage==100.0? true : false
+
           updated_positions.push({
             ...user.positions[i],
             is_completed: is_completed,
@@ -242,14 +247,21 @@ export class AuthService {
   }
   calculateExperience(positions) {
     if (positions.length === 0) {
-     return "N/A";
+        return "N/A";
     }
     const result = positions.reduce(
-     (acc, position) => this.calculatePositionDays(position, acc),
-     { totalDays: 0, maxEndDate: null }
+        (acc, position) => {
+            if (position.is_completed) {
+                return this.calculatePositionDays(position, acc);
+            } else {
+                return acc;
+            }
+        },
+        { totalDays: 0, maxEndDate: null }
     );
     return this.calculateYearsAndMonths(result.totalDays);
-   }
+}
+
 
    calculateCompletionPercentage(position) {
     let totalFields = 0;
@@ -266,11 +278,8 @@ export class AuthService {
       totalFields=17;
       filledFields = this.calculateIsBookingMeetingFields(position)
     }
-    //filledFields = this.calculateFilledFields(position);
-    console.log(filledFields)
-    console.log(totalFields)
+   
     const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
-    console.log(completionPercentage)
     return completionPercentage;
 }
 
