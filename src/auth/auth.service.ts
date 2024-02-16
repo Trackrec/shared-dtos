@@ -252,11 +252,164 @@ export class AuthService {
    }
 
    calculateCompletionPercentage(position) {
-    const totalFields = 23;
-    const filledFields = this.calculateFilledFields(position);
+    let totalFields = 0;
+    let filledFields=0;
+    if(position.details.is_leadership){
+      totalFields=24;
+      filledFields= this.calculateIsLeadershipFields(position)
+    }
+    else if(position.is_individual_contributor){
+      totalFields=23;
+      filledFields = this.calculateIsIndividualContributerFields(position)
+    }
+    else if(position.is_booking_meeting){
+      totalFields=17;
+      filledFields = this.calculateIsBookingMeetingFields(position)
+    }
+    filledFields = this.calculateFilledFields(position);
 
     const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
     return completionPercentage;
+}
+
+calculateIsBookingMeetingFields(position) {
+  let totalFilled = 1;
+
+  const positionFields=[
+    'company', 'role', 'revenue_generated'
+  ]
+
+  positionFields.forEach(field=>{
+    if(position[field]){
+      totalFilled++;
+    }
+  })
+
+  // Define fields that contribute 1 to the count
+  const fieldsToCount1 = [
+   'quota_achievements', 
+    'worked_in', 'sold_to', 'persona', 'territories', 'average_booked_meeting',
+     'achievements', 'notable_clients'
+  ];
+
+  // Count fields that contribute 1 to the total filled count
+  fieldsToCount1.forEach(field => {
+    if (position.details[field]) {
+      totalFilled++;
+    }
+  });
+
+  // Check additional conditions
+  if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
+    totalFilled++;
+  }
+  if (position.details.existing_business || position.details.new_business) {
+    totalFilled++;
+  }
+  if(position.start_month && position.start_year)
+    totalFilled+=2;
+  if (position.details.outbound || position.details.inbound) {
+    totalFilled++;
+  }
+  if(position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage){
+    totalFilled++;
+  }
+
+  return totalFilled;
+}
+
+
+calculateIsIndividualContributerFields(position) {
+  let totalFilled = 1;
+
+  const positionFields=[
+    'company', 'role', 'revenue_generated'
+  ]
+
+  positionFields.forEach(field=>{
+    if(position[field]){
+      totalFilled++;
+    }
+  })
+
+  // Define fields that contribute 1 to the count
+  const fieldsToCount1 = [
+   'quota_achievements', 
+    'worked_in', 'sold_to', 'persona', 'territories', 'short_deal_size', 
+    'average_deal_size', 'long_deal_size', 'short_sales_cycle', 
+    'average_sales_cycle', 'long_sales_cycle', 
+     'achievements', 'notable_clients'
+  ];
+
+  // Count fields that contribute 1 to the total filled count
+  fieldsToCount1.forEach(field => {
+    if (position.details[field]) {
+      totalFilled++;
+    }
+  });
+
+  // Check additional conditions
+  if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
+    totalFilled++;
+  }
+  if (position.details.existing_business || position.details.new_business) {
+    totalFilled++;
+  }
+  if(position.start_month && position.start_year)
+    totalFilled+=2;
+  if (position.details.outbound || position.details.inbound) {
+    totalFilled++;
+  }
+  if(position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage){
+    totalFilled++;
+  }
+
+  return totalFilled;
+}
+
+
+calculateIsLeadershipFields(position) {
+  let totalFilled = 1;
+
+  const positionFields=[
+    'company', 'role', 'revenue_generated'
+  ]
+
+  positionFields.forEach(field=>{
+    if(position[field]){
+      totalFilled++;
+    }
+  })
+  // Define fields that contribute 1 to the count
+  const detailFields = [
+    'quota_achievements', 
+    'worked_in', 'sold_to', 'persona', 'territories', 'short_deal_size', 
+    'average_deal_size', 'long_deal_size', 'short_sales_cycle', 
+    'average_sales_cycle', 'long_sales_cycle', 'management', 
+    'people_rolling_up', 'achievements', 'notable_clients'
+  ];
+
+  // Count fields that contribute 1 to the total filled count
+  detailFields.forEach(field => {
+    if (position.details[field]) {
+      totalFilled++;
+    }
+  });
+
+  // Check additional conditions
+  if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
+    totalFilled++;
+  }
+  if (position.details.existing_business || position.details.new_business) {
+    totalFilled++;
+  }
+  if(position.start_month && position.start_year)
+    totalFilled+=2;
+  if (position.details.outbound || position.details.inbound) {
+    totalFilled++;
+  }
+
+  return totalFilled;
 }
 
 calculateFilledFields(position) {
