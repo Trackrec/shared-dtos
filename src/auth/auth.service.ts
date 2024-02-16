@@ -146,7 +146,7 @@ export class AuthService {
               is_completed: is_completed
             })
             if(is_completed){
-              totalRevenue+=updatedUser.positions[i].details.revenue_generated;
+              totalRevenue+=+updatedUser.positions[i].details.revenue_generated;
             }
           }
           (updatedUser as any).total_revenue=totalRevenue;
@@ -170,7 +170,7 @@ export class AuthService {
             completion_percentage
           })
           if(is_completed){
-            totalRevenue+=user.positions[i].details.revenue_generated;
+            totalRevenue+=+user.positions[i].details.revenue_generated;
           }
         }
         (user as any).total_revenue=totalRevenue;
