@@ -163,7 +163,7 @@ export class AuthService {
         let totalRevenue=0;
         for(let i=0;i<user.positions.length;i++){
           let is_completed: boolean= user.positions[i].details ? this.isProfileCompleted(user.positions[i].details) : false
-          let completion_percentage=user.positions[i].details ? this.calculateCompletionPercentage(user.positions[i]) : 0
+          let completion_percentage=user.positions[i].details ? this.calculateCompletionPercentage(user.positions[i]) : 0.0
           updated_positions.push({
             ...user.positions[i],
             is_completed: is_completed,
@@ -258,17 +258,19 @@ export class AuthService {
       totalFields=24;
       filledFields= this.calculateIsLeadershipFields(position)
     }
-    else if(position.is_individual_contributor){
+    else if(position.details.is_individual_contributor){
       totalFields=23;
       filledFields = this.calculateIsIndividualContributerFields(position)
     }
-    else if(position.is_booking_meeting){
+    else if(position.details.is_booking_meeting){
       totalFields=17;
       filledFields = this.calculateIsBookingMeetingFields(position)
     }
-    filledFields = this.calculateFilledFields(position);
-
+    //filledFields = this.calculateFilledFields(position);
+    console.log(filledFields)
+    console.log(totalFields)
     const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
+    console.log(completionPercentage)
     return completionPercentage;
 }
 
@@ -288,10 +290,19 @@ calculateIsBookingMeetingFields(position) {
   // Define fields that contribute 1 to the count
   const fieldsToCount1 = [
    'quota_achievements', 
-    'worked_in', 'sold_to', 'persona', 'territories', 'average_booked_meeting',
-     'achievements', 'notable_clients'
+     'average_booked_meeting',
   ];
 
+  const arrayFields =[
+    "worked_in", "sold_to", "persona", "territories", "achievements", "notable_clients"
+  ]
+
+  arrayFields.forEach(field => {
+    if (position.details[field] && position.details[field].length>0) {
+      totalFilled++;
+    }
+  });
+  
   // Count fields that contribute 1 to the total filled count
   fieldsToCount1.forEach(field => {
     if (position.details[field]) {
@@ -335,15 +346,25 @@ calculateIsIndividualContributerFields(position) {
   // Define fields that contribute 1 to the count
   const fieldsToCount1 = [
    'quota_achievements', 
-    'worked_in', 'sold_to', 'persona', 'territories', 'short_deal_size', 
+     'short_deal_size', 
     'average_deal_size', 'long_deal_size', 'short_sales_cycle', 
     'average_sales_cycle', 'long_sales_cycle', 
-     'achievements', 'notable_clients'
+     
   ];
+
+  const arrayFields =[
+    "worked_in", "sold_to", "persona", "territories", "achievements", "notable_clients"
+  ]
 
   // Count fields that contribute 1 to the total filled count
   fieldsToCount1.forEach(field => {
     if (position.details[field]) {
+      totalFilled++;
+    }
+  });
+
+  arrayFields.forEach(field => {
+    if (position.details[field] && position.details[field].length>0) {
       totalFilled++;
     }
   });
@@ -383,11 +404,15 @@ calculateIsLeadershipFields(position) {
   // Define fields that contribute 1 to the count
   const detailFields = [
     'quota_achievements', 
-    'worked_in', 'sold_to', 'persona', 'territories', 'short_deal_size', 
+     'short_deal_size', 
     'average_deal_size', 'long_deal_size', 'short_sales_cycle', 
-    'average_sales_cycle', 'long_sales_cycle', 'management', 
-    'people_rolling_up', 'achievements', 'notable_clients'
+    'average_sales_cycle', 'long_sales_cycle', 
+    'people_rolling_up'
   ];
+
+  const arrayFields =[
+    "worked_in", "sold_to", "persona", "territories", "management", "achievements", "notable_clients"
+  ]
 
   // Count fields that contribute 1 to the total filled count
   detailFields.forEach(field => {
@@ -396,6 +421,11 @@ calculateIsLeadershipFields(position) {
     }
   });
 
+  arrayFields.forEach(field => {
+    if (position.details[field] && position.details[field].length>0) {
+      totalFilled++;
+    }
+  });
   // Check additional conditions
   if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
     totalFilled++;
