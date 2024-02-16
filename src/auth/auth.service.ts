@@ -499,8 +499,8 @@ calculateFilledFields(position) {
 
   calculatePositionDays(position, { totalDays, maxEndDate }) {
     const startDate:any = new Date(position.start_year, position.start_month - 1, 1);
-    const endDate:any = position.end_year && position.end_month
-     ? new Date(position.endYear, position.endMonth - 1, 1)
+    const endDate:any = (position.end_year && position.end_month)
+     ? new Date(position.end_year, position.end_month - 1, 1)
      : new Date(); // Use the current date if end date is null
     let daysToAdd;
     if (maxEndDate === null || startDate >= maxEndDate) {
