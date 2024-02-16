@@ -22,13 +22,13 @@ export class AuthController {
       const user = req.user;
 
       if (user && user.token) {
-        return res.redirect(`http://localhost:3000/?token=${user.token}`);
+        return res.redirect(`${process.env.REACT_APP_URL}/?token=${user.token}`);
       } else {
-        return res.redirect('http://localhost:3000/linkedin');
+        return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
       }
     } catch (error) {
       this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-      return res.redirect('http://localhost:3000/linkedin');
+      return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
     }
   }
 
