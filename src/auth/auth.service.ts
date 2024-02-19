@@ -141,7 +141,7 @@ export class AuthService {
           let totalRevenue=0;
           
           for(let i=0;i<updatedUser.positions.length;i++){
-            let completion_percentage=user.positions[i].details ? this.calculateCompletionPercentage(user.positions[i]) : 0.0
+            let completion_percentage=(user.positions[i] && user.positions[i]?.details) ? this.calculateCompletionPercentage(user.positions[i]) : 0.0
 
             let is_completed: boolean= completion_percentage==100.0? true : false
             updated_positions.push({
@@ -155,6 +155,10 @@ export class AuthService {
           }
           (updatedUser as any).total_revenue=totalRevenue;
           (updatedUser as any).total_years_experience=this.calculateExperience(updatedUser.positions)
+          const {existing_business_average, new_business_average}= this.calculateWeightedAverageForBusiness(updatedUser.positions);
+          (updatedUser as any).weightedAverageExistingBusiness=existing_business_average;
+          (updatedUser as any).weightedAverageNewBusiness=new_business_average
+
           updatedUser.positions=updated_positions
         }
         return { error: false, user:updatedUser };
@@ -180,7 +184,9 @@ export class AuthService {
         }
         (user as any).total_revenue=totalRevenue;
         (user as any).total_years_experience=this.calculateExperience(user.positions)
-
+        const {existing_business_average, new_business_average}= this.calculateWeightedAverageForBusiness(user.positions);
+        (user as any).weightedAverageExistingBusiness=existing_business_average;
+        (user as any).weightedAverageNewBusiness=new_business_average
         user.positions=updated_positions
       }
       return { error: false, user };
@@ -561,5 +567,62 @@ calculateFilledFields(position) {
            details.quota_achievements != null);
 }
 
+calculateWeightedAverageForBusiness(positions){
+  let totalWeightedExistingBusiness = 0;
+  let totalWeightedNewBusiness = 0;
+  let totalDuration = 0;
+
+  if(positions && positions.length==0){
+    return {existing_business_average: 0, new_business_average: 0};
+
+  }
+  
+  positions.forEach(position => {
+    if(!position.details)
+     return
+
+   if(!this.isProfileCompleted(position.details))
+    return
+
+      let startMonth = position.start_month;
+      let startYear = position.start_year;
+      let endMonth = position.end_month;
+      let endYear = position.end_year;
+      let existingBusinessPercentage = position.details.existing_business;
+      let newBusinessPercentage = position.details.new_business;
+  
+      let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
+      totalDuration += duration;
+  
+      let weightedExistingBusiness = existingBusinessPercentage * duration;
+      let weightedNewBusiness = newBusinessPercentage * duration;
+  
+      // Adjust weights based on duration
+      totalWeightedExistingBusiness += weightedExistingBusiness + (weightedExistingBusiness / totalDuration);
+      totalWeightedNewBusiness += weightedNewBusiness + (weightedNewBusiness / totalDuration);
+  });
+  
+  if(totalDuration==0){
+    return {existing_business_average: 0, new_business_average: 0};
+
+  }
+  let weightedAverageExistingBusiness = totalWeightedExistingBusiness / totalDuration;
+  let weightedAverageNewBusiness = totalWeightedNewBusiness / totalDuration;
+  
+  return {existing_business_average: Math.round(weightedAverageExistingBusiness), new_business_average: Math.round(weightedAverageNewBusiness)};
+}
+
+calculateDuration(startMonth, startYear, endMonth, endYear) {
+  let startDate = new Date(startYear, startMonth - 1);
+  let endDate:Date;
+  if (endMonth === null || endYear === null) {
+      endDate = new Date();
+  } else {
+      endDate = new Date(endYear, endMonth - 1);
+  }
+  let durationInMilliseconds = endDate.getTime() - startDate.getTime();
+  let durationInMonths = durationInMilliseconds / (1000 * 60 * 60 * 24 * 30);
+  return durationInMonths;
+}
 
 }

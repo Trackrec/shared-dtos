@@ -55,7 +55,7 @@ export class AppModule implements NestModule {
       .apply(TokenMiddleware)
       .forRoutes(
         //todo: rename to "GetUserDetails/Me"
-        "me", "positions"
+        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions"
       );
   }
 }
