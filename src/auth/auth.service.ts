@@ -100,6 +100,7 @@ export class AuthService {
       return { error: true, message: 'User not found' };
     }
     try {
+      updateUserPayload.is_preferences_save= true;
       // Update user properties based on the payload
       Object.assign(user, updateUserPayload);
 
