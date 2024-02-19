@@ -588,136 +588,139 @@ calculateWeightedAverageForBusiness(positions){
   let totalWeightedNewBusiness = 0;
   let totalDuration = 0;
 
-  if(positions && positions.length==0){
-    return {existing_business_average: 0, new_business_average: 0};
-
+  if(!positions || positions.length === 0){
+    return { existing_business_average: 0, new_business_average: 0 };
   }
   
   positions.forEach(position => {
-    if(!position.details)
-     return
+    if(!position.details || !this.isProfileCompleted(position.details)) {
+      return;
+    }
 
-   if(!this.isProfileCompleted(position.details))
-    return
+    let startMonth = position.start_month;
+    let startYear = position.start_year;
+    let endMonth = position.end_month;
+    let endYear = position.end_year;
+    let existingBusinessPercentage = position.details.existing_business;
+    let newBusinessPercentage = position.details.new_business;
 
-      let startMonth = position.start_month;
-      let startYear = position.start_year;
-      let endMonth = position.end_month;
-      let endYear = position.end_year;
-      let existingBusinessPercentage = position.details.existing_business;
-      let newBusinessPercentage = position.details.new_business;
-  
-      let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
-      totalDuration += duration;
-  
-      let weightedExistingBusiness = existingBusinessPercentage * duration;
-      let weightedNewBusiness = newBusinessPercentage * duration;
-  
-      // Adjust weights based on duration
-      totalWeightedExistingBusiness += weightedExistingBusiness + (weightedExistingBusiness / totalDuration);
-      totalWeightedNewBusiness += weightedNewBusiness + (weightedNewBusiness / totalDuration);
+    let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
+    totalDuration += duration;
+
+    let weightedExistingBusiness = existingBusinessPercentage * duration;
+    let weightedNewBusiness = newBusinessPercentage * duration;
+
+    totalWeightedExistingBusiness += weightedExistingBusiness;
+    totalWeightedNewBusiness += weightedNewBusiness;
   });
-  
-  if(totalDuration==0){
-    return {existing_business_average: 0, new_business_average: 0};
 
+  if(totalDuration === 0){
+    return { existing_business_average: 0, new_business_average: 0 };
   }
+
+  // Calculate weighted averages
   let weightedAverageExistingBusiness = totalWeightedExistingBusiness / totalDuration;
   let weightedAverageNewBusiness = totalWeightedNewBusiness / totalDuration;
-  
-  return {existing_business_average: Math.round(weightedAverageExistingBusiness), new_business_average: Math.round(weightedAverageNewBusiness)};
+
+  return { existing_business_average: Math.round(weightedAverageExistingBusiness), new_business_average: Math.round(weightedAverageNewBusiness) };
 }
+
 
 calculateWeightedAverageForOutbound(positions){
   let totalWeightedOutbound = 0;
   let totalWeightedInbound = 0;
   let totalDuration = 0;
 
-  if(positions && positions.length==0){
-    return {outbound_average: 0, inbound_average: 0};
-
+  if(!positions || positions.length === 0){
+    return { outbound_average: 0, inbound_average: 0 };
   }
   
   positions.forEach(position => {
-    if(!position.details)
-     return
+    if(!position.details || !this.isProfileCompleted(position.details)) {
+      return;
+    }
 
-   if(!this.isProfileCompleted(position.details))
-    return
+    let startMonth = position.start_month;
+    let startYear = position.start_year;
+    let endMonth = position.end_month;
+    let endYear = position.end_year;
+    let outboundPercentage = position.details.outbound;
+    let inboundPercentage = position.details.inbound;
 
-      let startMonth = position.start_month;
-      let startYear = position.start_year;
-      let endMonth = position.end_month;
-      let endYear = position.end_year;
-      let outboundPercentage = position.details.outbound;
-      let inboundPercentage = position.details.inbound;
-  
-      let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
-      totalDuration += duration;
-  
-      let weightedOutbound = outboundPercentage * duration;
-      let weightedInbound = inboundPercentage * duration;
-  
-      // Adjust weights based on duration
-      totalWeightedOutbound += weightedOutbound + (weightedOutbound / totalDuration);
-      totalWeightedInbound += weightedInbound + (weightedInbound / totalDuration);
+    let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
+    totalDuration += duration;
+
+    let weightedOutbound = outboundPercentage * duration;
+    let weightedInbound = inboundPercentage * duration;
+
+    totalWeightedOutbound += weightedOutbound;
+    totalWeightedInbound += weightedInbound;
   });
-  
-  if(totalDuration==0){
-    return {outbound_average: 0, inbound_average: 0};
 
+  if(totalDuration === 0){
+    return { outbound_average: 0, inbound_average: 0 };
   }
+
+  // Calculate weighted averages
   let weightedAverageOutbound = totalWeightedOutbound / totalDuration;
   let weightedAverageInbound = totalWeightedInbound / totalDuration;
-  
-  return {outbound_average: Math.round(weightedAverageOutbound), inbound_average: Math.round(weightedAverageInbound)};
+
+  return { outbound_average: Math.round(weightedAverageOutbound), inbound_average: Math.round(weightedAverageInbound) };
 }
+
 
 calculateWeightedAverageForSegment(positions) {
   let totalSmb = 0;
   let totalMidmarket = 0;
-  let totalEnterprise= 0;
+  let totalEnterprise = 0;
   let totalDuration = 0;
 
   if (!positions || positions.length === 0) {
-      return { smb_average: 0, midmarket_average: 0, enterprise_average: 0 };
+    return { smb_average: 0, midmarket_average: 0, enterprise_average: 0 };
   }
 
   positions.forEach(position => {
-      if (!position.details) return;
-      if (!this.isProfileCompleted(position.details)) return;
+    if (!position.details || !this.isProfileCompleted(position.details)) {
+      return;
+    }
 
-      let startMonth = position.start_month;
-      let startYear = position.start_year;
-      let endMonth = position.end_month;
-      let endYear = position.end_year;
-      let smbPercentage = position.details.segment_smb;
-      let midmarketPercentage = position.details.segment_mid_market;
-      let enterprisePercentage = position.details.segment_enterprise;
+    let startMonth = position.start_month;
+    let startYear = position.start_year;
+    let endMonth = position.end_month;
+    let endYear = position.end_year;
+    let smbPercentage = position.details.segment_smb;
+    let midmarketPercentage = position.details.segment_mid_market;
+    let enterprisePercentage = position.details.segment_enterprise;
 
-      let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
-      totalDuration += duration;
+    let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
+    totalDuration += duration;
 
-      let weightedSmb = smbPercentage * duration;
-      let weightedMidmarket = midmarketPercentage * duration;
-      let weightedEnterprise = enterprisePercentage * duration;
+    let weightedSmb = smbPercentage * duration;
+    let weightedMidmarket = midmarketPercentage * duration;
+    let weightedEnterprise = enterprisePercentage * duration;
 
-      // Adjust weights based on duration
-      totalSmb += weightedSmb + (weightedSmb / totalDuration);
-      totalMidmarket += weightedMidmarket + (weightedMidmarket / totalDuration);
-      totalEnterprise += weightedEnterprise + (weightedEnterprise / totalDuration);
+    // Accumulate weighted values
+    totalSmb += weightedSmb;
+    totalMidmarket += weightedMidmarket;
+    totalEnterprise += weightedEnterprise;
   });
 
   if (totalDuration === 0) {
     return { smb_average: 0, midmarket_average: 0, enterprise_average: 0 };
   }
 
+  // Calculate weighted averages
   let weightedAverageSmb = totalSmb / totalDuration;
   let weightedAverageMidmarket = totalMidmarket / totalDuration;
   let weightedAverageEnterprise = totalEnterprise / totalDuration;
 
-  return { smb_average: Math.round(weightedAverageSmb), midmarket_average: Math.round(weightedAverageMidmarket), enterprise_average: Math.round(weightedAverageEnterprise) };
+  return {
+    smb_average: Math.round(weightedAverageSmb),
+    midmarket_average: Math.round(weightedAverageMidmarket),
+    enterprise_average: Math.round(weightedAverageEnterprise)
+  };
 }
+
 
 
 
