@@ -25,6 +25,8 @@ import { CityController } from './location/city.controller';
 import { CityService } from './location/city.service';
 import { City } from './location/city.entity';
 import { S3UploadService } from './storage_bucket/storage_bucket.service';
+import { PublishProfileController } from './publish_profile/publish_profile.controller';
+import { PublishProfileService } from './publish_profile/publish-profile.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -46,8 +48,8 @@ import { S3UploadService } from './storage_bucket/storage_bucket.service';
 
 
   ],
-  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController],
-  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService],
+  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController],
+  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

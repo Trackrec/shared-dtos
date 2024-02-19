@@ -32,7 +32,9 @@ import {
     @Column({default:null})
     profile_image: string;
   
-  
+    @Column({ type: 'datetime', nullable: true })
+    published_at: Date | null;
+
     @Column({default:null})
     has_avatar: boolean;
 
