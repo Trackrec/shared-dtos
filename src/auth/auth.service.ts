@@ -289,15 +289,15 @@ export class AuthService {
     let totalFields = 0;
     let filledFields=0;
     if(position.details.is_leadership){
-      totalFields=24;
+      totalFields=23;
       filledFields= this.calculateIsLeadershipFields(position)
     }
     else if(position.details.is_individual_contributor){
-      totalFields=23;
+      totalFields=22;
       filledFields = this.calculateIsIndividualContributerFields(position)
     }
     else if(position.details.is_booking_meeting){
-      totalFields=17;
+      totalFields=16;
       filledFields = this.calculateIsBookingMeetingFields(position)
     }
    
