@@ -117,7 +117,7 @@ export class AuthService {
       */
        let user = await this.userRepository.findOne({
         where: { username: username },
-        relations: ['positions', 'positions.details', 'positions.company'],
+        relations: ['keywords','positions', 'positions.details', 'positions.company'],
       });
       
 
@@ -131,7 +131,7 @@ export class AuthService {
         await this.userRepository.save(user);
         let updatedUser = await this.userRepository.findOne({
           where: { username: username },
-          relations: ['positions', 'positions.details', 'positions.company'],
+          relations: ["keywords",'positions', 'positions.details', 'positions.company'],
         });
         
         delete updatedUser.password;

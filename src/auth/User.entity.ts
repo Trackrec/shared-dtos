@@ -6,9 +6,12 @@ import {
     OneToMany,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToOne,
+    JoinColumn,
   } from 'typeorm';
   import { IsEmail, IsNotEmpty, IsString, Length, IsIn, ArrayNotEmpty } from "class-validator";
   import { Position } from 'src/positions/positions.entity';
+import { Keywords } from 'src/keywords/keyword.entity';
   export enum LocationPreference {
     ONSITE = 'onsite',
     REMOTE = 'remote',
@@ -89,5 +92,9 @@ import {
 
     @OneToMany(() => Position, (position) => position.user)
     positions: Position[];
+
+    @OneToOne(() => Keywords, { cascade: true, eager: true }) 
+    @JoinColumn({name:'keyword_id'})
+    keywords: Keywords;
   }
 

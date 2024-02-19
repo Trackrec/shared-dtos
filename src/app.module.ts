@@ -27,6 +27,9 @@ import { City } from './location/city.entity';
 import { S3UploadService } from './storage_bucket/storage_bucket.service';
 import { PublishProfileController } from './publish_profile/publish_profile.controller';
 import { PublishProfileService } from './publish_profile/publish-profile.service';
+import { KeywordsController } from './keywords/keyword.controller';
+import { KeywordsService } from './keywords/keyword.service';
+import { Keywords } from './keywords/keyword.entity';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -42,14 +45,16 @@ import { PublishProfileService } from './publish_profile/publish-profile.service
     TypeOrmModule.forFeature([Company]),
     TypeOrmModule.forFeature([City]),
     TypeOrmModule.forFeature([Position, Company]),
+    TypeOrmModule.forFeature([Keywords]),
+
 
 
 
 
 
   ],
-  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController],
-  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService],
+  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController],
+  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
