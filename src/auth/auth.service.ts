@@ -157,10 +157,14 @@ export class AuthService {
           (updatedUser as any).total_years_experience=this.calculateExperience(updatedUser.positions)
           const {existing_business_average, new_business_average}= this.calculateWeightedAverageForBusiness(updatedUser.positions);
           const {outbound_average, inbound_average}= this.calculateWeightedAverageForOutbound(updatedUser.positions);
+          const {smb_average, midmarket_average, enterprise_average}= this.calculateWeightedAverageForSegment(updatedUser.positions);
           (updatedUser as any).weightedAverageExistingBusiness=existing_business_average;
           (updatedUser as any).weightedAverageNewBusiness=new_business_average;
           (updatedUser as any).outbound_average=outbound_average;
           (updatedUser as any).inbound_average=inbound_average;
+          (updatedUser as any).smb_average=smb_average;
+          (updatedUser as any).midmarket_average=midmarket_average;
+          (updatedUser as any).enterprise_average=enterprise_average;
 
 
           updatedUser.positions=updated_positions
@@ -190,11 +194,15 @@ export class AuthService {
         (user as any).total_years_experience=this.calculateExperience(user.positions)
         const {existing_business_average, new_business_average}= this.calculateWeightedAverageForBusiness(user.positions);
         const {outbound_average, inbound_average}= this.calculateWeightedAverageForOutbound(user.positions);
+        const {smb_average, midmarket_average, enterprise_average}= this.calculateWeightedAverageForSegment(user.positions);
 
         (user as any).weightedAverageExistingBusiness=existing_business_average;
         (user as any).weightedAverageNewBusiness=new_business_average;
         (user as any).outbound_average=outbound_average;
         (user as any).inbound_average=inbound_average;
+        (user as any).smb_average=smb_average;
+        (user as any).midmarket_average=midmarket_average;
+        (user as any).enterprise_average=enterprise_average;
         user.positions=updated_positions
       }
       return { error: false, user };
@@ -664,6 +672,54 @@ calculateWeightedAverageForOutbound(positions){
   
   return {outbound_average: Math.round(weightedAverageOutbound), inbound_average: Math.round(weightedAverageInbound)};
 }
+
+calculateWeightedAverageForSegment(positions) {
+  let totalSmb = 0;
+  let totalMidmarket = 0;
+  let totalEnterprise= 0;
+  let totalDuration = 0;
+
+  if (!positions || positions.length === 0) {
+      return { smb_average: 0, midmarket_average: 0, enterprise_average: 0 };
+  }
+
+  positions.forEach(position => {
+      if (!position.details) return;
+      if (!this.isProfileCompleted(position.details)) return;
+
+      let startMonth = position.start_month;
+      let startYear = position.start_year;
+      let endMonth = position.end_month;
+      let endYear = position.end_year;
+      let smbPercentage = position.details.segment_smb;
+      let midmarketPercentage = position.details.segment_mid_market;
+      let enterprisePercentage = position.details.segment_enterprise;
+
+      let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
+      totalDuration += duration;
+
+      let weightedSmb = smbPercentage * duration;
+      let weightedMidmarket = midmarketPercentage * duration;
+      let weightedEnterprise = enterprisePercentage * duration;
+
+      // Adjust weights based on duration
+      totalSmb += weightedSmb + (weightedSmb / totalDuration);
+      totalMidmarket += weightedMidmarket + (weightedMidmarket / totalDuration);
+      totalEnterprise += weightedEnterprise + (weightedEnterprise / totalDuration);
+  });
+
+  if (totalDuration === 0) {
+    return { smb_average: 0, midmarket_average: 0, enterprise_average: 0 };
+  }
+
+  let weightedAverageSmb = totalSmb / totalDuration;
+  let weightedAverageMidmarket = totalMidmarket / totalDuration;
+  let weightedAverageEnterprise = totalEnterprise / totalDuration;
+
+  return { smb_average: Math.round(weightedAverageSmb), midmarket_average: Math.round(weightedAverageMidmarket), enterprise_average: Math.round(weightedAverageEnterprise) };
+}
+
+
 
 calculateDuration(startMonth, startYear, endMonth, endYear) {
   let startDate = new Date(startYear, startMonth - 1);
