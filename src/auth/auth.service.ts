@@ -156,8 +156,12 @@ export class AuthService {
           (updatedUser as any).total_revenue=totalRevenue;
           (updatedUser as any).total_years_experience=this.calculateExperience(updatedUser.positions)
           const {existing_business_average, new_business_average}= this.calculateWeightedAverageForBusiness(updatedUser.positions);
+          const {outbound_average, inbound_average}= this.calculateWeightedAverageForOutbound(updatedUser.positions);
           (updatedUser as any).weightedAverageExistingBusiness=existing_business_average;
-          (updatedUser as any).weightedAverageNewBusiness=new_business_average
+          (updatedUser as any).weightedAverageNewBusiness=new_business_average;
+          (updatedUser as any).outbound_average=outbound_average;
+          (updatedUser as any).inbound_average=inbound_average;
+
 
           updatedUser.positions=updated_positions
         }
@@ -185,8 +189,12 @@ export class AuthService {
         (user as any).total_revenue=totalRevenue;
         (user as any).total_years_experience=this.calculateExperience(user.positions)
         const {existing_business_average, new_business_average}= this.calculateWeightedAverageForBusiness(user.positions);
+        const {outbound_average, inbound_average}= this.calculateWeightedAverageForOutbound(user.positions);
+
         (user as any).weightedAverageExistingBusiness=existing_business_average;
-        (user as any).weightedAverageNewBusiness=new_business_average
+        (user as any).weightedAverageNewBusiness=new_business_average;
+        (user as any).outbound_average=outbound_average;
+        (user as any).inbound_average=inbound_average;
         user.positions=updated_positions
       }
       return { error: false, user };
@@ -610,6 +618,51 @@ calculateWeightedAverageForBusiness(positions){
   let weightedAverageNewBusiness = totalWeightedNewBusiness / totalDuration;
   
   return {existing_business_average: Math.round(weightedAverageExistingBusiness), new_business_average: Math.round(weightedAverageNewBusiness)};
+}
+
+calculateWeightedAverageForOutbound(positions){
+  let totalWeightedOutbound = 0;
+  let totalWeightedInbound = 0;
+  let totalDuration = 0;
+
+  if(positions && positions.length==0){
+    return {outbound_average: 0, inbound_average: 0};
+
+  }
+  
+  positions.forEach(position => {
+    if(!position.details)
+     return
+
+   if(!this.isProfileCompleted(position.details))
+    return
+
+      let startMonth = position.start_month;
+      let startYear = position.start_year;
+      let endMonth = position.end_month;
+      let endYear = position.end_year;
+      let outboundPercentage = position.details.outbound;
+      let inboundPercentage = position.details.inbound;
+  
+      let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
+      totalDuration += duration;
+  
+      let weightedOutbound = outboundPercentage * duration;
+      let weightedInbound = inboundPercentage * duration;
+  
+      // Adjust weights based on duration
+      totalWeightedOutbound += weightedOutbound + (weightedOutbound / totalDuration);
+      totalWeightedInbound += weightedInbound + (weightedInbound / totalDuration);
+  });
+  
+  if(totalDuration==0){
+    return {outbound_average: 0, inbound_average: 0};
+
+  }
+  let weightedAverageOutbound = totalWeightedOutbound / totalDuration;
+  let weightedAverageInbound = totalWeightedInbound / totalDuration;
+  
+  return {outbound_average: Math.round(weightedAverageOutbound), inbound_average: Math.round(weightedAverageInbound)};
 }
 
 calculateDuration(startMonth, startYear, endMonth, endYear) {
