@@ -32,6 +32,8 @@ import { KeywordsService } from './keywords/keyword.service';
 import { Keywords } from './keywords/keyword.entity';
 import { AccountsVisitors } from './visitors/accounts_visitor.entity';
 import { AnalyticsAccess } from './visitors/analytics_access.entity';
+import { SuperAdminController } from './super-admin/super-admin.controller';
+import { SuperAdminService } from './super-admin/super-admin.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -56,16 +58,15 @@ import { AnalyticsAccess } from './visitors/analytics_access.entity';
 
 
   ],
-  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController],
-  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService],
+  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController, SuperAdminController],
+  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
       .forRoutes(
-        //todo: rename to "GetUserDetails/Me"
-        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views"
+        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies"
       );
   }
 }

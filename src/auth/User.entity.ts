@@ -42,6 +42,9 @@ import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
     @Column({default:null})
     has_avatar: boolean;
 
+    @Column({default:false})
+    blocked: boolean;
+
     @Column({default:true})
     open_to_work: boolean;
   
@@ -90,6 +93,9 @@ import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
   
     @UpdateDateColumn()
     updated_at: Date;
+
+    @CreateDateColumn()
+    last_accessed_at: Date;
 
     @OneToMany(() => Position, (position) => position.user)
     positions: Position[];

@@ -14,6 +14,19 @@ export class KeywordsService {
     private readonly userRepository: Repository<UserAccounts>
   ) {}
 
+  async getKeywords(user_id: number){
+    try{
+       let user= await this.userRepository.findOne({where:{id: user_id}, select:["keywords", "id", "full_name"]})
+       if(!user){
+        return {error: false, message: "Keywords not found."}
+       }
+       return { error: false, user}
+    }
+    catch(e){
+      return { error: true, message: 'Keywords not found.' };
+
+    }
+  }
   async createOrUpdateKeywords(userId: number, newKeywords: string[]): Promise<{ error: boolean, message: string }> {
     try {
         let user = await this.userRepository.findOne({where:{id:userId}});

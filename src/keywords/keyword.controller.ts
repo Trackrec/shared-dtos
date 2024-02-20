@@ -1,6 +1,6 @@
 // keywords.controller.ts
 
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import { KeywordsService } from './keyword.service';
 @Controller('keywords')
 export class KeywordsController {
@@ -18,5 +18,10 @@ export class KeywordsController {
       console.error('Error creating or updating keywords:', error);
       return { error: true, message: 'Something went wrong, please try again!' };
     }
+  }
+
+  @Get(':userId')
+  async getKeywords(@Param('userId') userId: number){
+    return await this.keywordsService.getKeywords(userId)
   }
 }
