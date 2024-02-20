@@ -12,6 +12,7 @@ import {
   import { IsEmail, IsNotEmpty, IsString, Length, IsIn, ArrayNotEmpty } from "class-validator";
   import { Position } from 'src/positions/positions.entity';
 import { Keywords } from 'src/keywords/keyword.entity';
+import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
   export enum LocationPreference {
     ONSITE = 'onsite',
     REMOTE = 'remote',
@@ -96,5 +97,8 @@ import { Keywords } from 'src/keywords/keyword.entity';
     @OneToOne(() => Keywords, { cascade: true, eager: true }) 
     @JoinColumn({name:'keyword_id'})
     keywords: Keywords;
+
+    @OneToMany(() => AnalyticsAccess, analyticsAccess => analyticsAccess.user)
+  analyticsAccess: AnalyticsAccess[];
   }
 

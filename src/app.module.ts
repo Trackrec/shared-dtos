@@ -30,6 +30,8 @@ import { PublishProfileService } from './publish_profile/publish-profile.service
 import { KeywordsController } from './keywords/keyword.controller';
 import { KeywordsService } from './keywords/keyword.service';
 import { Keywords } from './keywords/keyword.entity';
+import { AccountsVisitors } from './visitors/accounts_visitor.entity';
+import { AnalyticsAccess } from './visitors/analytics_access.entity';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -46,7 +48,8 @@ import { Keywords } from './keywords/keyword.entity';
     TypeOrmModule.forFeature([City]),
     TypeOrmModule.forFeature([Position, Company]),
     TypeOrmModule.forFeature([Keywords]),
-
+    TypeOrmModule.forFeature([AccountsVisitors]),
+    TypeOrmModule.forFeature([AnalyticsAccess])
 
 
 
@@ -62,7 +65,7 @@ export class AppModule implements NestModule {
       .apply(TokenMiddleware)
       .forRoutes(
         //todo: rename to "GetUserDetails/Me"
-        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions"
+        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views"
       );
   }
 }

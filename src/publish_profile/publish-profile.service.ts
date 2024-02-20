@@ -4,11 +4,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
+import { AccountsVisitors } from 'src/visitors/accounts_visitor.entity';
+import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
 @Injectable()
 export class PublishProfileService {
   constructor(
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
+    @InjectRepository(AccountsVisitors)
+    private readonly visitorRepository: Repository<AccountsVisitors>,
+    @InjectRepository(AnalyticsAccess)
+    private readonly analyticsRepository: Repository<AnalyticsAccess>
   ) {}
 
   async publishProfile(userId: number): Promise<{ error: boolean, message: string }> {
@@ -29,8 +35,62 @@ export class PublishProfileService {
     }
   }
 
-  async findUserByIdAndName(userId: number, userName: string): Promise<UserAccounts | null> {
+  async getProfileViews(user_id) {
+    try {
+      const analyticsAccessRecords = await this.analyticsRepository.find({
+        where: {
+          user: {
+            id: user_id
+          }
+        },
+        relations: ['accountVisitor'], 
+        order: {
+          created_at: 'DESC' 
+        }
+      });
+  
+      return {error:false, views: analyticsAccessRecords};
+    } catch (error) {
+      console.error('Error fetching profile views:', error);
+      return {error: true, message:"views not found."}
+    }
+  }
+  
+
+  async track_view(userId: number, visitor_id: number): Promise<void> {
+    try {
+      // Find the visitor by id
+      const visitor = await this.userRepository.findOne({where:{id:visitor_id}});
+  
+      // If visitor exists, create a new visitor and save it
+      if (visitor) {
+        const newVisitor = this.visitorRepository.create({
+          email: visitor.email,
+          full_name: visitor.full_name,
+          linkedin_access_token: visitor.linkedin_access_token,
+        });
+        const createdVisitor = await this.visitorRepository.save(newVisitor);
+  
+        // Create new analytics entry
+        const newAnalytics = this.analyticsRepository.create({
+          type: 'view',
+          accountVisitor: { id: createdVisitor.id },
+          user: { id: userId },
+        });
+  
+        await this.analyticsRepository.save(newAnalytics);
+      }
+    } catch (error) {
+      console.error('Error tracking view:', error);
+    }
+  }
+  
+  async findUserByIdAndName(userId: number, userName: string, visitor_id: number): Promise<UserAccounts | null> {
     const formattedName = userName.replace(/-/g, ' ').toLowerCase();
+
+    if(visitor_id && visitor_id!=userId){
+        this.track_view(userId, visitor_id)
+    }
     let user = await this.userRepository.findOne({ where: { id: userId } ,  relations: ['positions', 'positions.details', 'positions.company'],});
     if (!user || user.full_name.toLowerCase() !== formattedName) {
       return null;
