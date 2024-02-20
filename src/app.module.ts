@@ -66,7 +66,7 @@ export class AppModule implements NestModule {
     consumer
       .apply(TokenMiddleware)
       .forRoutes(
-        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies"
+        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status"
       );
   }
 }

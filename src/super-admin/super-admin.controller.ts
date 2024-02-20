@@ -1,5 +1,5 @@
 // super-admin.controller.ts
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { SuperAdminService } from './super-admin.service';
 
 @Controller()
@@ -21,5 +21,10 @@ export class SuperAdminController {
     return this.superAdminService.getAllCompanies()
   }
 
+  @Post('update_block_user_status')
+  blockUser(@Req() req: Request, @Body() body: any) {
+    const user_id = req['user_id'];
+    return this.superAdminService.updateBlockStatus(user_id, body);
+  }
 
 }

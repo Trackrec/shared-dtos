@@ -62,6 +62,20 @@ export class SuperAdminService {
 
   }
 
+  async updateBlockStatus(userId: number, body: any) {
+    const { block_status } = body;
+    if (block_status === undefined || block_status === null) {
+        return { error: true, message: "block_status field is required" };
+    }
+    try {
+        await this.userRepository.update(userId, { blocked: block_status });
+        return { error: false, message: "Block status updated successfully!" };
+    } catch (error) {
+        return { error: true, message: "Error during updating block status." };
+    }
+}
+
+
   async getAllCompanies(){
       try{
         const companies= await this.companyRepository.find()
