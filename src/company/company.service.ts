@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './company.entity';
+import axios from 'axios';
 
 @Injectable()
 export class CompanyService {
@@ -43,6 +44,33 @@ export class CompanyService {
       return { error: true, message: `Error getting company by ID: ${error.message}` };
     }
   }
+
+  async searchCompany(body: any) {
+    try {
+        const {
+            company_name
+        } = body;
+        if (!company_name) {
+            return {
+                error: true,
+                message: "company_name is required."
+            }
+        }
+        const resp = await axios.get(
+            `https://api.apollo.io/api/v1/mixed_companies/search?api_key=${"OxlHrj_L0t16QUJvC-7nrA"}&q_organization_name=${company_name}&per_page=5`
+        );
+
+        return {
+            error: false,
+            data: resp.data
+        };
+    } catch (e) {
+        return {
+            error: true,
+            message: "Not able to search companies."
+        }
+    }
+}
 
   async updateCompany(id: string, companyData: Partial<Company>): Promise<{ error: boolean; message?: string; updatedCompany?: Company }> {
     try {
