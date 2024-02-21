@@ -11,6 +11,7 @@ import { Position } from 'src/positions/positions.entity';
 import { CompanyService } from 'src/company/company.service';
 import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { Company } from 'src/company/company.entity';
+import { SharedService } from 'src/shared/shared.service';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'linkedin' }),
@@ -21,7 +22,7 @@ import { Company } from 'src/company/company.entity';
 
 
   ],
-  providers: [LinkedinStrategy, AuthService, PositionService, CompanyService, S3UploadService],
+  providers: [LinkedinStrategy, AuthService, PositionService, CompanyService, S3UploadService, SharedService],
   controllers: [AuthController]
 })
 export class AuthModule {}

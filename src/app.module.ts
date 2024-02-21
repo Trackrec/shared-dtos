@@ -34,6 +34,12 @@ import { AccountsVisitors } from './visitors/accounts_visitor.entity';
 import { AnalyticsAccess } from './visitors/analytics_access.entity';
 import { SuperAdminController } from './super-admin/super-admin.controller';
 import { SuperAdminService } from './super-admin/super-admin.service';
+import { AdminAuthController } from './admin/auth/auth.controller';
+import { AdminAuthService } from './admin/auth/auth.service';
+import { AccountProjectController } from './admin/projects/project.controller';
+import { AccountProjectService } from './admin/projects/project.service';
+import { AccountProject } from './admin/projects/project.entity';
+import { SharedService } from './shared/shared.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -51,22 +57,19 @@ import { SuperAdminService } from './super-admin/super-admin.service';
     TypeOrmModule.forFeature([Position, Company]),
     TypeOrmModule.forFeature([Keywords]),
     TypeOrmModule.forFeature([AccountsVisitors]),
-    TypeOrmModule.forFeature([AnalyticsAccess])
-
-
-
-
+    TypeOrmModule.forFeature([AnalyticsAccess]),
+    TypeOrmModule.forFeature([AccountProject])
 
   ],
-  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController, SuperAdminController],
-  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService],
+  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController, SuperAdminController, AdminAuthController, AccountProjectController],
+  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService, AdminAuthService, AccountProjectService, SharedService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
       .forRoutes(
-        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status"
+        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status", "account-projects"
       );
   }
 }

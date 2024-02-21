@@ -10,6 +10,7 @@ import { State } from "src/location/state.entity";
 import { Keywords } from "src/keywords/keyword.entity";
 import { AccountsVisitors } from "src/visitors/accounts_visitor.entity";
 import { AnalyticsAccess } from "src/visitors/analytics_access.entity";
+import { AccountProject } from "src/admin/projects/project.entity";
 dotenv.config();
 const { DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE } = process.env;
 
@@ -21,7 +22,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
     password: DB_PASSWORD,
     database: DB_DATABASE,
     connectTimeout: 60000,
-    entities: [UserAccounts, Position, PositionDetails, Company, City, Country, State, Keywords, AccountsVisitors, AnalyticsAccess],
+    entities: [UserAccounts, Position, PositionDetails, Company, City, Country, State, Keywords, AccountsVisitors, AnalyticsAccess, AccountProject],
     logging: false,
     synchronize: true,
   };
