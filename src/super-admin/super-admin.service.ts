@@ -67,14 +67,20 @@ export class SuperAdminService {
 
   async impersonateUser(body:any){
     try{
-      const {user_id, email, username}= body;
-      if(!user_id || !email || !username){
+      const {user_id, email}= body;
+      if(!user_id || !email ){
         return {error: true, message: "Please send all the required fields."}
       }
+      let user= await this.userRepository.findOne({where:{id:user_id, email}})
+
+      if(!user){
+        return {error:true, message: "User not found."}
+      }
+     
       const payload = {
         user_id,
         email,
-        username,
+  
       };
   
       const token= jwt.sign(payload, process.env.JWT_SECRET, { expiresIn:'24h' });
