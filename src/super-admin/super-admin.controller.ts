@@ -23,8 +23,7 @@ export class SuperAdminController {
 
   @Post('update_block_user_status')
   blockUser(@Req() req: Request, @Body() body: any) {
-    const user_id = req['user_id'];
-    return this.superAdminService.updateBlockStatus(user_id, body);
+    return this.superAdminService.updateBlockStatus(body);
   }
 
 }
