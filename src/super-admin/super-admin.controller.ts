@@ -26,4 +26,9 @@ export class SuperAdminController {
     return this.superAdminService.updateBlockStatus(body);
   }
 
+  @Post('impersonate_user')
+  impersonateUser(@Req() req: Request, @Body() body: any) {
+    return this.superAdminService.impersonateUser(body);
+  }
+
 }

@@ -5,6 +5,7 @@ import { UserAccounts } from 'src/auth/User.entity';
 import { Company } from 'src/company/company.entity';
 import { Repository } from 'typeorm';
 import { SharedService } from 'src/shared/shared.service';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class SuperAdminService {
@@ -62,6 +63,27 @@ export class SuperAdminService {
 
     }
 
+  }
+
+  async impersonateUser(body:any){
+    try{
+      const {user_id, email, username}= body;
+      if(!user_id || !email || !username){
+        return {error: true, message: "Please send all the required fields."}
+      }
+      const payload = {
+        user_id,
+        email,
+        username,
+      };
+  
+      const token= jwt.sign(payload, process.env.JWT_SECRET, { expiresIn:'24h' });
+      return {error: false, token}
+
+    }
+    catch(e){
+      return {error: true, message:"Not able to impersonate."}
+    }
   }
 
   async updateBlockStatus( body: any) {
