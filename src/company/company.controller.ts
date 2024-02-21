@@ -34,4 +34,9 @@ export class CompanyController {
   async deleteCompany(@Param('id') id: string): Promise<{ error: boolean; message?: string }> {
     return await this.companyService.deleteCompany(id);
   }
+
+  @Post('search')
+  searchCompany( @Body() body: any) {
+    return this.companyService.searchCompany(body);
+  }
 }
