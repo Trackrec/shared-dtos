@@ -35,6 +35,9 @@ import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
   
     @Column({default:null})
     profile_image: string;
+
+    @Column({default:null})
+    custom_current_role: string;
   
     @Column({ type: 'datetime', nullable: true })
     published_at: Date | null;
