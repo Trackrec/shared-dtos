@@ -12,6 +12,12 @@ export class AdminAuthController {
       return await this.userService.createAdminUser();
   }
 
+  @Get('get_users')
+  async getAllUsers(@Req() req: Request) : Promise<any>{
+    const user_id=req['user_id']
+     return await this.userService.getAllUsers(user_id)
+  }
+
   @Get('get-my-details')
   async getUserDetails(@Req() req: Request){
     const user_id= req['user_id']

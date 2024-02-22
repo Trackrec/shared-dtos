@@ -77,6 +77,21 @@ export class AdminAuthService {
     }
   }
 
+  async getAllUsers(user_id:number){
+    try{
+      const user= await this.userRepository.findOne({where:{id: user_id, role: 'Admin'}})
+      if(!user){
+         return {error: true, message: "You are not authorized to make this request."}
+      }
+      const users= await this.userRepository.find({where:{role: In(["Admin", "User"]),}, select: ["id", "full_name", "email", "otp", "role", "created_at"]})
+      return {error: true, users}
+
+    }
+    catch(e){
+      return {error: true, message: "Users not found."}
+    }
+  }
+
   async createUser(email: string, full_name:string, role: string, user_id:number ){
     try{
       if(!email || !full_name || !role ){

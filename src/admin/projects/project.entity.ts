@@ -1,5 +1,5 @@
 import { UserAccounts } from 'src/auth/User.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 
 @Entity("account_projects")
@@ -120,4 +120,10 @@ export class AccountProject {
 
     @ManyToOne(() => UserAccounts, user => user.projects)
     user: UserAccounts;
+
+    @CreateDateColumn()
+    created_at: Date;
+  
+    @UpdateDateColumn()
+    updated_at: Date;
 }

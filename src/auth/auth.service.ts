@@ -194,7 +194,7 @@ export class AuthService {
           }
         }
         (user as any).total_revenue=totalRevenue;
-        (user as any).total_years_experience=this.sharedService.calculateExperience(user.positions)
+        (user as any).total_years_experience=this.sharedService.calculateExperience(updated_positions)
         const {existing_business_average, new_business_average}= this.sharedService.calculateWeightedAverageForBusiness(user.positions);
         const {outbound_average, inbound_average}= this.sharedService.calculateWeightedAverageForOutbound(user.positions);
         const {smb_average, midmarket_average, enterprise_average}= this.sharedService.calculateWeightedAverageForSegment(user.positions);
