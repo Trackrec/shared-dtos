@@ -5,13 +5,15 @@ import * as bcrypt from 'bcrypt';
 import { UserAccounts } from 'src/auth/User.entity';
 import { In, Repository } from 'typeorm';
 import * as jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
+import { MailgunService } from 'src/mailgun/mailgun.service';
 
 @Injectable()
 export class AdminAuthService {
     constructor(
         @InjectRepository(UserAccounts)
         private readonly userRepository: Repository<UserAccounts>,
-     
+        private readonly mailgunService: MailgunService
       ) {}
 
   async createAdminUser(): Promise<any> {
@@ -36,11 +38,53 @@ export class AdminAuthService {
    }
   }
 
-  async createUser(email: string, full_name:string, password: string ){
+  generatePassword(length: number = 12): string {
+    const buffer = randomBytes(Math.ceil(length / 2));
+    return buffer.toString('hex').slice(0, length);
+  }
+
+  async remove(user_id:number, logged_in_user_id: number){
+    try{ 
+        const isAdminUser = await this.userRepository.findOne({ where: { id: logged_in_user_id, role: "Admin"} });
+        if (!isAdminUser) {
+          return {error:true, message: 'You are not authorized to do this.'};
+        }
+        const user= await this.userRepository.findOne({where:{id:user_id}})
+        if(!user){
+            return {error: true, message: "User not fount."}
+        }
+       await this.userRepository.delete({id: user_id});
+       return {error: false, message: "User Deleted Successfully"}
+
+    }
+    catch(e){
+        return {error:true, message: "User not deleted."}
+    }
+  }
+
+  async getUserDetails(user_id:number){
+    try{ 
+       
+    let user= await this.userRepository.findOne({where:{id:user_id}, select:["id", "full_name", "email", "role", "otp"]})
+        if(!user){
+            return {error: true, message: "User not found."}
+        }
+       return {error: false, user}
+
+    }
+    catch(e){
+        return {error:true, message: "User not deleted."}
+    }
+  }
+
+  async createUser(email: string, full_name:string, role: string, user_id:number ){
     try{
-      console.log(password)
-      if(!email || !full_name || !password){
+      if(!email || !full_name || !role ){
         return {error:true, message:"All the fields are required."}
+      }
+      const checkAdmin=await this.userRepository.findOne({where:{id: user_id, role: "Admin"}})
+      if(!checkAdmin){
+        return {error: true, message: "You are not admin User."}
       }
       const user = await this.userRepository.findOne({
         where: {
@@ -52,14 +96,33 @@ export class AdminAuthService {
       if(user){
         return {error: true, message:"User already exist with this email."}
       }
+      const generatedPassword=this.generatePassword()
+
       const newUser = this.userRepository.create({
         full_name,
-        role: 'User',
+        role,
         email,
-        password: await bcrypt.hash(password.toString(), 10), 
+        password: await bcrypt.hash(generatedPassword, 10), 
+        otp: true
       });
 
       await this.userRepository.save(newUser);
+      const messageData = {
+        from: `Trackrec <mailgun@${process.env.MAILGUN_DOMAIN}>`,
+        to: email,
+        subject: `${full_name}, Account Credentials`,
+        html: `
+        <h1>Account Credentials.</h1>
+        <p>Hey ${full_name}, please use Credentials to login::</p>
+        <p>Email: ${email}</p>
+        <p>Password: ${generatedPassword}</p>
+        <p>Best, </p>
+        <p>Trackrect Team</p>
+        `
+     };
+  
+      await this.mailgunService.sendMail(messageData);
+    
 
       return {error: false, message: "User created successfully."}
 
@@ -103,7 +166,7 @@ export class AdminAuthService {
 
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedNewPassword;
-
+        user.otp=false
         await this.userRepository.update({
             id: user.id
         }, user);

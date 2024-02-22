@@ -40,6 +40,7 @@ import { AccountProjectController } from './admin/projects/project.controller';
 import { AccountProjectService } from './admin/projects/project.service';
 import { AccountProject } from './admin/projects/project.entity';
 import { SharedService } from './shared/shared.service';
+import { MailgunService } from './mailgun/mailgun.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -62,14 +63,14 @@ import { SharedService } from './shared/shared.service';
 
   ],
   controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController, SuperAdminController, AdminAuthController, AccountProjectController],
-  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService, AdminAuthService, AccountProjectService, SharedService],
+  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService, AdminAuthService, AccountProjectService, SharedService, MailgunService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
       .forRoutes(
-        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status", "account-projects", "impersonate_user"
+        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status", "account-projects", "impersonate_user", "create-user", "remove-user", "get-my-details"
       );
   }
 }
