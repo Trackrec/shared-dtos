@@ -24,16 +24,20 @@ export class TokenMiddleware implements NestMiddleware {
     
     if (token) {
       try {
+
         const decodedToken: any = jwt.verify(token, process.env.JWT_SECRET);
-        req['username'] = decodedToken.username;
         req['user_id'] = decodedToken.id;
         this.updateLastAccessed(decodedToken.id)
         next();
       } catch (err) {
         res.status(401).json({ error: true, message: 'No Token Provided' });
       }
-    } else {
+    } else if(req.originalUrl.startsWith("/p/")){
       next(); 
+    }
+    else{
+      res.status(401).json({ error: true, message: 'No Token Provided' });
+
     }
   }
 

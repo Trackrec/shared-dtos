@@ -113,13 +113,13 @@ export class AuthService {
       return { error: true, message: 'Failed to update user' };
     }
   }
-  async getMe(username: string, user_id:number): Promise<{ error: boolean; user?: any; message?: string }> {
+  async getMe( user_id:number): Promise<{ error: boolean; user?: any; message?: string }> {
     try {
        /** todo: Create a condition here that if email is present then 
        * search based on email, otherwise search based on username for old data
       */
        let user = await this.userRepository.findOne({
-        where: { username: username },
+        where: { id: user_id },
         relations: ['keywords','positions', 'positions.details', 'positions.company'],
       });
       
@@ -133,7 +133,7 @@ export class AuthService {
         user.isExperienceImported=true;
         await this.userRepository.save(user);
         let updatedUser = await this.userRepository.findOne({
-          where: { username: username },
+          where: { id: user_id },
           relations: ["keywords",'positions', 'positions.details', 'positions.company'],
         });
         

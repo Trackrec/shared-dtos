@@ -34,10 +34,9 @@ export class AuthController {
 
   @Get('me')
   async getMe(@Req() req) {
-    const username = req['username'];
     const user_id= req['user_id']
     try {
-      const result = await this.authService.getMe(username,user_id);
+      const result = await this.authService.getMe(user_id);
 
       if (result.error) {
         return { error: true, message: result.message };
