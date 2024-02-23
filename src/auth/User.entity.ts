@@ -14,6 +14,7 @@ import {
 import { Keywords } from 'src/keywords/keyword.entity';
 import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
 import { AccountProject } from 'src/admin/projects/project.entity';
+import { ProjectApplication } from 'src/applications/application.entity';
   export enum LocationPreference {
     ONSITE = 'onsite',
     REMOTE = 'remote',
@@ -113,5 +114,8 @@ import { AccountProject } from 'src/admin/projects/project.entity';
 
   @OneToMany(() => AccountProject, project => project.user)
   projects: AccountProject[];
+
+  @OneToMany(() => ProjectApplication, application => application.user)
+  applications: ProjectApplication[];
   }
 

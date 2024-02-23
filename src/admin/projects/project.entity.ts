@@ -1,6 +1,7 @@
 import { UserAccounts } from 'src/auth/User.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
+import { ProjectApplication } from 'src/applications/application.entity';
 
 @Entity("account_projects")
 export class AccountProject {
@@ -129,4 +130,7 @@ export class AccountProject {
   
     @UpdateDateColumn()
     updated_at: Date;
+
+    @OneToMany(() => ProjectApplication, application => application.user)
+  applications: ProjectApplication[];
 }
