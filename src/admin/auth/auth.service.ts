@@ -84,7 +84,7 @@ export class AdminAuthService {
          return {error: true, message: "You are not authorized to make this request."}
       }
       const users= await this.userRepository.find({where:{role: In(["Admin", "User"]),}, select: ["id", "full_name", "email", "otp", "role", "created_at"]})
-      return {error: true, users}
+      return {error: false, users}
 
     }
     catch(e){
