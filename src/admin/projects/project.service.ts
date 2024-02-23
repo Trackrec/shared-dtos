@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { AccountProject } from './project.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { validate } from 'class-validator';
-
+import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 @Injectable()
 export class AccountProjectService {
   constructor(
@@ -12,6 +12,8 @@ export class AccountProjectService {
     private readonly accountProjectRepository: Repository<AccountProject>,
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
+    private readonly uploadService: S3UploadService,
+
   ) {}
 
   async findAll(userId): Promise<any> {
@@ -53,11 +55,12 @@ export class AccountProjectService {
     accountProjectData.user=user
     const project = this.accountProjectRepository.create(accountProjectData);
     const errors = await validate(project);
+    console.log(errors)
     if (errors.length > 0) {
        return {error: true, message: "Please send all the required fields."}
       }
     await this.accountProjectRepository.save(project);
-    return {error:false, message:"Project created successfully."}
+    return {error:false, message:"Project created successfully.",project}
     }
     catch(e){
         return {error: true, message:"Project not created!"}
@@ -92,5 +95,25 @@ export class AccountProjectService {
         return {error: true, message: "Project not deleted."}
     }
    
+  }
+
+
+  async updateProjectPicture(id: number, image, user_id: number): Promise<{ error: boolean, message: string }> {
+    try {
+    const project = await this.accountProjectRepository.findOne({where:{id, user:{id:user_id}}});
+    if (!project) {
+      return { error: true, message: 'Project not found or you are not the owner of project.' };
+    }
+      let storedImage=await this.uploadService.uploadNewImage(image, "project_images")
+      if(storedImage)
+      project.project_image=storedImage;
+      
+
+      await this.accountProjectRepository.save(project);
+
+      return { error: false, message: 'Project Image updated successfully' };
+    } catch (error) {
+      return { error: true, message: 'Failed to update project image.' };
+    }
   }
 }

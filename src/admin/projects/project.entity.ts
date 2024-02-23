@@ -11,6 +11,9 @@ export class AccountProject {
     @IsNotEmpty()
     title: string;
 
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    project_image: string;
+
     @Column({ type: 'int' })
     @IsNotEmpty()
     experience: number;
