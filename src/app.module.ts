@@ -44,6 +44,7 @@ import { MailgunService } from './mailgun/mailgun.service';
 import { ProjectApplication } from './applications/application.entity';
 import { ProjectApplicationController } from './applications/application.controller';
 import { ApplicationService } from './applications/application.service';
+import { PointsService } from './admin/projects/points.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -68,14 +69,14 @@ import { ApplicationService } from './applications/application.service';
 
   ],
   controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController, SuperAdminController, AdminAuthController, AccountProjectController, ProjectApplicationController],
-  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService, AdminAuthService, AccountProjectService, SharedService, MailgunService, ApplicationService],
+  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService, AdminAuthService, AccountProjectService, SharedService, MailgunService, ApplicationService, PointsService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
       .forRoutes(
-        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status", "account-projects", "impersonate_user", "create-user", "remove-user", "get-my-details", "get_users", "update_project_picture", "applications"
+        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status", "account-projects", "impersonate_user", "create-user", "remove-user", "get-my-details", "get_users", "update_project_picture", "applications", "project_ranking"
       );
   }
 }

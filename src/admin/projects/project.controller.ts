@@ -56,4 +56,10 @@ export class AccountProjectController {
     }
     return this.accountProjectService.updateProjectPicture(id, image.buffer, user_id);
   }
+
+  @Get('project_ranking/:id')
+  async getRanking(@Param('id') project_id: number, @Req() req:Request){
+    const user_id=req['user_id']
+    return await this.accountProjectService.getRanking(project_id, user_id)
+  }
 }

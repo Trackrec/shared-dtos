@@ -1,6 +1,6 @@
 // application.entity.ts
 
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { AccountProject } from 'src/admin/projects/project.entity';
 @Entity()
@@ -14,17 +14,18 @@ export class ProjectApplication {
   @Column({ default: true })
   available: boolean;
 
-  @OneToOne(() => UserAccounts)
+  @ManyToOne(() => UserAccounts)
   @JoinColumn()
   user: UserAccounts;
 
-  @OneToOne(() => AccountProject)
+  @ManyToOne(() => AccountProject, project => project.applications)
   @JoinColumn()
   project: AccountProject;
 
   @CreateDateColumn()
     created_at: Date;
   
+
     @UpdateDateColumn()
     updated_at: Date;
 }
