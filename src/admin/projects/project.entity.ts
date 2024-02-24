@@ -1,6 +1,7 @@
 import { UserAccounts } from 'src/auth/User.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
+import { ProjectApplication } from 'src/applications/application.entity';
 
 @Entity("account_projects")
 export class AccountProject {
@@ -10,6 +11,9 @@ export class AccountProject {
     @Column({ type: 'varchar', length: 255 })
     @IsNotEmpty()
     title: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    project_image: string;
 
     @Column({ type: 'int' })
     @IsNotEmpty()
@@ -120,4 +124,13 @@ export class AccountProject {
 
     @ManyToOne(() => UserAccounts, user => user.projects)
     user: UserAccounts;
+
+    @CreateDateColumn()
+    created_at: Date;
+  
+    @UpdateDateColumn()
+    updated_at: Date;
+
+    @OneToMany(() => ProjectApplication, application => application.user)
+  applications: ProjectApplication[];
 }

@@ -1,5 +1,5 @@
 
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 @Entity()
 export class Keywords {
@@ -12,4 +12,10 @@ export class Keywords {
     @OneToOne(() => UserAccounts)
     @JoinColumn({name:'user_id'})
     userAccount: UserAccounts;
+
+    @CreateDateColumn()
+    created_at: Date;
+  
+    @UpdateDateColumn()
+    updated_at: Date;
 }
