@@ -228,7 +228,8 @@ export class AdminAuthService {
         const jwtToken = this.generateToken(user);
         return {
             error: false,
-            token: jwtToken
+            token: jwtToken,
+            email: user.email
         }
     } catch (e) {
         return {
