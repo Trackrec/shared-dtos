@@ -132,13 +132,24 @@ export class AccountProjectService {
     let worked_in_points:any=0.0;
     let sold_to_points:any=0.0;
     let segment_points: any=0.0;
-    
+    let salescycle_points: any=0.0
+    let dealsize_points: any=0.0
+    let newbusiness_points: any= 0.0;
+    let outbound_points: any=0.0
+    let points_for_persona: any=0.0
+    let points_for_experience: any=0.0
     if(application.user.positions.length==0){
       return {
         ote_points: 0,
         worked_in_points: 0,
         sold_to_points: 0,
-        segment_points: 0
+        segment_points: 0,
+        salescycle_points: 0, 
+        dealsize_points: 0,
+        newbusiness_points: 0,
+        outbound_points:0, 
+        points_for_persona: 0, 
+        points_for_experience: 0
 
       }
     }
@@ -146,12 +157,23 @@ export class AccountProjectService {
     worked_in_points= this.pointsService.points_for_worked_in(application.user.positions, application.project.Industry_Works_IN)
     sold_to_points= this.pointsService.points_for_sold_to(application.user.positions, application.project.Industry_Sold_To)
     segment_points= this.pointsService.points_for_segment(application.user.positions, application.project)
-  
+    salescycle_points= this.pointsService.points_for_sales_cycle(application.user.positions, application.project)
+    dealsize_points = this.pointsService.points_for_dealsize(application.user.positions, application.project )
+    newbusiness_points= this.pointsService.points_for_new_business(application.user.positions, application.project)
+    outbound_points= this.pointsService.points_for_outbound(application.user.positions, application.project)
+    points_for_persona= this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona)
+    points_for_experience= this.pointsService.points_for_years(application.user.positions, application.project)
     return {
       ote_points: otePoints,
       worked_in_points,
       sold_to_points,
-      segment_points
+      segment_points,
+      salescycle_points,
+      dealsize_points, 
+      newbusiness_points,
+      outbound_points,
+      points_for_persona,
+      points_for_experience
 
     };
   };
