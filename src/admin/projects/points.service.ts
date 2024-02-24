@@ -342,6 +342,12 @@ export class PointsService {
             return Math.round(ratio * 10);
         }
     }
+
+    
+    
+    
+    
+    
     
     
     

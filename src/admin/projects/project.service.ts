@@ -127,7 +127,7 @@ export class AccountProjectService {
 
 
   calculatePointsForUser = (application) => {
-
+try{
     let otePoints: any = 0.0;
     let worked_in_points:any=0.0;
     let sold_to_points:any=0.0;
@@ -140,7 +140,7 @@ export class AccountProjectService {
     let points_for_experience: any=0.0
     if(application.user.positions.length==0){
       return {
-        ote_points: 0,
+        points:{ote_points: 0,
         worked_in_points: 0,
         sold_to_points: 0,
         segment_points: 0,
@@ -149,7 +149,8 @@ export class AccountProjectService {
         newbusiness_points: 0,
         outbound_points:0, 
         points_for_persona: 0, 
-        points_for_experience: 0
+        points_for_experience: 0},
+        percentage: 0
 
       }
     }
@@ -163,7 +164,7 @@ export class AccountProjectService {
     outbound_points= this.pointsService.points_for_outbound(application.user.positions, application.project)
     points_for_persona= this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona)
     points_for_experience= this.pointsService.points_for_years(application.user.positions, application.project)
-    return {
+    let points= {
       ote_points: otePoints,
       worked_in_points,
       sold_to_points,
@@ -176,7 +177,38 @@ export class AccountProjectService {
       points_for_experience
 
     };
+    let sum=this.sumObjectValues(points)
+    const maxPossibleSum = 10 * Object.keys(points).length;
+    const percentage = (sum / maxPossibleSum) * 100;
+    return {points, percentage};
+  }
+  catch(e){
+    return {
+      points:{ote_points: 0,
+      worked_in_points: 0,
+      sold_to_points: 0,
+      segment_points: 0,
+      salescycle_points: 0, 
+      dealsize_points: 0,
+      newbusiness_points: 0,
+      outbound_points:0, 
+      points_for_persona: 0, 
+      points_for_experience: 0},
+      percentage: 0
+
+    }
+  }
   };
+
+  sumObjectValues(obj) {
+    let sum = 0;
+    for (let key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        sum += obj[key];
+      }
+    }
+    return sum;
+  }
   async getRanking(project_id: number, user_id:number){
     try{
       const applications = await this.applicationService
