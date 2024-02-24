@@ -28,7 +28,7 @@ export class PointsService {
         let combinedWorkedIn = [];
     
         positions.forEach(position => {
-            combinedWorkedIn.push(...position.details.worked_in);
+            combinedWorkedIn.push(...position?.details?.worked_in);
         });
     
         const uniqueWorkedIn = [...new Set([...combinedWorkedIn, ...Industry_Works_IN])];

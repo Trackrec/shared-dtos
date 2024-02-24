@@ -138,6 +138,7 @@ try{
     let outbound_points: any=0.0
     let points_for_persona: any=0.0
     let points_for_experience: any=0.0
+
     if(application.user.positions.length==0){
       return {
         points:{ote_points: 0,
@@ -183,6 +184,8 @@ try{
     return {points, percentage};
   }
   catch(e){
+    console.log("ERROR")
+    console.log(e)
     return {
       points:{ote_points: 0,
       worked_in_points: 0,
@@ -221,7 +224,6 @@ try{
      
       .getMany();
   
-    console.log(applications)
     let updatedApplications = applications.map(application => ({
       ...application, 
       user: {
@@ -249,7 +251,6 @@ try{
        
     }
     catch(e){
-      console.log(e)
       return {error: true, message: "Error for getting ranking, try again."}
     }
   }
