@@ -20,7 +20,7 @@ export class PointsService {
             // Calculate points linearly between 0 to 10 based on the difference
             let points = 10 - (10 * diff) / user_ote;
             // Ensure points are within the range of 0 to 10
-            return Math.max(0, Math.min(10, points)).toFixed(2);
+            return parseFloat(Math.max(0, Math.min(10, points)).toFixed(2));
         }
     }
 

@@ -138,7 +138,6 @@ try{
     let outbound_points: any=0.0
     let points_for_persona: any=0.0
     let points_for_experience: any=0.0
-
     if(application.user.positions.length==0){
       return {
         points:{ote_points: 0,
@@ -155,7 +154,7 @@ try{
 
       }
     }
-    otePoints= this.pointsService.points_for_ote(application.user.ote_expectation, application.ote); 
+    otePoints= this.pointsService.points_for_ote(parseInt(application.user.ote_expectation), parseInt(application.ote)); 
     worked_in_points= this.pointsService.points_for_worked_in(application.user.positions, application.project.Industry_Works_IN)
     sold_to_points= this.pointsService.points_for_sold_to(application.user.positions, application.project.Industry_Sold_To)
     segment_points= this.pointsService.points_for_segment(application.user.positions, application.project)
@@ -220,6 +219,8 @@ try{
       .leftJoinAndSelect("application.user", "user")
       .leftJoinAndSelect("user.positions", "position")
       .leftJoinAndSelect("position.details", "detail")
+      .leftJoinAndSelect("position.company", "company")
+
       .where("project.id = :projectId", { projectId: project_id })
      
       .getMany();
@@ -233,12 +234,13 @@ try{
             return false;
           }
           let completionPercentage = position.details ? this.sharedService.calculateCompletionPercentage(position) : 0.0;
-          return completionPercentage === 100.0;
+          console.log("completionPercentage",completionPercentage)
+          return completionPercentage == 100.0;
         })
 
       }
     }));
-
+    
     const updatedApplicationsWithUserPoints = updatedApplications.map(application => {
       const updatedUser = this.calculatePointsForUser(application);
       return {
@@ -246,7 +248,15 @@ try{
         user: {...application.user, points :updatedUser}
       };
     });
-    return {error: false, updatedApplicationsWithUserPoints}
+
+  let above75Count = 0;
+  updatedApplicationsWithUserPoints?.map((item) => {
+      if (item?.user?.points?.percentage >= 75) {
+        above75Count++;
+      }
+    });
+   
+    return {error: false, updatedApplicationsWithUserPoints,above75Count}
 
        
     }
