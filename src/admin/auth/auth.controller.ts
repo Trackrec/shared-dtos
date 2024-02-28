@@ -1,10 +1,19 @@
 // user.controller.ts
-import { Controller, Post, Get, Body, Req, Delete, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Req,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { AdminAuthService } from './auth.service';
 import { MailgunService } from 'src/mailgun/mailgun.service';
 @Controller()
 export class AdminAuthController {
-  constructor(private readonly userService: AdminAuthService,
+  constructor(
+    private readonly userService: AdminAuthService,
     private readonly mailgunService: MailgunService) {}
 
   @Get('admin/create-admin-user')

@@ -69,7 +69,7 @@ export class SharedService {
           totalFields=15;
           filledFields = this.calculateIsBookingMeetingFields(position)
         }
-       
+       console.log('totalFields :>> ', totalFields,filledFields);
         const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
         return completionPercentage;
     }
@@ -78,7 +78,7 @@ export class SharedService {
       let totalFilled = 1;
     
       const positionFields=[
-        'company', 'role', 'revenue_generated'
+        'company', 'role', 
       ]
     
       positionFields.forEach(field=>{
@@ -90,7 +90,7 @@ export class SharedService {
       // Define fields that contribute 1 to the count
       const fieldsToCount1 = [
        'quota_achievements', 
-         'average_booked_meeting',
+         'average_booked_meeting','revenue_generated'
       ];
     
       const arrayFields =[
@@ -134,7 +134,7 @@ export class SharedService {
       let totalFilled = 1;
     
       const positionFields=[
-        'company', 'role', 'revenue_generated'
+        'company', 'role'
       ]
     
       positionFields.forEach(field=>{
@@ -148,7 +148,7 @@ export class SharedService {
        'quota_achievements', 
          'short_deal_size', 
         'average_deal_size', 'long_deal_size', 'short_sales_cycle', 
-        'average_sales_cycle', 'long_sales_cycle', 
+        'average_sales_cycle', 'long_sales_cycle', 'revenue_generated'
          
       ];
     
@@ -191,41 +191,44 @@ export class SharedService {
     
     calculateIsLeadershipFields(position) {
       let totalFilled = 1;
-    
+      console.log('positionnnn :>> ', position);
+    console.log('revenue_generated :>> ', position?.revenue_generated);
       const positionFields=[
-        'company', 'role', 'revenue_generated'
+        'company', 'role'
       ]
-    
+   
       positionFields.forEach(field=>{
         if(position[field]){
           totalFilled++;
         }
       })
+      console.log('againchecking :>> ', totalFilled);
       // Define fields that contribute 1 to the count
       const detailFields = [
         'quota_achievements', 
          'short_deal_size', 
         'average_deal_size', 'long_deal_size', 'short_sales_cycle', 
         'average_sales_cycle', 'long_sales_cycle', 
-        'people_rolling_up'
+        'people_rolling_up', 'revenue_generated'
       ];
     
       const arrayFields =[
         "worked_in", "sold_to", "persona", "territories", "management", "achievements"
       ]
-    
+      
       // Count fields that contribute 1 to the total filled count
       detailFields.forEach(field => {
         if (position.details[field]) {
           totalFilled++;
         }
       });
-    
+      
       arrayFields.forEach(field => {
         if (position.details[field] && position.details[field].length>0) {
           totalFilled++;
         }
       });
+    
       // Check additional conditions
       if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
         totalFilled++;
@@ -234,11 +237,10 @@ export class SharedService {
         totalFilled++;
       }
       if(position.start_month && position.start_year)
-        totalFilled+=2;
+        totalFilled+=1;
       if (position.details.outbound || position.details.inbound) {
         totalFilled++;
       }
-    
       return totalFilled;
     }
 
