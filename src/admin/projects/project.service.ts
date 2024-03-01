@@ -47,10 +47,12 @@ export class AccountProjectService {
   async findOne(id: number): Promise<any> {
     try{
         const project = await this.accountProjectRepository.findOne({ where: { id }});
+        // const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
+
         if (!project) {
              return {error:true, message: 'Project not found.'};
          }  
-         return {error: false, project}
+         return {error: false, project, }
      }
     catch(e){
          return {error: true, message: "Project not found."}

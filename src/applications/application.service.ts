@@ -31,15 +31,23 @@ export class ApplicationService {
            if(!project){
             return {error:true, message: "Project not found."}
            }
-           const application = new ProjectApplication();
-           application.ote = ote;
-           application.available = available;
-           application.user=user;
-           application.project= project
-
-           await this.applicationRepository.save(application);
-
-           return {error: false, message: "Application created successfully."}
+          // check  if this user has already created application for this project
+          const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
+          console.log('applicationExists :>> ', applicationExists);
+          if(!applicationExists){
+            const application = new ProjectApplication();
+            application.ote = ote;
+            application.available = available;
+            application.user=user;
+            application.project= project
+ 
+            await this.applicationRepository.save(application);
+ 
+            return {error: false, message: "Application created successfully."}
+          }else{
+            return {error: true, message: "Application already exists"}
+          }
+          
     }
     catch(e){
         return {error: true, message: "Application not created."}

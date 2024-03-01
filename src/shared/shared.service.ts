@@ -69,7 +69,6 @@ export class SharedService {
           totalFields=15;
           filledFields = this.calculateIsBookingMeetingFields(position)
         }
-       console.log('totalFields :>> ', totalFields,filledFields);
         const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
         return completionPercentage;
     }
@@ -118,7 +117,7 @@ export class SharedService {
         totalFilled++;
       }
       if(position.start_month && position.start_year)
-        totalFilled+=2;
+        totalFilled+=1;
       if (position.details.outbound || position.details.inbound) {
         totalFilled++;
       }
@@ -177,7 +176,7 @@ export class SharedService {
         totalFilled++;
       }
       if(position.start_month && position.start_year)
-        totalFilled+=2;
+        totalFilled+=1;
       if (position.details.outbound || position.details.inbound) {
         totalFilled++;
       }
@@ -191,8 +190,7 @@ export class SharedService {
     
     calculateIsLeadershipFields(position) {
       let totalFilled = 1;
-      console.log('positionnnn :>> ', position);
-    console.log('revenue_generated :>> ', position?.revenue_generated);
+     
       const positionFields=[
         'company', 'role'
       ]
@@ -202,7 +200,6 @@ export class SharedService {
           totalFilled++;
         }
       })
-      console.log('againchecking :>> ', totalFilled);
       // Define fields that contribute 1 to the count
       const detailFields = [
         'quota_achievements', 
