@@ -11,7 +11,7 @@ export class SharedService {
         const result = positions.reduce(
             (acc, position) => {
                 if (position.is_completed) {
-                    return this.calculatePositionDays(position, acc);
+                    return  this.calculatePositionDays(position, acc)
                 } else {
                     return acc;
                 }
@@ -32,8 +32,8 @@ export class SharedService {
          daysToAdd = Math.max(Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1, 0);
         } else {
          // Include only days after the previous max end date
-         const maxEndDateDiff = Math.max(Math.ceil((startDate - maxEndDate) / (1000 * 60 * 60 * 24)), 0);
-         daysToAdd = Math.max(Math.ceil((endDate - maxEndDate) / (1000 * 60 * 60 * 24)) - maxEndDateDiff + 1, 0);
+         const maxEndDateDiff = Math.max(Math.ceil((maxEndDate - startDate) / (1000 * 60 * 60 * 24)), 0);
+         daysToAdd = Math.max(Math.ceil(maxEndDateDiff-( maxEndDate - endDate) / (1000 * 60 * 60 * 24)) + 1, 0);
         }
         return { totalDays: totalDays + daysToAdd, maxEndDate: endDate };
        }
@@ -66,7 +66,7 @@ export class SharedService {
           filledFields = this.calculateIsIndividualContributerFields(position)
         }
         else if(position.details.is_booking_meeting){
-          totalFields=15;
+          totalFields=16;
           filledFields = this.calculateIsBookingMeetingFields(position)
         }
         const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
