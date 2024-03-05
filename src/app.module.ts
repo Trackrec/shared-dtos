@@ -1,10 +1,15 @@
-import { Module , MiddlewareConsumer, NestModule,
-  RequestMethod,} from '@nestjs/common';
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { loggerConfig } from "./config/logger.config";
+import { ProjectVisitors } from './project_visits/project_visits.entity';
+import {
+  Module,
+  MiddlewareConsumer,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { loggerConfig } from './config/logger.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { databaseConfig } from "./config/database.config";
+import { databaseConfig } from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { SessionModule } from 'nestjs-session';
@@ -45,6 +50,9 @@ import { ProjectApplication } from './applications/application.entity';
 import { ProjectApplicationController } from './applications/application.controller';
 import { ApplicationService } from './applications/application.service';
 import { PointsService } from './admin/projects/points.service';
+import { ProjectVisitorsController } from './project_visits/project_visits.controller';
+import { ProjectVisitorsService } from './project_visits/project_visits.service';
+
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -64,19 +72,72 @@ import { PointsService } from './admin/projects/points.service';
     TypeOrmModule.forFeature([AccountsVisitors]),
     TypeOrmModule.forFeature([AnalyticsAccess]),
     TypeOrmModule.forFeature([AccountProject]),
-    TypeOrmModule.forFeature([ProjectApplication])
-
-
+    TypeOrmModule.forFeature([ProjectApplication]),
+    TypeOrmModule.forFeature([ProjectVisitors]),
   ],
-  controllers: [AuthController, AppController, PositionController, PositionDetailsController, CompanyController, CityController, PublishProfileController, KeywordsController, SuperAdminController, AdminAuthController, AccountProjectController, ProjectApplicationController],
-  providers: [AuthService,AppService,CompanyService, PositionService,PositionDetailsService, CityService, S3UploadService, PublishProfileService, KeywordsService, SuperAdminService, AdminAuthService, AccountProjectService, SharedService, MailgunService, ApplicationService, PointsService],
+  controllers: [
+    AuthController,
+    AppController,
+    PositionController,
+    PositionDetailsController,
+    CompanyController,
+    CityController,
+    PublishProfileController,
+    KeywordsController,
+    SuperAdminController,
+    AdminAuthController,
+    AccountProjectController,
+    ProjectApplicationController,
+    ProjectVisitorsController,
+  ],
+  providers: [
+    AuthService,
+    AppService,
+    CompanyService,
+    PositionService,
+    PositionDetailsService,
+    CityService,
+    S3UploadService,
+    PublishProfileService,
+    KeywordsService,
+    SuperAdminService,
+    AdminAuthService,
+    AccountProjectService,
+    SharedService,
+    MailgunService,
+    ApplicationService,
+    PointsService,
+    ProjectVisitorsService,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
       .forRoutes(
-        "me", "positions","profile", "update_profile_picture", "companies", "position_details", "positions", "p", "my/profile_views", "keywords", "get_all_users", "get_user_details", "get_user_companies", "update_block_user_status", "account-projects", "impersonate_user", "create-user", "remove-user", "get-my-details", "get_users", "update_project_picture", "applications", "project_ranking"
+        'me',
+        'positions',
+        'profile',
+        'update_profile_picture',
+        'companies',
+        'position_details',
+        'positions',
+        'p',
+        'my/profile_views',
+        'keywords',
+        'get_all_users',
+        'get_user_details',
+        'get_user_companies',
+        'update_block_user_status',
+        'account-projects',
+        'impersonate_user',
+        'create-user',
+        'remove-user',
+        'get-my-details',
+        'get_users',
+        'update_project_picture',
+        'applications',
+        'project_ranking',
       );
   }
 }
