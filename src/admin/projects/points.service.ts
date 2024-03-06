@@ -278,23 +278,7 @@ export class PointsService {
 
     calculateTotalYears(positions) {
         let totalYears = 0;
-    
-        // Get current date
-        const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth() + 1; // Add 1 because getMonth() returns 0-based index
-    
-        // Sort positions by start year and month
-        positions.sort((a, b) => {
-            if (a.start_year !== b.start_year) {
-                return a.start_year - b.start_year;
-            } else {
-                return a.start_month - b.start_month;
-            }
-        });
-    
-        let prevEndYear = -Infinity;
-        let prevEndMonth = -Infinity;
+        let uniquePeriods = {};
     
         positions.forEach(position => {
             const startYear = position.start_year;
@@ -303,34 +287,34 @@ export class PointsService {
             let endMonth = position.end_month;
     
             // If end_month and end_year are null, consider them as current month and year
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1;
             if (endYear === null || endMonth === null) {
                 endYear = currentYear;
                 endMonth = currentMonth;
             }
     
-            // Check for overlapping dates
-            if (startYear < prevEndYear || (startYear === prevEndYear && startMonth <= prevEndMonth)) {
-                // Overlapping period, skip counting
-                return;
+            // Merge overlapping periods
+            const startStr = startYear + "-" + startMonth;
+            const endStr = endYear + "-" + endMonth;
+            for (let year = startYear; year <= endYear; year++) {
+                const monthStart = year === startYear ? startMonth : 1;
+                const monthEnd = year === endYear ? endMonth : 12;
+    
+                for (let month = monthStart; month <= monthEnd; month++) {
+                    const periodStr = year + "-" + month;
+                    if (!uniquePeriods[periodStr]) {
+                        uniquePeriods[periodStr] = true;
+                    }
+                }
             }
-    
-            // Calculate years of employment for this position
-            let years = endYear - startYear;
-            if (endMonth < startMonth) {
-                years--; // Adjust if end month is before start month
-            }
-    
-            // Add years to totalYears
-            totalYears += years;
-    
-            // Update previous end year and month
-            prevEndYear = endYear;
-            prevEndMonth = endMonth;
         });
     
+        // Calculate total years based on distinct periods
+        totalYears = Object.keys(uniquePeriods).length / 12;
         return totalYears;
     }
-
     points_for_years(positions, project) {
         const totalYears = this.calculateTotalYears(positions);
     
