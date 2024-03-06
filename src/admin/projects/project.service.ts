@@ -9,6 +9,7 @@ import { ApplicationService } from 'src/applications/application.service';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { SharedService } from 'src/shared/shared.service';
 import { PointsService } from './points.service';
+import { ProjectVisitors } from 'src/project_visits/project_visits.entity';
 @Injectable()
 export class AccountProjectService {
   constructor(
@@ -18,6 +19,8 @@ export class AccountProjectService {
     private readonly userRepository: Repository<UserAccounts>,
     @InjectRepository(ProjectApplication)
     private readonly applicationService: Repository<ProjectApplication>,
+    @InjectRepository(ProjectVisitors)
+    private readonly visitorRepository: Repository<ProjectVisitors>,
     private readonly uploadService: S3UploadService,
     private readonly sharedService: SharedService,
     private readonly pointsService: PointsService,
@@ -133,9 +136,20 @@ export class AccountProjectService {
           message: 'Project not found or does not belong to the user.',
         };
       }
+      const applications = await this.applicationService.find({
+        where: { project: { id: id } },
+      });
+      await this.applicationService.remove(applications);
+
+      const visitors = await this.visitorRepository.find({
+        where: { project: { id: id } },
+      });
+      await this.visitorRepository.remove(visitors);
       await this.accountProjectRepository.delete(id);
+
       return { error: false, message: 'Project Deleted Successfully' };
     } catch (e) {
+      console.log(e);
       return { error: true, message: 'Project not deleted.' };
     }
   }
