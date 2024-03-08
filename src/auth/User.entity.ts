@@ -25,7 +25,7 @@ import { ProjectApplication } from 'src/applications/application.entity';
     @PrimaryGeneratedColumn()
     id: number;
   
-    @Column({ unique: true })
+    @Column({ })
      @IsEmail()
      email: string;
 
@@ -76,7 +76,7 @@ import { ProjectApplication } from 'src/applications/application.entity';
     @Column()
     role: string;
 
-    @Column({default:null, unique: true})
+    @Column({default:null})
     username: string
 
     @Column({default:null})
@@ -99,7 +99,8 @@ import { ProjectApplication } from 'src/applications/application.entity';
     @UpdateDateColumn()
     updated_at: Date;
 
-    @CreateDateColumn()
+
+    @CreateDateColumn({default:null})
     last_accessed_at: Date;
 
     @OneToMany(() => Position, (position) => position.user)
@@ -110,7 +111,7 @@ import { ProjectApplication } from 'src/applications/application.entity';
     keywords: Keywords;
 
     @OneToMany(() => AnalyticsAccess, analyticsAccess => analyticsAccess.user)
-  analyticsAccess: AnalyticsAccess[];
+     analyticsAccess: AnalyticsAccess[];
 
   @OneToMany(() => AccountProject, project => project.user)
   projects: AccountProject[];

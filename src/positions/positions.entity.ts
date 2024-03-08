@@ -34,12 +34,13 @@ export class Position {
 
   @Column({ nullable: true })
   alternative_brand_icon_url: string;
+  
 
   @ManyToOne(() => Company, company => company.positions)
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @OneToOne(type => PositionDetails, positionDetails => positionDetails.position)
+  @OneToOne(type => PositionDetails, positionDetails => positionDetails.position, { nullable: true })
   @JoinColumn()
   details: PositionDetails;
 }
