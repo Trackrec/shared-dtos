@@ -25,7 +25,7 @@ import { ProjectApplication } from 'src/applications/application.entity';
     @PrimaryGeneratedColumn()
     id: number;
   
-    @Column({ })
+    @Column({unique: true })
      @IsEmail()
      email: string;
 
@@ -76,7 +76,7 @@ import { ProjectApplication } from 'src/applications/application.entity';
     @Column()
     role: string;
 
-    @Column({default:null})
+    @Column({default:null, unique: true})
     username: string
 
     @Column({default:null})
