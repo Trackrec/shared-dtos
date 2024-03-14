@@ -1,0 +1,31 @@
+name: Trackrec API Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.2
+        with:
+          ssh-private-key: ${{ secrets.DIGITAL_OCEAN_SECRET_KEY }}
+
+      - name: Deploy to Digital Ocean
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<EOF
+            cd /root/backend_stage
+            git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Trackrec/backend.git
+            git pull origin main
+            npm cache clean --force
+            npm install --legacy-peer-deps
+            npm run build
+            pm2 restart backend_stage
+          EOF
