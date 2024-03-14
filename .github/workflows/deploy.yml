@@ -1,31 +1,31 @@
-name: Trackrec API Deployment
+name: Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  deploy:
+  Deploy:
+    name: Deploy to Digital Ocean
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install SSH key
-        uses: webfactory/ssh-agent@v0.5.2
-        with:
-          ssh-private-key: ${{ secrets.DIGITAL_OCEAN_SECRET_KEY }}
-
-      - name: Deploy to Digital Ocean
+      - uses: actions/checkout@v2 
+      - name: Build & Deploy
+        env:
+            PRIVATE_KEY: ${{ secrets.DIGITAL_OCEAN_SECRET_KEY }}
+            HOSTNAME: ${{secrets.SERVER_IP}}
+            USER_NAME: ${{secrets.SERVER_USER}}
+      
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<EOF
-            cd /root/backend_stage
-            git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Trackrec/backend.git
-            git pull origin main
-            npm cache clean --force
-            npm install --legacy-peer-deps
-            npm run build
-            pm2 restart backend_stage
-          EOF
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+
+              # Now we have got the access of EC2 and we will start the deploy .
+              cd /root/backend_stage &&
+              git checkout main &&
+              git pull origin main &&
+              sudo npm i &&
+              sudo npm run build &&
+              sudo pm2 restart backend_stage
+              '
