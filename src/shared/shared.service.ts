@@ -4,54 +4,73 @@ import { Injectable, ConflictException, InternalServerErrorException } from '@ne
 @Injectable()
 export class SharedService {
 
-    calculateExperience(positions) {
-        if (positions.length === 0) {
-            return "N/A";
-        }
-        const result = positions.reduce(
-            (acc, position) => {
-                if (position.is_completed) {
-                    return  this.calculatePositionDays(position, acc)
-                } else {
-                    return acc;
-                }
-            },
-            { totalDays: 0, maxEndDate: null }
-        );
-        return this.calculateYearsAndMonths(result.totalDays);
+  calculateExperience(positions) {
+    if (positions.length === 0) {
+      return "N/A";
     }
 
-    calculatePositionDays(position, { totalDays, maxEndDate }) {
-        const startDate:any = new Date(position.start_year, position.start_month - 1, 1);
-        const endDate:any = (position.end_year && position.end_month)
-         ? new Date(position.end_year, position.end_month - 1, 1)
-         : new Date(); // Use the current date if end date is null
-        let daysToAdd;
-        if (maxEndDate === null || startDate >= maxEndDate) {
-         // Include all days for the position
-         daysToAdd = Math.max(Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1, 0);
-        } else {
-         // Include only days after the previous max end date
-         const maxEndDateDiff = Math.max(Math.ceil((maxEndDate - startDate) / (1000 * 60 * 60 * 24)), 0);
-         daysToAdd = Math.max(Math.ceil(maxEndDateDiff-( maxEndDate - endDate) / (1000 * 60 * 60 * 24)) + 1, 0);
-        }
-        return { totalDays: totalDays + daysToAdd, maxEndDate: endDate };
-       }
+    const result = positions.reduce(
+      (acc, position) => this.calculatePositionDays(position, acc),
+      { totalDays: 0, maxEndDate: null }
+    );
 
-       calculateYearsAndMonths(diff) {
-        const years = Math.floor(diff / 365);
-        const remainingDays = diff % 365;
-        const months = Math.floor(remainingDays / 30.44); // Average number of days in a month
-        if (years > 0 && months === 0) {
-         return `${years} year${years !== 1 ? 's' : ''}`;
-        } else if (years > 0 && months > 0) {
-         return `${years} year${years !== 1 ? 's' : ''}, ${months} month${months !== 1 ? 's' : ''}`;
-        } else if (months > 0) {
-         return `${months} month${months !== 1 ? 's' : ''}`;
-        } else {
-         return "N/A";
-        }
-       }
+    return this.calculateYearsAndMonths(result.totalDays);
+  }
+
+  calculatePositionDays(position, { totalDays, maxEndDate }) {
+    const startDate: any = new Date(
+      position.start_year,
+      position.start_month - 1,
+      1
+    );
+    const endDate: any =
+      position.end_year && position.end_month
+        ? new Date(position.end_year, position.end_month - 1, 1)
+        : new Date(); // Use the current date if end date is null
+
+    let daysToAdd;
+
+    if (maxEndDate === null || startDate >= maxEndDate) {
+      // Include all days for the position
+      daysToAdd = Math.max(
+        Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1,
+        0
+      );
+    } else {
+      // Include only days after the previous max end date
+      const maxEndDateDiff = Math.max(
+        Math.ceil((startDate - maxEndDate) / (1000 * 60 * 60 * 24)),
+        0
+      );
+      daysToAdd = Math.max(
+        Math.ceil((endDate - maxEndDate) / (1000 * 60 * 60 * 24)) -
+          maxEndDateDiff +
+          1,
+        0
+      );
+    }
+
+    return { totalDays: totalDays + daysToAdd, maxEndDate: endDate };
+  }
+
+  calculateYearsAndMonths(diff) {
+    const years = Math.floor(diff / 365);
+    const remainingDays = diff % 365;
+
+    const months = Math.floor(remainingDays / 30.44); // Average number of days in a month
+
+    if (years > 0 && months === 0) {
+      return `${years} year${years !== 1 ? "s" : ""}`;
+    } else if (years > 0 && months > 0) {
+      return `${years} year${years !== 1 ? "s" : ""}, ${months} month${
+        months !== 1 ? "s" : ""
+      }`;
+    } else if (months > 0) {
+      return `${months} month${months !== 1 ? "s" : ""}`;
+    } else {
+      return "N/A";
+    }
+  }
 
 
        calculateCompletionPercentage(position) {
