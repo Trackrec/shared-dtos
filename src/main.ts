@@ -17,6 +17,6 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   
   //todo: move this to .env
-  await app.listen(4000);
+  await app.listen(process.env.PORT);
 }
 bootstrap();
