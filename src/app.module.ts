@@ -42,6 +42,8 @@ import { SuperAdminService } from './super-admin/super-admin.service';
 import { AdminAuthController } from './admin/auth/auth.controller';
 import { AdminAuthService } from './admin/auth/auth.service';
 import { AccountProjectController } from './admin/projects/project.controller';
+import { VerifyPositionController } from './verify-position/verify-position.controller';
+import { VerifyPositionService } from './verify-position/verify-position.service';
 import { AccountProjectService } from './admin/projects/project.service';
 import { AccountProject } from './admin/projects/project.entity';
 import { SharedService } from './shared/shared.service';
@@ -52,6 +54,7 @@ import { ApplicationService } from './applications/application.service';
 import { PointsService } from './admin/projects/points.service';
 import { ProjectVisitorsController } from './project_visits/project_visits.controller';
 import { ProjectVisitorsService } from './project_visits/project_visits.service';
+import { VerifyPosition } from './verify-position/verify-position.entity';
 
 @Module({
   imports: [
@@ -74,6 +77,7 @@ import { ProjectVisitorsService } from './project_visits/project_visits.service'
     TypeOrmModule.forFeature([AccountProject]),
     TypeOrmModule.forFeature([ProjectApplication]),
     TypeOrmModule.forFeature([ProjectVisitors]),
+    TypeOrmModule.forFeature([VerifyPosition]),
   ],
   controllers: [
     AuthController,
@@ -89,6 +93,7 @@ import { ProjectVisitorsService } from './project_visits/project_visits.service'
     AccountProjectController,
     ProjectApplicationController,
     ProjectVisitorsController,
+    VerifyPositionController,
   ],
   providers: [
     AuthService,
@@ -108,6 +113,7 @@ import { ProjectVisitorsService } from './project_visits/project_visits.service'
     ApplicationService,
     PointsService,
     ProjectVisitorsService,
+    VerifyPositionService,
   ],
 })
 export class AppModule implements NestModule {
@@ -138,6 +144,7 @@ export class AppModule implements NestModule {
         'update_project_picture',
         'applications',
         'project_ranking',
+        'verify',
       );
   }
 }

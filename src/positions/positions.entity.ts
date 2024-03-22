@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne
 import { UserAccounts } from 'src/auth/User.entity';
 import { PositionDetails } from 'src/position_details/position_details.entity';
 import { Company } from 'src/company/company.entity';
+import { VerifyPosition } from 'src/verify-position/verify-position.entity';
 @Entity('positions')
 export class Position {
   @PrimaryGeneratedColumn({ type: 'bigint' })
@@ -43,4 +44,8 @@ export class Position {
   @OneToOne(type => PositionDetails, positionDetails => positionDetails.position, { nullable: true })
   @JoinColumn()
   details: PositionDetails;
+
+  @OneToOne(() => VerifyPosition)
+  @JoinColumn({ name: 'verify_request_id' })
+  verify_request: VerifyPosition;
 }
