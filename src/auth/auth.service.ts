@@ -120,7 +120,7 @@ export class AuthService {
       */
        let user = await this.userRepository.findOne({
         where: { id: user_id },
-        relations: ['keywords','positions', 'positions.details', 'positions.company'],
+        relations: ['keywords','positions', 'positions.details', 'positions.company', "positons.verify_request"],
       });
       
 
@@ -134,7 +134,7 @@ export class AuthService {
         await this.userRepository.save(user);
         let updatedUser = await this.userRepository.findOne({
           where: { id: user_id },
-          relations: ["keywords",'positions', 'positions.details', 'positions.company'],
+          relations: ["keywords",'positions', 'positions.details', 'positions.company', "positions.verify_request"],
         });
         
         delete updatedUser.password;
