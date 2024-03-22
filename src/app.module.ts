@@ -77,7 +77,7 @@ import { VerifyPosition } from './verify-position/verify-position.entity';
     TypeOrmModule.forFeature([AccountProject]),
     TypeOrmModule.forFeature([ProjectApplication]),
     TypeOrmModule.forFeature([ProjectVisitors]),
-    TypeOrmModule.forFeature([VerifyPosition])
+    TypeOrmModule.forFeature([VerifyPosition]),
   ],
   controllers: [
     AuthController,
@@ -93,7 +93,7 @@ import { VerifyPosition } from './verify-position/verify-position.entity';
     AccountProjectController,
     ProjectApplicationController,
     ProjectVisitorsController,
-    VerifyPositionController
+    VerifyPositionController,
   ],
   providers: [
     AuthService,
@@ -113,7 +113,7 @@ import { VerifyPosition } from './verify-position/verify-position.entity';
     ApplicationService,
     PointsService,
     ProjectVisitorsService,
-    VerifyPositionService
+    VerifyPositionService,
   ],
 })
 export class AppModule implements NestModule {
@@ -144,7 +144,7 @@ export class AppModule implements NestModule {
         'update_project_picture',
         'applications',
         'project_ranking',
-        //'verify'
+        'verify',
       );
   }
 }
