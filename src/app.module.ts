@@ -55,6 +55,8 @@ import { PointsService } from './admin/projects/points.service';
 import { ProjectVisitorsController } from './project_visits/project_visits.controller';
 import { ProjectVisitorsService } from './project_visits/project_visits.service';
 import { VerifyPosition } from './verify-position/verify-position.entity';
+import { State } from './location/state.entity';
+import { Country } from './location/country.entity';
 
 @Module({
   imports: [
@@ -69,7 +71,9 @@ import { VerifyPosition } from './verify-position/verify-position.entity';
     TypeOrmModule.forFeature([Position, UserAccounts]),
     TypeOrmModule.forFeature([PositionDetails]),
     TypeOrmModule.forFeature([Company]),
-    TypeOrmModule.forFeature([City]),
+    TypeOrmModule.forFeature([City, State, Country]),
+    TypeOrmModule.forFeature([State]),
+    TypeOrmModule.forFeature([Country]),
     TypeOrmModule.forFeature([Position, Company]),
     TypeOrmModule.forFeature([Keywords]),
     TypeOrmModule.forFeature([AccountsVisitors]),

@@ -9,6 +9,6 @@ export class CityController {
 
   @Get('/search')
   async searchCities(@Query('term') searchTerm: string): Promise<{ error: boolean, cities?: City[], message?: string }> {
-    return this.cityService.searchCities(searchTerm);
+    return this.cityService.searchCities2(searchTerm);
   }
 }
