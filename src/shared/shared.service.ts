@@ -85,7 +85,7 @@ export class SharedService {
           filledFields = this.calculateIsIndividualContributerFields(position)
         }
         else if(position.details.is_booking_meeting){
-          totalFields=16;
+          totalFields=15;
           filledFields = this.calculateIsBookingMeetingFields(position)
         }
         const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
@@ -129,9 +129,7 @@ export class SharedService {
       });
     
       // Check additional conditions
-      if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
-        totalFilled++;
-      }
+     
       if (position.details.existing_business || position.details.new_business) {
         totalFilled++;
       }
@@ -140,8 +138,11 @@ export class SharedService {
       if (position.details.outbound || position.details.inbound) {
         totalFilled++;
       }
-      if(position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage){
+      if(position.details.is_prospecting_channel_relevant &&( position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage)){
         totalFilled++;
+      }
+      else if(!position.details.is_prospecting_channel_relevant){
+        totalFilled++
       }
     
       return totalFilled;

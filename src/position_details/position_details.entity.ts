@@ -89,6 +89,9 @@ export class PositionDetails {
   @Column({ type: 'int', nullable: true })
   tradeshow_percentage: number;
 
+  @Column({default: true})
+  is_prospecting_channel_relevant: boolean;
+
   @Column({ type: 'int', nullable: true })
   refferals_percentage: number;
 
