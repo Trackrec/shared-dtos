@@ -138,10 +138,10 @@ export class SharedService {
       if (position.details.outbound || position.details.inbound) {
         totalFilled++;
       }
-      if(position.details.is_prospecting_channel_relevant &&( position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage)){
+      if(!position.details.is_prospecting_channel_relevant &&( position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage)){
         totalFilled++;
       }
-      else if(!position.details.is_prospecting_channel_relevant){
+      else if(position.details.is_prospecting_channel_relevant){
         totalFilled++
       }
     
@@ -200,8 +200,11 @@ export class SharedService {
       if (position.details.outbound || position.details.inbound) {
         totalFilled++;
       }
-      if(position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage){
+      if(!position.details.is_prospecting_channel_relevant &&( position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage)){
         totalFilled++;
+      }
+      else if(position.details.is_prospecting_channel_relevant){
+        totalFilled++
       }
     
       return totalFilled;
