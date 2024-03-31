@@ -47,7 +47,7 @@ export class VerifyPositionService {
         where: { id: requestBody.requestBy },
       });
       const messageData = {
-        from: `Trackrec <mailgun@${process.env.MAILGUN_DOMAIN}>`,
+        from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: requestBody.email,
         subject: `Requesting verification of experience`,
         html: `
@@ -55,7 +55,7 @@ export class VerifyPositionService {
         <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a>
         
         <p>Best, </p>
-        <p>Trackrect Team</p>
+        <p>Trackrec Team</p>
         `,
       };
 

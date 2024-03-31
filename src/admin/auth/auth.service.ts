@@ -123,7 +123,7 @@ export class AdminAuthService {
 
       await this.userRepository.save(newUser);
       const messageData = {
-        from: `Trackrec <mailgun@${process.env.MAILGUN_DOMAIN}>`,
+        from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: email,
         subject: `${full_name}, Account Credentials`,
         html: `
@@ -132,7 +132,7 @@ export class AdminAuthService {
         <p>Email: ${email}</p>
         <p>Password: ${generatedPassword}</p>
         <p>Best, </p>
-        <p>Trackrect Team</p>
+        <p>Trackrec Team</p>
         `
      };
   
