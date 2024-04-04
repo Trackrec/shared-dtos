@@ -1,6 +1,10 @@
 import { Position } from 'src/positions/positions.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
-
+interface Client {
+  id: string;
+  name: string;
+  logo_url: string;
+}
 @Entity()
 export class PositionDetails {
   @PrimaryGeneratedColumn({ type: 'bigint' })
@@ -55,8 +59,8 @@ export class PositionDetails {
   @Column({ type: 'boolean', nullable: true })
   disable_prospecting: boolean;
 
-  @Column('simple-array', { nullable: true })
-  notable_clients: string[];
+  @Column('json', { nullable: true })
+  notable_clients: Client[];
 
   @Column('simple-array', { nullable: true })
   management: string[];
