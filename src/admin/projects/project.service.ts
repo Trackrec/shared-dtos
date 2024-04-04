@@ -28,9 +28,21 @@ export class AccountProjectService {
 
   async findAll(userId): Promise<any> {
     try {
-      const projects = await this.accountProjectRepository.find({
-        where: { user: { id: userId } },
-      });
+      const user= await this.userRepository.findOne({where:{id:userId}})
+      if(!user){
+        return {error: true, message: "You are not authorized to make this request."}
+     }
+      let projects;
+
+     if (user.role === "Admin") {
+           projects = await this.accountProjectRepository.find();
+     } else {
+         projects = await this.accountProjectRepository.find({
+           where: { user: { id: userId } },
+           });
+       }
+
+      
       return { error: false, projects };
     } catch (e) {
       return { error: true, message: 'Projects not found' };
