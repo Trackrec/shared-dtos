@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { Company } from 'src/company/company.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { SharedService } from 'src/shared/shared.service';
 import * as jwt from 'jsonwebtoken';
 
@@ -19,8 +19,13 @@ export class SuperAdminService {
 
   async getAllUsers() {
     try {
-        const users = await this.userRepository.find({where:{role:'Applicant'},  select: ['id', 'full_name', 'email', 'created_at', 'last_accessed_at', 'is_preferences_save'] });
-        if (!users || users.length === 0) {
+      const users = await this.userRepository.find({
+        where: {
+          role: In(['Applicant', 'Super-Admin'])
+        },
+        select: ['id', 'full_name', 'email', 'created_at', 'last_accessed_at', 'is_preferences_save']
+      });
+              if (!users || users.length === 0) {
         return { error: false, data: [] };
       }
       return { error: false,  data: users };
@@ -84,7 +89,7 @@ export class SuperAdminService {
   
       };
   
-      const token= jwt.sign(payload, process.env.JWT_SECRET, { expiresIn:'24h' });
+      const token= jwt.sign(payload, process.env.JWT_SECRET, { expiresIn:'30d' });
       return {error: false, token}
 
     }

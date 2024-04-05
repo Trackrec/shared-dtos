@@ -51,11 +51,18 @@ export class VerifyPositionService {
         to: requestBody.email,
         subject: `Requesting verification of experience`,
         html: `
-        <p>Candidate ${requestBy.full_name} is requesting verification of experience, please click on the link to continue</p>
-        <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a>
-        
-        <p>Best, </p>
-        <p>Trackrec Team</p>
+
+        Hello, <br/><br/>
+        ${requestBy.full_name} has listed you as someone who can attest to their professional accomplishments during their time at ${position?.company?.name}.<br/><br/>
+        Your verification would greatly assist ${requestBy.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
+        If you could take a few moments to verify ${requestBy.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
+        Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a> <br/><br/>
+
+        Best, <br/>
+        Team TrackRec <br/> 
+        app.trackrec.co <br/>
+
         `,
       };
 
