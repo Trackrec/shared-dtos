@@ -14,6 +14,15 @@ export class VerifyPositionController {
         return {error: true, message: "Something went wrong please try again."}
     }
   }
+  @Post('resend_verification_email')
+  async resendVerificationEmail(@Body() requestBody:any){
+    try {
+      return await this.verifyPositionService.resendVerificationEmail(requestBody);
+      
+    } catch (error) {
+        return {error: true, message: "Something went wrong please try again."}
+    }
+  }
 
   @Post('change_verification_status')
   async changeVerificationStatus(@Body() requestBody:any ){

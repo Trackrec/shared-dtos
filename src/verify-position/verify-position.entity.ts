@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne, OneToMany } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { Position } from 'src/positions/positions.entity';
 
@@ -14,7 +14,7 @@ export class VerifyPosition {
   @JoinColumn({ name: 'request_by' })
   requestBy: UserAccounts;
 
-  @OneToOne(() => Position)
+  @ManyToOne(() => Position,  position => position.verify_request)
   @JoinColumn({ name: 'position_id' })
   position: Position;
 

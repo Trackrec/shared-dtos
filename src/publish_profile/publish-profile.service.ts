@@ -93,7 +93,7 @@ export class PublishProfileService {
     if(visitor_id && visitor_id!=userId){
         this.track_view(userId, visitor_id)
     }
-    let user = await this.userRepository.findOne({ where: { id: userId } ,  relations: ['positions', 'positions.details', 'positions.company'],});
+    let user = await this.userRepository.findOne({ where: { id: userId } ,  relations: ['positions', 'positions.details', 'positions.company','positions.verify_request'],});
     if (!user || user.full_name.toLowerCase() !== formattedName) {
       return null;
     }

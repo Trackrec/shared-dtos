@@ -18,10 +18,53 @@ export class VerifyPositionService {
     private readonly positionRepository: Repository<Position>,
   ) {}
 
+  async resendVerificationEmail(requestBody: any): Promise<any> {
+    try {
+      const existingRequest = await this.verifyPositionRepository.findOne({
+        where: { id: requestBody.requestId},
+        relations:["position", "requestBy"]
+      });
+      if (!existingRequest) {
+        return {
+          error: true,
+          message: 'Request with this id does not exist!',
+        };
+      }
+      
+      const messageData = {
+        from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        to: existingRequest?.email,
+        subject: `Requesting verification of experience`,
+        html: `
+
+        Hello, <br/><br/>
+        ${existingRequest?.requestBy?.full_name} has listed you as someone who can attest to their professional accomplishments during their time at ${existingRequest?.position?.company?.name}.<br/><br/>
+        Your verification would greatly assist ${existingRequest?.requestBy?.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
+        If you could take a few moments to verify ${existingRequest?.requestBy?.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
+        Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a> <br/><br/>
+
+        Best, <br/>
+        Team TrackRec <br/> 
+        app.trackrec.co <br/>
+
+        `,
+      };
+
+      await this.mailgunService.sendMail(messageData);
+
+      return {
+        error: false,
+        message: 'Email resent successfully!',
+      };
+    } catch (error) {
+      return { error: true, message: 'Error sending verification erequest.' };
+    }
+  }
   async requestVerification(requestBody: any): Promise<any> {
     try {
       const existingRequest = await this.verifyPositionRepository.findOne({
-        where: { position: { id: requestBody.positionId } },
+        where: { position: { id: requestBody.positionId } , email: requestBody.email},
       });
       if (existingRequest) {
         return {
@@ -40,7 +83,7 @@ export class VerifyPositionService {
       const position = await this.positionRepository.findOne({
         where: { id: requestBody.positionId },
       });
-      position.verify_request = createdRequest;
+      //position.verify_request = createdRequest;
       this.positionRepository.save(position);
 
       let requestBy = await this.userRepository.findOne({

@@ -45,7 +45,7 @@ export class Position {
   @JoinColumn()
   details: PositionDetails;
 
-  @OneToOne(() => VerifyPosition)
+  @OneToMany(() => VerifyPosition, verifyPosition => verifyPosition.position)
   @JoinColumn({ name: 'verify_request_id' })
-  verify_request: VerifyPosition;
+  verify_request: VerifyPosition[];
 }
