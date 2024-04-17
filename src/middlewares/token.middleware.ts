@@ -22,7 +22,7 @@ export class TokenMiddleware implements NestMiddleware {
 
     // If token is present, verify it
     
-    if (token) {
+    if (token!="null" && token ) {
       try {
 
         const decodedToken: any = jwt.verify(token, process.env.JWT_SECRET);
