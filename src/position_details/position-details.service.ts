@@ -89,7 +89,7 @@ export class PositionDetailsService {
         return { error: false, message: 'Position details saved successfully.' };
     } catch (error) {
         console.error(error);
-        return { error: true, message: 'Internal server error.' };
+        return { error: true, message: 'Missing details please try again.' };
     }
 }
 
@@ -104,7 +104,7 @@ export class PositionDetailsService {
       return { error: false, data: positionDetails, message: 'Position details retrieved successfully.' };
     } catch (error) {
       // Handle specific error types if needed
-      return { error: true, message: 'Internal server error.' };
+      return { error: true, message: 'Position details not found.' };
     }
   }
 }
