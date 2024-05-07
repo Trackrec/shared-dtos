@@ -9,6 +9,13 @@ export class SharedService {
       return "N/A";
     }
 
+    // Sort positions by start_date before processing
+    positions.sort((a, b) => {
+      const dateA = new Date(a.start_year, a.start_month - 1).getTime();
+      const dateB = new Date(b.start_year, b.start_month - 1).getTime();
+      return dateA - dateB;
+    });
+
     const result = positions.reduce(
       (acc, position) => this.calculatePositionDays(position, acc),
       { totalDays: 0, maxEndDate: null }
