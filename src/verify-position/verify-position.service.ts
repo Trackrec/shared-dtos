@@ -21,8 +21,8 @@ export class VerifyPositionService {
   async resendVerificationEmail(requestBody: any): Promise<any> {
     try {
       const existingRequest = await this.verifyPositionRepository.findOne({
-        where: { id: requestBody.requestId},
-        relations:["position", "requestBy"]
+        where: { id: requestBody.requestId },
+        relations: ['position', 'requestBy'],
       });
       if (!existingRequest) {
         return {
@@ -30,7 +30,7 @@ export class VerifyPositionService {
           message: 'Request with this id does not exist!',
         };
       }
-      
+
       const messageData = {
         from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: existingRequest?.email,
@@ -64,7 +64,10 @@ export class VerifyPositionService {
   async requestVerification(requestBody: any): Promise<any> {
     try {
       const existingRequest = await this.verifyPositionRepository.findOne({
-        where: { position: { id: requestBody.positionId } , email: requestBody.email},
+        where: {
+          position: { id: requestBody.positionId },
+          email: requestBody.email,
+        },
       });
       if (existingRequest) {
         return {
@@ -82,6 +85,7 @@ export class VerifyPositionService {
 
       const position = await this.positionRepository.findOne({
         where: { id: requestBody.positionId },
+        relations: { company: true },
       });
       //position.verify_request = createdRequest;
       this.positionRepository.save(position);
