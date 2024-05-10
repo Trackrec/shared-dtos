@@ -22,7 +22,7 @@ export class VerifyPositionService {
     try {
       const existingRequest = await this.verifyPositionRepository.findOne({
         where: { id: requestBody.requestId },
-        relations: ['position', 'requestBy'],
+        relations: ['position', 'requestBy', 'position.company'],
       });
       if (!existingRequest) {
         return {
@@ -93,6 +93,8 @@ export class VerifyPositionService {
       let requestBy = await this.userRepository.findOne({
         where: { id: requestBody.requestBy },
       });
+
+      console.log(position);
       const messageData = {
         from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: requestBody.email,
