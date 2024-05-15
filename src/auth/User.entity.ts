@@ -1,122 +1,147 @@
 import {
-    Entity,
-    Column,
-    PrimaryGeneratedColumn,
-    ManyToOne,
-    OneToMany,
-    CreateDateColumn,
-    UpdateDateColumn,
-    OneToOne,
-    JoinColumn,
-  } from 'typeorm';
-  import { IsEmail, IsNotEmpty, IsString, Length, IsIn, ArrayNotEmpty } from "class-validator";
-  import { Position } from 'src/positions/positions.entity';
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  IsIn,
+  ArrayNotEmpty,
+} from 'class-validator';
+import { Position } from 'src/positions/positions.entity';
 import { Keywords } from 'src/keywords/keyword.entity';
 import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
 import { AccountProject } from 'src/admin/projects/project.entity';
 import { ProjectApplication } from 'src/applications/application.entity';
-  export enum LocationPreference {
-    ONSITE = 'onsite',
-    REMOTE = 'remote',
-    HYBRID = 'hybrid',
-  }
-  @Entity({ name: 'accounts_users' })
-  export class UserAccounts {
-    @PrimaryGeneratedColumn()
-    id: number;
-  
-    @Column({ })
-     @IsEmail()
-     email: string;
+export enum LocationPreference {
+  ONSITE = 'onsite',
+  REMOTE = 'remote',
+  HYBRID = 'hybrid',
+}
+@Entity({ name: 'accounts_users' })
+export class UserAccounts {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({default:null})
-    phone: string;
-  
-    @Column({default:null})
-    full_name: string;
-  
-    @Column({default:null})
-    profile_image: string;
+  @Column({})
+  @IsEmail()
+  email: string;
 
-    @Column({default:null})
-    custom_current_role: string;
-  
-    @Column({ type: 'datetime', nullable: true })
-    published_at: Date | null;
+  @Column({ default: null })
+  phone: string;
 
-    @Column({default:null})
-    has_avatar: boolean;
+  @Column({ default: null })
+  full_name: string;
 
-    @Column({default:false})
-    blocked: boolean;
+  @Column({ default: null })
+  profile_image: string;
 
-    @Column({default:true})
-    open_to_work: boolean;
-  
-    @Column({default:null,  type:"longtext"})
-    linkedin_access_token: string;
-  
-    @Column({default:null})
-    ote_expectation: number;
+  @Column({ default: null })
+  custom_current_role: string;
 
-    @Column({ type: 'enum', enum: LocationPreference, default: LocationPreference.HYBRID }) 
-    @IsNotEmpty()
-    @IsIn([LocationPreference.ONSITE, LocationPreference.REMOTE, LocationPreference.HYBRID]) 
-    location_preferences: LocationPreference;
+  @Column({ type: 'datetime', nullable: true })
+  published_at: Date | null;
 
-    @Column({default:null})
-    password: string;
+  @Column({ default: null })
+  has_avatar: boolean;
 
-    @Column({default:true})
-    otp: boolean;
+  @Column({ default: false })
+  blocked: boolean;
 
-    @Column({default:false})
-    is_preferences_save : boolean;
+  @Column({ default: true })
+  open_to_work: boolean;
 
-    @Column()
-    role: string;
+  @Column({ default: null, type: 'longtext' })
+  linkedin_access_token: string;
 
-    @Column({default:null})
-    username: string
+  @Column({ default: null })
+  ote_expectation: number;
 
-    @Column({default:null})
-    city: string;
+  @Column({ type: 'bigint', nullable: true })
+  ote_min: number;
 
-    @ArrayNotEmpty()
-    @Column("simple-array", { nullable: true })
-    languages: string[];
+  @Column({ type: 'bigint', nullable: true })
+  ote_max: number;
 
-    @ArrayNotEmpty()
-    @Column("simple-array", { nullable: true })
-    next_desired_titles: string[];
+  @Column({
+    type: 'enum',
+    enum: LocationPreference,
+    default: LocationPreference.HYBRID,
+  })
+  @IsNotEmpty()
+  @IsIn([
+    LocationPreference.ONSITE,
+    LocationPreference.REMOTE,
+    LocationPreference.HYBRID,
+  ])
+  location_preferences: LocationPreference;
 
-    @Column({default:false})
-    isExperienceImported: boolean
-  
-    @CreateDateColumn()
-    created_at: Date;
-  
-    @UpdateDateColumn()
-    updated_at: Date;
+  @Column({ default: null })
+  password: string;
 
+  @Column({ default: true })
+  otp: boolean;
 
-    @CreateDateColumn({default:null})
-    last_accessed_at: Date;
+  @Column({ default: false })
+  is_preferences_save: boolean;
 
-    @OneToMany(() => Position, (position) => position.user)
-    positions: Position[];
+  @Column()
+  role: string;
 
-    @OneToOne(() => Keywords, { cascade: true, eager: true }) 
-    @JoinColumn({name:'keyword_id'})
-    keywords: Keywords;
+  @Column({ default: null })
+  username: string;
 
-    @OneToMany(() => AnalyticsAccess, analyticsAccess => analyticsAccess.user)
-     analyticsAccess: AnalyticsAccess[];
+  @Column({ default: null })
+  city: string;
 
-  @OneToMany(() => AccountProject, project => project.user)
+  @ArrayNotEmpty()
+  @Column('simple-array', { nullable: true })
+  languages: string[];
+
+  @Column({ default: '$', nullable: true })
+  currency: string;
+
+  @Column({ default: 'United States', nullable: true })
+  currency_country: string;
+
+  @ArrayNotEmpty()
+  @Column('simple-array', { nullable: true })
+  next_desired_titles: string[];
+
+  @Column({ default: false })
+  isExperienceImported: boolean;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @CreateDateColumn({ default: null })
+  last_accessed_at: Date;
+
+  @OneToMany(() => Position, (position) => position.user)
+  positions: Position[];
+
+  @OneToOne(() => Keywords, { cascade: true, eager: true })
+  @JoinColumn({ name: 'keyword_id' })
+  keywords: Keywords;
+
+  @OneToMany(() => AnalyticsAccess, (analyticsAccess) => analyticsAccess.user)
+  analyticsAccess: AnalyticsAccess[];
+
+  @OneToMany(() => AccountProject, (project) => project.user)
   projects: AccountProject[];
 
-  @OneToMany(() => ProjectApplication, application => application.user)
+  @OneToMany(() => ProjectApplication, (application) => application.user)
   applications: ProjectApplication[];
-  }
-
+}
