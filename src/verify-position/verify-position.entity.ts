@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToOne,
+  OneToMany,
+} from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { Position } from 'src/positions/positions.entity';
 
@@ -10,20 +18,31 @@ export class VerifyPosition {
   @Column()
   email: string;
 
+  @Column({ nullable: true })
+  role: string;
+
   @ManyToOne(() => UserAccounts)
   @JoinColumn({ name: 'request_by' })
   requestBy: UserAccounts;
 
-  @ManyToOne(() => Position,  position => position.verify_request)
+  @ManyToOne(() => Position, (position) => position.verify_request)
   @JoinColumn({ name: 'position_id' })
   position: Position;
 
-  @Column({ type: 'enum', enum: ['Requested', 'Approved', 'Rejected'], default: 'Requested' })
+  @Column({
+    type: 'enum',
+    enum: ['Requested', 'Approved', 'Rejected'],
+    default: 'Requested',
+  })
   status: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   updated_at: Date;
 }
