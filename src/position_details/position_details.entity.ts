@@ -1,5 +1,11 @@
 import { Position } from 'src/positions/positions.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 interface Client {
   id: string;
   name: string;
@@ -18,7 +24,6 @@ export class PositionDetails {
 
   @Column({ type: 'boolean', nullable: true })
   is_individual_contributor: boolean;
-
 
   @Column({ type: 'integer', nullable: true })
   segment_id: number;
@@ -50,7 +55,7 @@ export class PositionDetails {
   @Column({ nullable: true })
   short_sales_cycle: string;
 
-  @Column({  nullable: true })
+  @Column({ nullable: true })
   average_sales_cycle: string;
 
   @Column({ nullable: true })
@@ -64,7 +69,6 @@ export class PositionDetails {
 
   @Column('simple-array', { nullable: true })
   management: string[];
-
 
   @Column('simple-array', { nullable: true })
   persona: string[];
@@ -93,13 +97,11 @@ export class PositionDetails {
   @Column({ type: 'int', nullable: true })
   tradeshow_percentage: number;
 
-  @Column({default: true})
+  @Column({ default: true })
   is_prospecting_channel_relevant: boolean;
 
   @Column({ type: 'int', nullable: true })
   refferals_percentage: number;
-
-
 
   @Column({ type: 'bigint', nullable: true })
   short_deal_size: number;
@@ -112,6 +114,9 @@ export class PositionDetails {
 
   @Column({ type: 'bigint', nullable: true })
   existing_business: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  partnership: number;
 
   @Column({ type: 'bigint', nullable: true })
   outbound: number;
@@ -134,10 +139,14 @@ export class PositionDetails {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   updated_at: Date;
 
-  @OneToOne(type => Position, position => position.details)
+  @OneToOne((type) => Position, (position) => position.details)
   @JoinColumn()
   position: Position;
 }

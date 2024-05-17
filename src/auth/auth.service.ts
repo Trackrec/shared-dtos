@@ -205,7 +205,7 @@ export class AuthService {
           (updatedUser as any).total_revenue = totalRevenue;
           (updatedUser as any).total_years_experience =
             this.sharedService.calculateExperience(updatedUser.positions);
-          const { existing_business_average, new_business_average } =
+          const { existing_business_average, new_business_average,partnership_average } =
             this.sharedService.calculateWeightedAverageForBusiness(
               updatedUser.positions,
             );
@@ -221,6 +221,8 @@ export class AuthService {
             existing_business_average;
           (updatedUser as any).weightedAverageNewBusiness =
             new_business_average;
+          (updatedUser as any).weightedAveragePartnershipBusiness =
+            partnership_average;
           (updatedUser as any).outbound_average = outbound_average;
           (updatedUser as any).inbound_average = inbound_average;
           (updatedUser as any).smb_average = smb_average;
@@ -257,7 +259,7 @@ export class AuthService {
         (user as any).total_revenue = totalRevenue;
         (user as any).total_years_experience =
           this.sharedService.calculateExperience(updated_positions);
-        const { existing_business_average, new_business_average } =
+        const { existing_business_average, new_business_average,partnership_average } =
           this.sharedService.calculateWeightedAverageForBusiness(
             user.positions,
           );
@@ -271,6 +273,7 @@ export class AuthService {
         (user as any).weightedAverageExistingBusiness =
           existing_business_average;
         (user as any).weightedAverageNewBusiness = new_business_average;
+        (user as any).weightedAveragePartnershipBusiness = partnership_average;
         (user as any).outbound_average = outbound_average;
         (user as any).inbound_average = inbound_average;
         (user as any).smb_average = smb_average;

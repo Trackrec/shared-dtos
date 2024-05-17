@@ -275,10 +275,11 @@ export class SharedService {
     calculateWeightedAverageForBusiness(positions){
         let totalWeightedExistingBusiness = 0;
         let totalWeightedNewBusiness = 0;
+        let totalWeightedPartnershipBusiness = 0;
         let totalDuration = 0;
       
         if(!positions || positions.length === 0){
-          return { existing_business_average: 0, new_business_average: 0 };
+          return { existing_business_average: 0, new_business_average: 0,partnership_average:0 };
         }
         
         positions.forEach(position => {
@@ -295,26 +296,30 @@ export class SharedService {
           let endYear = position.end_year;
           let existingBusinessPercentage = position.details.existing_business;
           let newBusinessPercentage = position.details.new_business;
+          let partnershipBusinessPercentage = position.details.partnership;
       
           let duration = this.calculateDuration(startMonth, startYear, endMonth, endYear);
           totalDuration += duration;
       
           let weightedExistingBusiness = existingBusinessPercentage * duration;
           let weightedNewBusiness = newBusinessPercentage * duration;
+          let weightedPartnershipBusiness = partnershipBusinessPercentage * duration;
       
           totalWeightedExistingBusiness += weightedExistingBusiness;
           totalWeightedNewBusiness += weightedNewBusiness;
+          totalWeightedPartnershipBusiness += weightedPartnershipBusiness
         });
       
         if(totalDuration === 0){
-          return { existing_business_average: 0, new_business_average: 0 };
+          return { existing_business_average: 0, new_business_average: 0 , partnership_average: 0 };
         }
       
         // Calculate weighted averages
         let weightedAverageExistingBusiness = totalWeightedExistingBusiness / totalDuration;
         let weightedAverageNewBusiness = totalWeightedNewBusiness / totalDuration;
+        let weightedAveragePartnershipBusiness = totalWeightedPartnershipBusiness / totalDuration;
       
-        return { existing_business_average: Math.round(weightedAverageExistingBusiness), new_business_average: Math.round(weightedAverageNewBusiness) };
+        return { existing_business_average: Math.round(weightedAverageExistingBusiness), new_business_average: Math.round(weightedAverageNewBusiness) ,partnership_average:Math.round(weightedAveragePartnershipBusiness)};
       }
 
       calculateDuration(startMonth, startYear, endMonth, endYear) {
