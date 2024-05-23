@@ -55,6 +55,9 @@ export class UserAccounts {
   has_avatar: boolean;
 
   @Column({ default: false })
+  isFirstExperienceMailSent: boolean;
+
+  @Column({ default: false })
   blocked: boolean;
 
   @Column({ default: true })
@@ -110,7 +113,7 @@ export class UserAccounts {
   @Column({ default: '$', nullable: true })
   currency: string;
 
-  @Column({ default: 'United States', nullable: true })
+  @Column({ default: 'United States Dollar (USD)', nullable: true })
   currency_country: string;
 
   @ArrayNotEmpty()

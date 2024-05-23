@@ -57,10 +57,13 @@ import { ProjectVisitorsService } from './project_visits/project_visits.service'
 import { VerifyPosition } from './verify-position/verify-position.entity';
 import { State } from './location/state.entity';
 import { Country } from './location/country.entity';
+import { CronService } from './cron.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
+    ScheduleModule.forRoot(),
     loggerConfig,
     AuthModule,
     PassportModule,
@@ -118,6 +121,7 @@ import { Country } from './location/country.entity';
     PointsService,
     ProjectVisitorsService,
     VerifyPositionService,
+    CronService,
   ],
 })
 export class AppModule implements NestModule {

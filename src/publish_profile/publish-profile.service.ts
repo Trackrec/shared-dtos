@@ -156,14 +156,20 @@ export class PublishProfileService {
       (user as any).total_revenue = totalRevenue;
       (user as any).total_years_experience =
         this.sharedService.calculateExperience(user.positions);
-      const { existing_business_average, new_business_average } =
-        this.sharedService.calculateWeightedAverageForBusiness(user.positions);
+      const {
+        existing_business_average,
+        new_business_average,
+        partnership_average,
+      } = this.sharedService.calculateWeightedAverageForBusiness(
+        user.positions,
+      );
       const { outbound_average, inbound_average } =
         this.sharedService.calculateWeightedAverageForOutbound(user.positions);
       const { smb_average, midmarket_average, enterprise_average } =
         this.sharedService.calculateWeightedAverageForSegment(user.positions);
       (user as any).weightedAverageExistingBusiness = existing_business_average;
       (user as any).weightedAverageNewBusiness = new_business_average;
+      (user as any).weightedAveragePartnershipBusiness = partnership_average;
       (user as any).outbound_average = outbound_average;
       (user as any).inbound_average = inbound_average;
       (user as any).smb_average = smb_average;
