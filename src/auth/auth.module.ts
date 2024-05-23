@@ -12,17 +12,25 @@ import { CompanyService } from 'src/company/company.service';
 import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { Company } from 'src/company/company.entity';
 import { SharedService } from 'src/shared/shared.service';
+import { VerifyPosition } from 'src/verify-position/verify-position.entity';
+import { MailgunService } from 'src/mailgun/mailgun.service';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'linkedin' }),
     TypeOrmModule.forFeature([UserAccounts]),
     TypeOrmModule.forFeature([Position]),
     TypeOrmModule.forFeature([Company]),
-    TypeOrmModule.forFeature([Position, UserAccounts]),
-
-
+    TypeOrmModule.forFeature([Position, UserAccounts, VerifyPosition]),
   ],
-  providers: [LinkedinStrategy, AuthService, PositionService, CompanyService, S3UploadService, SharedService],
-  controllers: [AuthController]
+  providers: [
+    LinkedinStrategy,
+    AuthService,
+    PositionService,
+    CompanyService,
+    S3UploadService,
+    SharedService,
+    MailgunService,
+  ],
+  controllers: [AuthController],
 })
 export class AuthModule {}

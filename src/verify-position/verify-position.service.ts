@@ -79,6 +79,7 @@ export class VerifyPositionService {
       verifyPosition.email = requestBody.email;
       verifyPosition.requestBy = requestBody.requestBy;
       verifyPosition.position = requestBody.positionId;
+      verifyPosition.role = requestBody.role;
 
       const createdRequest =
         await this.verifyPositionRepository.save(verifyPosition);
