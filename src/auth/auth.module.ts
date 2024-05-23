@@ -13,6 +13,7 @@ import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { Company } from 'src/company/company.entity';
 import { SharedService } from 'src/shared/shared.service';
 import { VerifyPosition } from 'src/verify-position/verify-position.entity';
+import { MailgunService } from 'src/mailgun/mailgun.service';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'linkedin' }),
@@ -28,6 +29,7 @@ import { VerifyPosition } from 'src/verify-position/verify-position.entity';
     CompanyService,
     S3UploadService,
     SharedService,
+    MailgunService,
   ],
   controllers: [AuthController],
 })
