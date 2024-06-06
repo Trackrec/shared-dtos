@@ -45,7 +45,7 @@ export class VerifyPositionService {
         Your verification would greatly assist ${existingRequest?.requestBy?.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
         If you could take a few moments to verify ${existingRequest?.requestBy?.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
         Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
-        <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a> <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/?approval_request=true">Click here</a> <br/><br/>
 
         Best, <br/>
         Team TrackRec <br/> 
@@ -100,7 +100,6 @@ export class VerifyPositionService {
         where: { id: requestBody.requestBy },
       });
 
-      console.log(position);
       const messageData = {
         from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: requestBody.email,
@@ -112,7 +111,7 @@ export class VerifyPositionService {
         Your verification would greatly assist ${requestBy.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
         If you could take a few moments to verify ${requestBy.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
         Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
-        <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a> <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/?approval_request=true">Click here</a> <br/><br/>
 
         Best, <br/>
         Team TrackRec <br/> 
