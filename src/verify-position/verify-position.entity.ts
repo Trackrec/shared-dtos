@@ -21,12 +21,6 @@ export class VerifyPosition {
   @Column({ nullable: true })
   role: string;
 
-  @Column({ nullable: true })
-  first_name: string;
-
-  @Column({ nullable: true })
-  last_name: string;
-
   @ManyToOne(() => UserAccounts)
   @JoinColumn({ name: 'request_by' })
   requestBy: UserAccounts;
