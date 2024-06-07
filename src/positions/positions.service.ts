@@ -134,12 +134,12 @@ export class PositionService {
                     <p>You'll receive an email once this person verifies this experience and their name & LinkedIn profile will be displayed in the Verified section of your profile.</p>
                     <p>Let's grow your sales career,</p>
                     <p>Victor @ TrackRec<br>Founder</p>
-                    <p><a href="https://app.trackrec.co/" class="button">Go to TrackRec</a></p>
+                    <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
                  </div>
                  <div class="footer">
                     <p>Best,<br>
                        Team TrackRec<br> 
-                       <a href="https://app.trackrec.co/" style="color: #fff;">app.trackrec.co</a>
+                       <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
                     </p>
                  </div>
               </div>
