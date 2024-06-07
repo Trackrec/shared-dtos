@@ -123,9 +123,6 @@ export class UserAccounts {
   @Column({ default: false })
   isExperienceImported: boolean;
 
-  @Column({ type: 'longtext', nullable: true })
-  about: string;
-
   @CreateDateColumn()
   created_at: Date;
 

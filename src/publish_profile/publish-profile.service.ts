@@ -39,26 +39,6 @@ export class PublishProfileService {
     }
   }
 
-  async privateProfile(
-    userId: number,
-  ): Promise<{ error: boolean; message: string }> {
-    try {
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-
-      if (!user) {
-        return { error: true, message: 'User not found' };
-      }
-
-      user.published_at = null;
-      await this.userRepository.save(user);
-
-      return { error: false, message: 'Profile private successfully' };
-    } catch (error) {
-      console.error('Error privating profile:', error);
-      return { error: true, message: 'Internal server error' };
-    }
-  }
-
   async getProfileViews(user_id) {
     try {
       const analyticsAccessRecords = await this.analyticsRepository.find({
@@ -129,11 +109,6 @@ export class PublishProfileService {
         'positions.verify_request',
       ],
     });
-
-    if (!user?.published_at) {
-      return null;
-    }
-
     if (!user || user.full_name.toLowerCase() !== formattedName) {
       return null;
     }

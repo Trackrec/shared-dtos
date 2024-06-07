@@ -125,7 +125,7 @@ export class AuthService {
                  </div>
                  <div class="content">
                     <p>Hello ${user?.full_name}, and welcome to TrackRec.</p>
-                    <p>I'm absolutely thrilled to have you here. At any given time, go to <a href="${process.env.REACT_APP_URL}">${process.env.REACT_APP_URL}</a> to access and update your track record.</p>
+                    <p>I'm absolutely thrilled to have you here. At any given time, go to <a href="https://app.trackrec.co/">https://app.trackrec.co/</a> to access and update your track record.</p>
                     <p>Here’s what you can expect from using TrackRec:</p>
                     <ul>
                        <li>Showcase your sales achievements and track record (and ditch the resume once and for all).</li>
@@ -136,12 +136,12 @@ export class AuthService {
                     </ul>
                     <p>Let's grow your sales career,</p>
                     <p>Victor @ TrackRec<br>Founder</p>
-                    <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
+                    <p><a href="https://app.trackrec.co/" class="button">Go to TrackRec</a></p>
                  </div>
                  <div class="footer">
                     <p>Best,<br>
                        Team TrackRec<br> 
-                       <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
+                       <a href="https://app.trackrec.co/" style="color: #fff;">app.trackrec.co</a>
                     </p>
                  </div>
               </div>
