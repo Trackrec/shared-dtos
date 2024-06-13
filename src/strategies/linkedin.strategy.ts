@@ -33,7 +33,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
         //todo: remove linkedin id since it is not being used
         linkedinId: id,
         displayName: displayName,
-        email: emails[0]?.value,
+       // email: emails[0]?.value,
         profilePicture: photos[0]?.value,
         accessToken: accessToken,
         username: vanityName,
