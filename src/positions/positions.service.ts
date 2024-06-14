@@ -60,8 +60,17 @@ export class PositionService {
       if (isNewUserPosition) {
         await this.sendWelcomeEmail(userId);
       }
+      const savedPosition = await this.positionRepository.save(position);
 
-      return await this.positionRepository.save(position);
+      return {
+        ...savedPosition,
+        company: {
+          name: positionData?.company_name,
+          logo_url: positionData.logo_url ? positionData.logo_url : null,
+          domain: positionData.domain ? positionData.domain : null,
+          id: !company ? newCompany?.createdCompany.id : company.id,
+        },
+      };
     } catch (error) {
       //todo: add logger here
       throw new Error(`Error creating position: ${error.message}`);
