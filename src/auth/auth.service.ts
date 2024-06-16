@@ -337,12 +337,14 @@ export class AuthService {
             completion_percentage,
           });
           if (is_completed) {
+            console.log("postion completed")
+            console.log(user.positions[i].role)
             totalRevenue += +user.positions[i].details.revenue_generated;
           }
         }
         (user as any).total_revenue = totalRevenue;
         (user as any).total_years_experience =
-          this.sharedService.calculateExperience(updated_positions);
+          this.sharedService.calculateExperience(updated_positions.filter((pos)=>pos.is_completed));
         const {
           existing_business_average,
           new_business_average,
