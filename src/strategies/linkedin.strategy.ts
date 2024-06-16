@@ -12,7 +12,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
       clientID: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
       callbackURL: process.env.LINKEDIN_CALLBACK_URL,
-      scope: ['r_emailaddress', 'r_liteprofile', 'r_basicprofile'],
+      scope: [  'r_basicprofile'],
      });
   }
 
@@ -33,7 +33,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
         //todo: remove linkedin id since it is not being used
         linkedinId: id,
         displayName: displayName,
-        email: emails[0]?.value,
+       // email: emails[0]?.value,
         profilePicture: photos[0]?.value,
         accessToken: accessToken,
         username: vanityName,
