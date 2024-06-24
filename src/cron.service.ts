@@ -82,16 +82,16 @@ export class CronService {
                 <p>Hello ${user.full_name},</p>
                 <p>You recently created a TrackRec but haven't updated any experiences.</p>
                 <p>In order to match you with a job opportunity, we need to understand what you've achieved for the past 2 years at least.</p>
-                <p>Go to <a href="https://app.trackrec.co/">https://app.trackrec.co/</a> so you can tell us more and also set your own terms for your next role (Title, Compensation, Location, Work environment etc).</p>
+                <p>Go to <a href="${process.env.REACT_APP_URL}">${process.env.REACT_APP_URL}</a> so you can tell us more and also set your own terms for your next role (Title, Compensation, Location, Work environment etc).</p>
                 <p>Any questions, just answer to this email!</p>
                 <p>Let's grow your sales career,</p>
                 <p>Victor @ TrackRec<br>Founder</p>
-                <p><a href="https://app.trackrec.co/" class="button">Go to TrackRec</a></p>
+                <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
               </div>
               <div class="footer">
                 <p>Best,<br>
                   Team TrackRec<br> 
-                  <a href="https://app.trackrec.co/" style="color: #fff;">app.trackrec.co</a>
+                  <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
                 </p>
               </div>
             </div>
