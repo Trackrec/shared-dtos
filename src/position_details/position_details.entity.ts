@@ -61,6 +61,15 @@ export class PositionDetails {
   @Column({ nullable: true })
   long_sales_cycle: string;
 
+  @Column({ nullable: true, default: 'Weeks' })
+  short_sales_cycle_duration: string;
+
+  @Column({ nullable: true, default: 'Weeks' })
+  average_sales_cycle_duration: string;
+
+  @Column({ nullable: true, default: 'Weeks' })
+  long_sales_cycle_duration: string;
+
   @Column({ type: 'boolean', nullable: true })
   disable_prospecting: boolean;
 

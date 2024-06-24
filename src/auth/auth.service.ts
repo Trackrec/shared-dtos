@@ -73,7 +73,6 @@ export class AuthService {
       await this.userRepository.save(user);
 
       //Sending Registration Mail
-
   //     const messageData = {
   //       from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
   //       to: user.email,
@@ -150,7 +149,6 @@ export class AuthService {
   //       </html>        
   // `,
   //     };
-
 
       //await this.mailgunService.sendMail(messageData);
       return { error: false, user };
