@@ -6,8 +6,6 @@ import { VerifyPosition } from './verify-position.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { MailgunService } from 'src/mailgun/mailgun.service';
 import { Position } from 'src/positions/positions.entity';
-import { SharedService } from 'src/shared/shared.service';
-
 @Injectable()
 export class VerifyPositionService {
   constructor(
@@ -18,7 +16,6 @@ export class VerifyPositionService {
     private readonly mailgunService: MailgunService,
     @InjectRepository(Position)
     private readonly positionRepository: Repository<Position>,
-    private readonly sharedService: SharedService,
   ) {}
 
   async resendVerificationEmail(requestBody: any): Promise<any> {
@@ -45,7 +42,7 @@ export class VerifyPositionService {
         Your verification would greatly assist ${existingRequest?.requestBy?.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
         If you could take a few moments to verify ${existingRequest?.requestBy?.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
         Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
-        <a href="${process.env.REACT_APP_URL}/?approval_request=true">Click here</a> <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a> <br/><br/>
 
         Best, <br/>
         Team TrackRec <br/> 
@@ -83,8 +80,6 @@ export class VerifyPositionService {
       verifyPosition.requestBy = requestBody.requestBy;
       verifyPosition.position = requestBody.positionId;
       verifyPosition.role = requestBody.role;
-      verifyPosition.first_name = requestBody?.first_name;
-      verifyPosition.last_name = requestBody?.last_name;
 
       const createdRequest =
         await this.verifyPositionRepository.save(verifyPosition);
@@ -100,6 +95,7 @@ export class VerifyPositionService {
         where: { id: requestBody.requestBy },
       });
 
+      console.log(position);
       const messageData = {
         from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: requestBody.email,
@@ -111,7 +107,7 @@ export class VerifyPositionService {
         Your verification would greatly assist ${requestBy.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
         If you could take a few moments to verify ${requestBy.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
         Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
-        <a href="${process.env.REACT_APP_URL}/?approval_request=true">Click here</a> <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/approval-requests">Click here</a> <br/><br/>
 
         Best, <br/>
         Team TrackRec <br/> 
@@ -167,63 +163,27 @@ export class VerifyPositionService {
   async getAllRequests(userId) {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId } });
-      // const requests = await this.verifyPositionRepository
-      //   .createQueryBuilder('verifyPosition')
-      //   .leftJoin('verifyPosition.requestBy', 'requestBy')
-      //   .leftJoin('verifyPosition.position', 'position')
-      //   .leftJoin('position.company', 'company')
-      //   .leftJoin('position.details', 'details')
-      //   .select([
-      //     'verifyPosition.id',
-      //     'verifyPosition.email',
-      //     'verifyPosition.created_at',
-      //     'verifyPosition.status',
-      //     'verifyPosition.updated_at',
-      //     'requestBy',
-      //     'position',
-      //     'details',
-      //     'company',
-      //   ])
-      //   .where('verifyPosition.email = :email', { email: user.email })
-      //   .getMany();
-
-      // Awais Chnages
-
-      // Retrieve all requests associated with the user's email
-      const requests = await this.verifyPositionRepository.find({
-        where: { email: user.email },
-        relations: [
-          'requestBy',
+      const requests = await this.verifyPositionRepository
+        .createQueryBuilder('verifyPosition')
+        .leftJoin('verifyPosition.requestBy', 'requestBy')
+        .leftJoin('verifyPosition.position', 'position')
+        .leftJoin('position.company', 'company')
+        .select([
+          'verifyPosition.id',
+          'verifyPosition.email',
+          'verifyPosition.created_at',
+          'verifyPosition.status',
+          'verifyPosition.updated_at',
+          'requestBy.id',
+          'requestBy.email',
+          'requestBy.full_name',
           'position',
-          'position.company',
-          'position.details',
-        ],
-      });
-      let updatedRequests = requests;
+          'company',
+        ])
+        .where('verifyPosition.email = :email', { email: user.email })
+        .getMany();
 
-      for (let i = 0; i < updatedRequests.length; i++) {
-        let updated_requests_positon = null;
-        let completion_percentage =
-          updatedRequests[i].position && updatedRequests[i].position?.details
-            ? this.sharedService.calculateCompletionPercentage(
-                updatedRequests[i].position,
-              )
-            : 0.0;
-
-        let is_completed: boolean =
-          completion_percentage == 100.0 ? true : false;
-
-        updated_requests_positon = {
-          ...updatedRequests[i].position,
-          is_completed: is_completed,
-          completion_percentage,
-        };
-        updatedRequests[i].position = updated_requests_positon;
-      }
-
-      // Awais Chnages
-
-      return { error: false, requests: updatedRequests };
+      return { error: false, requests };
     } catch (error) {
       console.log(error);
       return {
