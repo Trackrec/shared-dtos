@@ -32,7 +32,7 @@ export class UserAccounts {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({})
+  @Column({nullable:true})
   @IsEmail()
   email: string;
 
