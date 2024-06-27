@@ -10,6 +10,9 @@ export class Company {
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
+  @Column({ type:'varchar', length: 100, default: null })
+  company_id: string;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   domain: string;
 

@@ -29,14 +29,12 @@ export class PositionService {
   ): Promise<any> {
     try {
       let company = await this.companyRepository.findOne({
-        where: [
-          { name: positionData.company_name },
-          { domain: positionData.domain },
-        ],
+        where:{company_id:positionData.company_id},
       });
       let newCompany;
       if (!company)
         newCompany = await this.companyService.createCompany({
+          company_id: positionData?.company_id,
           name: positionData?.company_name,
           logo_url: positionData.logo_url ? positionData.logo_url : null,
           domain: positionData.domain ? positionData.domain : null,
