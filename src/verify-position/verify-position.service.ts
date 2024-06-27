@@ -232,4 +232,19 @@ export class VerifyPositionService {
       };
     }
   }
+
+  async deleteVerificationRequest(requestId) {
+    try {
+      const request = await this.verifyPositionRepository.findOne({
+        where: { id: requestId },
+      });
+      if (!request) {
+        return {
+          error: true,
+          message: 'Request not found.',
+        };
+      }
+      await this.verifyPositionRepository.delete(requestId);
+    } catch (error) {}
+  }
 }

@@ -7,6 +7,8 @@ import {
   HttpStatus,
   Req,
   Get,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { VerifyPositionService } from './verify-position.service';
 @Controller('verify')
@@ -21,6 +23,7 @@ export class VerifyPositionController {
       return { error: true, message: 'Something went wrong please try again.' };
     }
   }
+
   @Post('resend_verification_email')
   async resendVerificationEmail(@Body() requestBody: any) {
     try {
@@ -50,6 +53,16 @@ export class VerifyPositionController {
       return await this.verifyPositionService.getAllRequests(userId);
     } catch (error) {
       return { error: true, message: 'Something went wrong please try again.' };
+    }
+  }
+
+  @Delete('delete_verification/:request_id')
+  async deleteVerificationRequest(@Param('request_id') request_id: string) {
+    try {
+      await this.verifyPositionService.deleteVerificationRequest(request_id);
+      return { error: false, message: 'Request deleted successfully' };
+    } catch (error) {
+      return { error: true, message: 'Internal server error.' };
     }
   }
 }
