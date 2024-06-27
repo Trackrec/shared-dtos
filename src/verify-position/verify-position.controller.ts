@@ -19,13 +19,10 @@ export class VerifyPositionController {
   async requestVerification(@Body() requestBody: any, @Req() req) {
     try {
       const userId = req.user_id;
-      if (userId === parseInt(requestBody.requestBy)) {
-        return {
-          error: true,
-          message: 'You cannot send request to yourself.',
-        };
-      }
-      return await this.verifyPositionService.requestVerification(requestBody);
+      return await this.verifyPositionService.requestVerification(
+        requestBody,
+        userId,
+      );
     } catch (error) {
       return { error: true, message: 'Something went wrong please try again.' };
     }
