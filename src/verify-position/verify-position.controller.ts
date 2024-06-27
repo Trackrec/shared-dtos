@@ -16,8 +16,15 @@ export class VerifyPositionController {
   constructor(private readonly verifyPositionService: VerifyPositionService) {}
 
   @Post('request_verification')
-  async requestVerification(@Body() requestBody: any) {
+  async requestVerification(@Body() requestBody: any, @Req() req) {
     try {
+      const userId = req.user_id;
+      if (userId === parseInt(requestBody.requestBy)) {
+        return {
+          error: true,
+          message: 'You cannot send request to yourself.',
+        };
+      }
       return await this.verifyPositionService.requestVerification(requestBody);
     } catch (error) {
       return { error: true, message: 'Something went wrong please try again.' };
