@@ -64,8 +64,17 @@ export class VerifyPositionService {
       return { error: true, message: 'Error sending verification erequest.' };
     }
   }
-  async requestVerification(requestBody: any): Promise<any> {
+  async requestVerification(requestBody: any, userId: any): Promise<any> {
     try {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+
+      if (user.email === requestBody?.email) {
+        return {
+          error: true,
+          message: 'You cannot send request to yourself.',
+        };
+      }
+
       const existingRequest = await this.verifyPositionRepository.findOne({
         where: {
           position: { id: requestBody.positionId },
@@ -231,5 +240,20 @@ export class VerifyPositionService {
         message: 'Something went wrong, please try again.',
       };
     }
+  }
+
+  async deleteVerificationRequest(requestId) {
+    try {
+      const request = await this.verifyPositionRepository.findOne({
+        where: { id: requestId },
+      });
+      if (!request) {
+        return {
+          error: true,
+          message: 'Request not found.',
+        };
+      }
+      await this.verifyPositionRepository.delete(requestId);
+    } catch (error) {}
   }
 }
