@@ -29,7 +29,7 @@ export class PositionService {
   ): Promise<any> {
     try {
       let company = await this.companyRepository.findOne({
-        where:{company_id:positionData.company_id},
+        where: { company_id: positionData.company_id },
       });
       let newCompany;
       if (!company)
@@ -67,6 +67,9 @@ export class PositionService {
           logo_url: positionData.logo_url ? positionData.logo_url : null,
           domain: positionData.domain ? positionData.domain : null,
           id: !company ? newCompany?.createdCompany.id : company.id,
+          company_id: !company
+            ? newCompany?.createdCompany.company_id
+            : company.company_id,
         },
       };
     } catch (error) {
