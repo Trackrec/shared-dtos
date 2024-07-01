@@ -1,6 +1,6 @@
 // publish-profile.controller.ts
 
-import { Controller, Post, Param, Get, Req } from '@nestjs/common';
+import { Controller, Post, Param, Get, Req, Body } from '@nestjs/common';
 import { PublishProfileService } from './publish-profile.service';
 import { UserAccounts } from 'src/auth/User.entity';
 
@@ -13,6 +13,15 @@ export class PublishProfileController {
     @Param('userId') userId: number,
   ): Promise<{ error: boolean; message: string }> {
     const result = await this.publishProfileService.publishProfile(userId);
+    return result;
+  }
+
+  @Post('public_profile/get_in_touch')
+  async GetInTouchMail(
+    @Body() mailData: any,
+  ): Promise<{ error: boolean; message: string }> {
+    const result =
+      await this.publishProfileService.sendGetInTouchMail(mailData);
     return result;
   }
 

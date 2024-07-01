@@ -115,7 +115,7 @@ export class VerifyPositionService {
         subject: `Requesting verification of experience`,
         html: `
 
-        Hello, <br/><br/>
+        Hello ${user?.full_name}, <br/><br/>
         ${requestBy.full_name} has listed you as someone who can attest to their professional accomplishments during their time at ${position?.company?.name}.<br/><br/>
         Your verification would greatly assist ${requestBy.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
         If you could take a few moments to verify ${requestBy.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
