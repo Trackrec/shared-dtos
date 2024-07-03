@@ -86,6 +86,9 @@ export class UserAccounts {
     { each: true },
   )
   location_preferences: LocationPreference[];
+  constructor() {
+    this.location_preferences = [LocationPreference.HYBRID];
+  }
 
   @Column({ default: null })
   password: string;
