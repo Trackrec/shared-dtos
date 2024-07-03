@@ -32,7 +32,7 @@ export class UserAccounts {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   @IsEmail()
   email: string;
 
@@ -75,18 +75,20 @@ export class UserAccounts {
   @Column({ type: 'bigint', nullable: true })
   ote_max: number;
 
-  @Column({
-    type: 'enum',
-    enum: LocationPreference,
-    default: LocationPreference.HYBRID,
-  })
-  @IsNotEmpty()
-  @IsIn([
-    LocationPreference.ONSITE,
-    LocationPreference.REMOTE,
-    LocationPreference.HYBRID,
-  ])
-  location_preferences: LocationPreference;
+  @Column('simple-array')
+  @ArrayNotEmpty()
+  @IsIn(
+    [
+      LocationPreference.ONSITE,
+      LocationPreference.REMOTE,
+      LocationPreference.HYBRID,
+    ],
+    { each: true },
+  )
+  location_preferences: LocationPreference[];
+  constructor() {
+    this.location_preferences = [LocationPreference.HYBRID];
+  }
 
   @Column({ default: null })
   password: string;

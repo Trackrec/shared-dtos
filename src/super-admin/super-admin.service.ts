@@ -36,8 +36,14 @@ export class SuperAdminService {
 
   async getUserDetails(user_id:any){
     try{
-    let user= await this.userRepository.findOne({where:{id:user_id},  relations: ["keywords",'positions', 'positions.details']})
-     if(!user){
+      let user = await this.userRepository.findOne({
+        where: { id: user_id },
+        relations: [
+          'positions',
+          'positions.details',
+          'positions.company',
+        ],
+      });     if(!user){
         return { error: true, message: 'User not found.' };
      }
      delete user.password;
@@ -45,18 +51,27 @@ export class SuperAdminService {
      (user as any).imported_positions = user.positions.length;
 
      let is_completed: boolean=false;
-     let totalRevenue=0;
-
-     for(let i=0;i<user.positions.length;i++){
-         let completion_percentage=(user.positions[i] && user.positions[i]?.details) ? this.sharedService.calculateCompletionPercentage(user.positions[i]) : 0.0
-         is_completed= completion_percentage==100.0? true : false
-
-         if(is_completed){
-            totalRevenue+=+user.positions[i].details.revenue_generated;
-         }
-     }
+     let updated_positions = [];
+        let totalRevenue = 0;
+        for (let i = 0; i < user.positions.length; i++) {
+          let completion_percentage = user.positions[i].details
+            ? this.sharedService.calculateCompletionPercentage(
+                user.positions[i],
+              )
+            : 0.0;
+          let is_completed: boolean =
+            completion_percentage == 100.0 ? true : false;
+          updated_positions.push({
+            ...user.positions[i],
+            is_completed: is_completed,
+            completion_percentage,
+          });
+          if (is_completed) {
+            totalRevenue += +user.positions[i].details.revenue_generated;
+          }
+        }
      (user as any).completed_positions= is_completed;
-     (user as any).total_revenue_generated = totalRevenue;
+     (user as any).total_revenue = totalRevenue;
      (user as any).total_years_experience=this.sharedService.calculateExperience(user.positions)
 
      delete user.positions;

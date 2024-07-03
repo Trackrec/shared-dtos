@@ -7,7 +7,7 @@ export class MailgunService {
   constructor() {}
 
   // mailgun secret key
-  private MAILGUN_KEY = process.env.MAILGUN_KEY
+  private MAILGUN_KEY = process.env.MAILGUN_KEY;
   private MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
 
   private client = new Mailgun(FormData).client({

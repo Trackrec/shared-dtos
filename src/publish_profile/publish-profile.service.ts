@@ -7,6 +7,7 @@ import { UserAccounts } from 'src/auth/User.entity';
 import { AccountsVisitors } from 'src/visitors/accounts_visitor.entity';
 import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
 import { SharedService } from 'src/shared/shared.service';
+import { MailgunService } from 'src/mailgun/mailgun.service';
 @Injectable()
 export class PublishProfileService {
   constructor(
@@ -17,6 +18,7 @@ export class PublishProfileService {
     @InjectRepository(AnalyticsAccess)
     private readonly analyticsRepository: Repository<AnalyticsAccess>,
     private readonly sharedService: SharedService,
+    private readonly mailgunService: MailgunService,
   ) {}
 
   async publishProfile(
@@ -35,6 +37,102 @@ export class PublishProfileService {
       return { error: false, message: 'Profile published successfully' };
     } catch (error) {
       console.error('Error publishing profile:', error);
+      return { error: true, message: 'Internal server error' };
+    }
+  }
+
+  async sendGetInTouchMail(
+    emailData: any,
+  ): Promise<{ error: boolean; message: string }> {
+    try {
+      console.log(emailData);
+      const user = await this.userRepository.findOne({
+        where: { email: emailData?.email_to },
+      });
+      if (!user) {
+        return { error: true, message: 'User not found' };
+      }
+
+      const messageData = {
+        from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        to: user.email,
+        subject: `Get in Touch - Inquiry from ${emailData.name}`,
+        html: `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Get in Touch - Inquiry</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                color: #333;
+                line-height: 1.6;
+              }
+              .container {
+                width: 80%;
+                margin: auto;
+                overflow: hidden;
+              }
+              .header, .footer {
+                background: #333;
+                color: #fff;
+                padding: 20px 0;
+                text-align: center;
+              }
+              .content {
+                background: #fff;
+                padding: 20px;
+                margin: 20px 0;
+              }
+              .button {
+                display: inline-block;
+                background: #28a745;
+                color: #fff;
+                padding: 10px 15px;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 5px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Get in Touch - Inquiry</h1>
+              </div>
+              <div class="content">
+                <p>Hello ${user.full_name},</p>
+                <p>You have received a new inquiry via Get in Touch.</p>
+                <p>Details of the inquiry:</p>
+                <ul>
+                  <li><strong>Name:</strong> ${emailData.name}</li>
+                  <li><strong>Email:</strong> ${emailData.email}</li>
+                  <li><strong>Phone:</strong> ${emailData.phone}</li>
+                  <li><strong>Inquiry:</strong> ${emailData.inquiry}</li>
+                </ul>
+                <p>Please respond to the inquiry as soon as possible.</p>
+               
+              </div>
+              <div class="footer">
+                <p>Best,<br>
+                  Team TrackRec<br> 
+                  <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
+                </p>
+              </div>
+            </div>
+          </body>
+          </html>`,
+      };
+
+      // Send the email using your mail service (e.g., Mailgun)
+      await this.mailgunService.sendMail(messageData);
+
+      return { error: false, message: 'Email send successfully' };
+    } catch (error) {
+      console.error('Error sending email:', error);
       return { error: true, message: 'Internal server error' };
     }
   }
