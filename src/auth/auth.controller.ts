@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param, UseInterceptors, UploadedFile, Post } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param, UseInterceptors, UploadedFile, Post, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -8,10 +8,17 @@ export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
   constructor(private readonly authService: AuthService) {}
-
   @Get('linkedin')
+  setLinkedinSession( @Query('request_token') request_token, @Req() req, @Res() res
+) {
+    req.session.request_token = request_token;
+    this.logger.log('LinkedIn session value set');
+    return res.redirect('/linkedin/set-session');
+  }
+  @Get('linkedin/set-session')
   @UseGuards(AuthGuard('linkedin'))
-  linkedinLogin() {
+  linkedinLogin(@Req() req) {
+    
     this.logger.log('LinkedIn login initiated');
   }
 
