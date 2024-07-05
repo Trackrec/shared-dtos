@@ -60,6 +60,17 @@ export class VerifyPositionController {
     }
   }
 
+  @Post('update_user_id')
+  async updateUserIdInRequest(@Req() req,@Body() requestBody: any ){
+    try{
+      const userId = req.user_id;
+      return await this.verifyPositionService.updateUserIdInRequest(userId, requestBody)
+    }
+    catch(error){
+      return { error: true, message: 'Something went wrong please try again.' };
+    }
+  }
+
   @Delete('delete_verification/:request_id')
   async deleteVerificationRequest(@Param('request_id') request_id: string) {
     try {

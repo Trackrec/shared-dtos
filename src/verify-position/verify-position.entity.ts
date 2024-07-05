@@ -35,6 +35,13 @@ export class VerifyPosition {
   @JoinColumn({ name: 'position_id' })
   position: Position;
 
+  @ManyToOne(() => UserAccounts, { nullable: true })
+  @JoinColumn({ name: 'user_id' })
+  user: UserAccounts;
+
+  @Column()
+  unique_token: string;
+
   @Column({
     type: 'enum',
     enum: ['Requested', 'Approved', 'Rejected'],

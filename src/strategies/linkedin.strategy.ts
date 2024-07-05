@@ -1,30 +1,44 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Req } from '@nestjs/common';
 import { Strategy, VerifyCallback } from 'passport-linkedin-oauth2';
 import { AuthService } from '../auth/auth.service';
 import * as jwt from 'jsonwebtoken';
+import { Request } from 'express';
+import { VerifyPosition } from 'src/verify-position/verify-position.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 @Injectable()
 export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
   private readonly logger = new Logger(LinkedinStrategy.name);
 
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly authService: AuthService,
+    @InjectRepository(VerifyPosition)
+    private readonly verifyPostionRepository: Repository<VerifyPosition>
+  ) {
     super({
       clientID: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
       callbackURL: process.env.LINKEDIN_CALLBACK_URL,
       scope: [  'r_basicprofile'],
+      passReqToCallback: true, // This is important to get the req in the validate method
+
      });
   }
 
+
   async validate(
+    req: Request,
     accessToken: string,
     refreshToken: string,
     profile: any,
     done: VerifyCallback,
+  
   ): Promise<any> {
     try {
-      this.logger.debug(`LinkedIn profile: ${JSON.stringify(profile)}`);
+      const session = req.session as { request_token?: string };
 
+      this.logger.debug(`LinkedIn profile: ${JSON.stringify(profile)}`);
       const { id, displayName, emails, photos, _json } = profile;
       const vanityName = _json.vanityName;
 
@@ -40,7 +54,17 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
       };
 
       const createdUser = await this.authService.findOrCreate(user);
+      
       if(!createdUser.error){
+        if(session?.request_token){
+          const verifyPosition = await this.verifyPostionRepository.findOne({
+            where: { unique_token:session.request_token },
+          });
+          if(verifyPosition && verifyPosition.user==null){
+            verifyPosition.user=createdUser.user.id as any;
+            await this.verifyPostionRepository.save(verifyPosition);
+          }
+        }
         const jwtToken = this.generateToken(createdUser.user);
         this.logger.debug(`User created: ${JSON.stringify(createdUser)}`);
   
