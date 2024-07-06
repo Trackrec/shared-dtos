@@ -153,6 +153,7 @@ export class AppModule implements NestModule {
         'applications',
         'project_ranking',
         'verify',
+        'preference',
       );
   }
 }
