@@ -48,7 +48,11 @@ export class UserAccounts {
   @Column({ default: null })
   custom_current_role: string;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({
+    type: 'datetime',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   published_at: Date | null;
 
   @Column({ default: null })
