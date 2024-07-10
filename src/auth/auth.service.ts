@@ -35,7 +35,7 @@ export class AuthService {
     userDto: any,
   ): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
     const {
-     // email,
+      // email,
       displayName,
       profilePicture,
       accessToken,
@@ -48,7 +48,7 @@ export class AuthService {
        * search based on email, otherwise search based on username for old data
        */
       let user = await this.userRepository.findOne({
-        where: [ { username }],
+        where: [{ username }],
       });
 
       if (user) {
@@ -73,82 +73,82 @@ export class AuthService {
       await this.userRepository.save(user);
 
       //Sending Registration Mail
-  //     const messageData = {
-  //       from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
-  //       to: user.email,
-  //       subject: `Welcome to TrackRec`,
-  //       html: `
-  //       <!DOCTYPE html>
-  //       <html lang="en">
-  //          <head>
-  //             <meta charset="UTF-8">
-  //             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  //             <title>Welcome to TrackRec</title>
-  //             <style>
-  //                body {
-  //                font-family: Arial, sans-serif;
-  //                background-color: #f4f4f4;
-  //                color: #333;
-  //                line-height: 1.6;
-  //                }
-  //                .container {
-  //                width: 80%;
-  //                margin: auto;
-  //                overflow: hidden;
-  //                }
-  //                .header, .footer {
-  //                background: #333;
-  //                color: #fff;
-  //                padding: 20px 0;
-  //                text-align: center;
-  //                }
-  //                .content {
-  //                background: #fff;
-  //                padding: 20px;
-  //                margin: 20px 0;
-  //                }
-  //                .button {
-  //                display: inline-block;
-  //                background: #28a745;
-  //                color: #fff;
-  //                padding: 10px 15px;
-  //                text-align: center;
-  //                text-decoration: none;
-  //                border-radius: 5px;
-  //                }
-  //             </style>
-  //          </head>
-  //          <body>
-  //             <div class="container">
-  //                <div class="header">
-  //                   <h1>Welcome to TrackRec</h1>
-  //                </div>
-  //                <div class="content">
-  //                   <p>Hello ${user?.full_name}, and welcome to TrackRec.</p>
-  //                   <p>I'm absolutely thrilled to have you here. At any given time, go to <a href="${process.env.REACT_APP_URL}">${process.env.REACT_APP_URL}</a> to access and update your track record.</p>
-  //                   <p>Here’s what you can expect from using TrackRec:</p>
-  //                   <ul>
-  //                      <li>Showcase your sales achievements and track record (and ditch the resume once and for all).</li>
-  //                      <li>Verify your experiences with approvals from managers, colleagues, and clients.</li>
-  //                      <li>Share your profile with hiring managers to skip a few steps in the hiring process (and see who viewed it).</li>
-  //                      <li>Receive job offers based on your own terms: location, compensation, work environment, title, etc.</li>
-  //                      <li>Access salary benchmarks to understand how much others with a similar background are making in your industry and location.</li>
-  //                   </ul>
-  //                   <p>Let's grow your sales career,</p>
-  //                   <p>Victor @ TrackRec<br>Founder</p>
-  //                   <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
-  //                </div>
-  //                <div class="footer">
-  //                   <p>Best,<br>
-  //                      Team TrackRec<br> 
-  //                      <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
-  //                   </p>
-  //                </div>
-  //             </div>
-  //          </body>
-  //       </html>        
-  // `,
-  //     };
+      //     const messageData = {
+      //       from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+      //       to: user.email,
+      //       subject: `Welcome to TrackRec`,
+      //       html: `
+      //       <!DOCTYPE html>
+      //       <html lang="en">
+      //          <head>
+      //             <meta charset="UTF-8">
+      //             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      //             <title>Welcome to TrackRec</title>
+      //             <style>
+      //                body {
+      //                font-family: Arial, sans-serif;
+      //                background-color: #f4f4f4;
+      //                color: #333;
+      //                line-height: 1.6;
+      //                }
+      //                .container {
+      //                width: 80%;
+      //                margin: auto;
+      //                overflow: hidden;
+      //                }
+      //                .header, .footer {
+      //                background: #333;
+      //                color: #fff;
+      //                padding: 20px 0;
+      //                text-align: center;
+      //                }
+      //                .content {
+      //                background: #fff;
+      //                padding: 20px;
+      //                margin: 20px 0;
+      //                }
+      //                .button {
+      //                display: inline-block;
+      //                background: #28a745;
+      //                color: #fff;
+      //                padding: 10px 15px;
+      //                text-align: center;
+      //                text-decoration: none;
+      //                border-radius: 5px;
+      //                }
+      //             </style>
+      //          </head>
+      //          <body>
+      //             <div class="container">
+      //                <div class="header">
+      //                   <h1>Welcome to TrackRec</h1>
+      //                </div>
+      //                <div class="content">
+      //                   <p>Hello ${user?.full_name}, and welcome to TrackRec.</p>
+      //                   <p>I'm absolutely thrilled to have you here. At any given time, go to <a href="${process.env.REACT_APP_URL}">${process.env.REACT_APP_URL}</a> to access and update your track record.</p>
+      //                   <p>Here’s what you can expect from using TrackRec:</p>
+      //                   <ul>
+      //                      <li>Showcase your sales achievements and track record (and ditch the resume once and for all).</li>
+      //                      <li>Verify your experiences with approvals from managers, colleagues, and clients.</li>
+      //                      <li>Share your profile with hiring managers to skip a few steps in the hiring process (and see who viewed it).</li>
+      //                      <li>Receive job offers based on your own terms: location, compensation, work environment, title, etc.</li>
+      //                      <li>Access salary benchmarks to understand how much others with a similar background are making in your industry and location.</li>
+      //                   </ul>
+      //                   <p>Let's grow your sales career,</p>
+      //                   <p>Victor @ TrackRec<br>Founder</p>
+      //                   <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
+      //                </div>
+      //                <div class="footer">
+      //                   <p>Best,<br>
+      //                      Team TrackRec<br>
+      //                      <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
+      //                   </p>
+      //                </div>
+      //             </div>
+      //          </body>
+      //       </html>
+      // `,
+      //     };
 
       //await this.mailgunService.sendMail(messageData);
       return { error: false, user };
@@ -216,6 +216,26 @@ export class AuthService {
       return { error: true, message: 'Failed to update user' };
     }
   }
+
+  async updatepreference(
+    id: number,
+    updateUserPreferencePayload: any,
+  ): Promise<{ error: boolean; message: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    console.log(id);
+    if (!user) {
+      return { error: true, message: 'User not found' };
+    }
+    try {
+      Object.assign(user, updateUserPreferencePayload);
+      await this.userRepository.save(user);
+      return { error: false, message: 'Preference save successfully' };
+    } catch (error) {
+      console.log(error);
+      return { error: true, message: 'Failed to save preference' };
+    }
+  }
+
   async getMe(
     user_id: number,
   ): Promise<{ error: boolean; user?: any; message?: string }> {
@@ -337,14 +357,14 @@ export class AuthService {
             completion_percentage,
           });
           if (is_completed) {
-            console.log("postion completed")
-            console.log(user.positions[i].role)
             totalRevenue += +user.positions[i].details.revenue_generated;
           }
         }
         (user as any).total_revenue = totalRevenue;
         (user as any).total_years_experience =
-          this.sharedService.calculateExperience(updated_positions.filter((pos)=>pos.is_completed));
+          this.sharedService.calculateExperience(
+            updated_positions.filter((pos) => pos.is_completed),
+          );
         const {
           existing_business_average,
           new_business_average,
