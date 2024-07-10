@@ -108,6 +108,9 @@ export class UserAccounts {
   @Column({ default: false })
   is_preferences_save: boolean;
 
+  @Column({ default: false })
+  is_welcome: boolean;
+
   @Column()
   role: string;
 
