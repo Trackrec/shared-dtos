@@ -124,6 +124,9 @@ export class UserAccounts {
   @Column({ default: null })
   city: string;
 
+  @Column({ default: null })
+  public_profile_username: string;
+
   @ArrayNotEmpty()
   @Column('simple-array', { nullable: true })
   languages: string[];

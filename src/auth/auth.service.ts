@@ -31,6 +31,22 @@ export class AuthService {
     private readonly sharedService: SharedService,
   ) {}
 
+  private async generateUniqueUsername(fullname: string): Promise<string> {
+    let baseUsername = fullname.toLowerCase().replace(/\s+/g, '-');
+    let username = baseUsername;
+    let counter = 2;
+
+    while (
+      await this.userRepository.findOne({
+        where: { public_profile_username: username },
+      })
+    ) {
+      username = `${baseUsername}-${counter}`;
+      counter++;
+    }
+
+    return username;
+  }
   async findOrCreate(
     userDto: any,
   ): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
@@ -59,6 +75,9 @@ export class AuthService {
 
         return { error: false, user };
       }
+      let public_profile_username = (await this.generateUniqueUsername(
+        displayName,
+      )) as any;
       let imageName =
         await this.uploadService.uploadImageFromURL(profilePicture);
       user = this.userRepository.create({
@@ -68,6 +87,7 @@ export class AuthService {
         linkedin_access_token: accessToken,
         username,
         role: 'Applicant',
+        public_profile_username,
       });
 
       await this.userRepository.save(user);
@@ -206,6 +226,18 @@ export class AuthService {
     }
     try {
       updateUserPayload.is_preferences_save = true;
+      const existingUser = await this.userRepository.findOne({
+        where: {
+          public_profile_username: updateUserPayload.public_profile_username,
+        },
+      });
+      if (existingUser) {
+        return {
+          error: true,
+          message: 'This Public profile username already choosen.',
+        };
+      }
+
       // Update user properties based on the payload
       Object.assign(user, updateUserPayload);
 

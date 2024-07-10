@@ -33,16 +33,14 @@ export class PublishProfileController {
     return result;
   }
 
-  @Get('p/:userId-:userName')
+  @Get('p/:userName')
   async getUserProfile(
-    @Param('userId') userId: number,
     @Param('userName') userName: string,
     @Req() req: Request,
   ): Promise<{ error: boolean; user?: UserAccounts; message?: string }> {
     try {
       const visitor_id = req['user_id'];
       const user = await this.publishProfileService.findUserByIdAndName(
-        userId,
         userName,
         visitor_id,
       );
