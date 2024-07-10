@@ -209,17 +209,12 @@ export class PublishProfileService {
   }
 
   async findUserByIdAndName(
-    userId: number,
     userName: string,
     visitor_id: number,
   ): Promise<UserAccounts | null> {
     const formattedName = userName.replace(/-/g, ' ').toLowerCase();
-
-    if (visitor_id && visitor_id != userId) {
-      this.track_view(userId, visitor_id);
-    }
     let user = await this.userRepository.findOne({
-      where: { id: userId },
+      where: { public_profile_username: userName },
       relations: [
         'positions',
         'positions.details',
@@ -232,9 +227,13 @@ export class PublishProfileService {
       return null;
     }
 
-    if (!user || user.full_name.toLowerCase() !== formattedName) {
+    if (!user) {
       return null;
     }
+    if (visitor_id && visitor_id != user.id) {
+      this.track_view(user.id, visitor_id);
+    }
+
     delete user.password;
     delete user.linkedin_access_token;
 
