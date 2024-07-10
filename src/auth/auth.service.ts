@@ -231,7 +231,7 @@ export class AuthService {
           public_profile_username: updateUserPayload.public_profile_username,
         },
       });
-      if (existingUser) {
+      if (existingUser && existingUser.id != id) {
         return {
           error: true,
           message: 'This Public profile username already choosen.',
