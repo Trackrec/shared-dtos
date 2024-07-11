@@ -1,4 +1,18 @@
-import { Controller, Get, UseGuards, Req, Res, Logger, Put, Body, Param, UseInterceptors, UploadedFile, Post, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Req,
+  Res,
+  Logger,
+  Put,
+  Body,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -9,22 +23,51 @@ export class AuthController {
 
   constructor(private readonly authService: AuthService) {}
   @Get('linkedin')
-  setLinkedinSession( @Query('request_token') request_token, @Req() req, @Res() res
-) {
+  setLinkedinSession(
+    @Query('request_token') request_token,
+    @Req() req,
+    @Res() res,
+  ) {
     req.session.request_token = request_token;
+
     this.logger.log('LinkedIn session value set');
-    return res.redirect('/linkedin/set-session');
+    if (request_token) return res.redirect('/secondary_linkedin/set-session');
+    else return res.redirect('/linkedin/set-session');
   }
   @Get('linkedin/set-session')
   @UseGuards(AuthGuard('linkedin'))
   linkedinLogin(@Req() req) {
-    
+    this.logger.log('LinkedIn login initiated');
+  }
+
+  @Get('secondary_linkedin/set-session')
+  @UseGuards(AuthGuard('linkedinSecondary'))
+  secondaryLinkedinLogin(@Req() req) {
     this.logger.log('LinkedIn login initiated');
   }
 
   @Get('linkedin/callback')
   @UseGuards(AuthGuard('linkedin'))
   linkedinLoginCallback(@Req() req, @Res() res) {
+    try {
+      const user = req.user;
+
+      if (user && user.token) {
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}`,
+        );
+      } else {
+        return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+      }
+    } catch (error) {
+      this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
+      return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+    }
+  }
+
+  @Get('secondary_linkedin/callback')
+  @UseGuards(AuthGuard('linkedinSecondary'))
+  secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
 

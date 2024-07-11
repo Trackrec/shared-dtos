@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { LinkedinStrategy } from '../strategies/linkedin.strategy';
+import { LinkedinSecondaryStrategy } from '../strategies/secondary_linkedin.strategy';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -24,6 +25,7 @@ import { MailgunService } from 'src/mailgun/mailgun.service';
   ],
   providers: [
     LinkedinStrategy,
+    LinkedinSecondaryStrategy,
     AuthService,
     PositionService,
     CompanyService,

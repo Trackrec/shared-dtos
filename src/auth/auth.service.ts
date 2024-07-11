@@ -51,7 +51,7 @@ export class AuthService {
     userDto: any,
   ): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
     const {
-      // email,
+      email,
       displayName,
       profilePicture,
       accessToken,
@@ -64,7 +64,7 @@ export class AuthService {
        * search based on email, otherwise search based on username for old data
        */
       let user = await this.userRepository.findOne({
-        where: [{ username }],
+        where: [{ email }, { username }],
       });
 
       if (user) {
@@ -81,7 +81,7 @@ export class AuthService {
       let imageName =
         await this.uploadService.uploadImageFromURL(profilePicture);
       user = this.userRepository.create({
-        //email,
+        email,
         full_name: displayName,
         profile_image: imageName ? imageName : '',
         linkedin_access_token: accessToken,
