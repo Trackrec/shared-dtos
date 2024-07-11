@@ -56,7 +56,7 @@ export class LinkedinSecondaryStrategy extends PassportStrategy(
         username: vanityName,
       };
 
-      const createdUser = await this.authService.findOrCreate(user);
+      const createdUser = await this.authService.findOrCreate(user, false);
 
       if (!createdUser.error) {
         if (session?.request_token) {

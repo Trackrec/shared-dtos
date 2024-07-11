@@ -49,7 +49,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
         username: vanityName,
       };
 
-      const createdUser = await this.authService.findOrCreate(user);
+      const createdUser = await this.authService.findOrCreate(user, true);
 
       if (!createdUser.error) {
         const jwtToken = this.generateToken(createdUser.user);
