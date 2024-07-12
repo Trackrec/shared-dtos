@@ -7,6 +7,7 @@ import { UserAccounts } from 'src/auth/User.entity';
 import { MailgunService } from 'src/mailgun/mailgun.service';
 import { Position } from 'src/positions/positions.entity';
 import { SharedService } from 'src/shared/shared.service';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class VerifyPositionService {
@@ -45,7 +46,7 @@ export class VerifyPositionService {
         Your verification would greatly assist ${existingRequest?.requestBy?.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
         If you could take a few moments to verify ${existingRequest?.requestBy?.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
         Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
-        <a href="${process.env.REACT_APP_URL}/?approval_request=true">Click here</a> <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/?approval_request=true&request_token=${existingRequest?.unique_token}">Click here</a> <br/><br/>
 
         Best, <br/>
         Team TrackRec <br/> 
@@ -64,6 +65,11 @@ export class VerifyPositionService {
       return { error: true, message: 'Error sending verification erequest.' };
     }
   }
+
+  generateUniqueToken(payload: any): string {
+    return jwt.sign(payload, process.env.JWT_SECRET);
+  }
+
   async requestVerification(requestBody: any, userId: any): Promise<any> {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -94,7 +100,7 @@ export class VerifyPositionService {
       verifyPosition.role = requestBody.role;
       verifyPosition.first_name = requestBody?.first_name;
       verifyPosition.last_name = requestBody?.last_name;
-
+      verifyPosition.unique_token=this.generateUniqueToken({ id: verifyPosition.id })
       const createdRequest =
         await this.verifyPositionRepository.save(verifyPosition);
 
@@ -120,7 +126,7 @@ export class VerifyPositionService {
         Your verification would greatly assist ${requestBy.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
         If you could take a few moments to verify ${requestBy.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
         Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
-        <a href="${process.env.REACT_APP_URL}/?approval_request=true">Click here</a> <br/><br/>
+        <a href="${process.env.REACT_APP_URL}/?approval_request=true&request_token=${verifyPosition.unique_token}">Click here</a> <br/><br/>
 
         Best, <br/>
         Team TrackRec <br/> 
@@ -175,7 +181,6 @@ export class VerifyPositionService {
 
   async getAllRequests(userId) {
     try {
-      const user = await this.userRepository.findOne({ where: { id: userId } });
       // const requests = await this.verifyPositionRepository
       //   .createQueryBuilder('verifyPosition')
       //   .leftJoin('verifyPosition.requestBy', 'requestBy')
@@ -200,7 +205,7 @@ export class VerifyPositionService {
 
       // Retrieve all requests associated with the user's email
       const requests = await this.verifyPositionRepository.find({
-        where: { email: user.email },
+        where: { user: {id:userId} },
         relations: [
           'requestBy',
           'position',
@@ -238,6 +243,27 @@ export class VerifyPositionService {
       return {
         error: true,
         message: 'Something went wrong, please try again.',
+      };
+    }
+  }
+
+  async updateUserIdInRequest(userId, body){
+    try{
+      const {request_token}= body;
+      const verifyPosition = await this.verifyPositionRepository.findOne({
+        where: { unique_token:request_token },
+      });
+      if(verifyPosition && verifyPosition.user==null){
+        verifyPosition.user=userId as any;
+        await this.verifyPositionRepository.save(verifyPosition);
+      }
+      return { error: false, message:"User_id updated successfully in verify request." };
+
+    }
+    catch(e){
+      return {
+        error: true,
+        message: 'Not able to update user_id in verify request.',
       };
     }
   }

@@ -108,7 +108,7 @@ export class CityService {
   buildName(place) {
     const name = [place.country_name, place.state_name, place.city_name]
       .filter((i) => i !== null && i !== undefined)
-      .join(' ');
+      .join(' > ');
 
     return { ...place, name };
   }

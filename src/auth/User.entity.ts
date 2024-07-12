@@ -48,7 +48,11 @@ export class UserAccounts {
   @Column({ default: null })
   custom_current_role: string;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({
+    type: 'datetime',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   published_at: Date | null;
 
   @Column({ default: null })
@@ -68,6 +72,15 @@ export class UserAccounts {
 
   @Column({ default: null })
   ote_expectation: number;
+
+  @Column({ default: 0 })
+  preference_step: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  current_ote: number;
+
+  @Column({ default: null })
+  next_role_location: string;
 
   @Column({ type: 'bigint', nullable: true })
   ote_min: number;
@@ -99,6 +112,9 @@ export class UserAccounts {
   @Column({ default: false })
   is_preferences_save: boolean;
 
+  @Column({ default: false })
+  is_welcome: boolean;
+
   @Column()
   role: string;
 
@@ -107,6 +123,9 @@ export class UserAccounts {
 
   @Column({ default: null })
   city: string;
+
+  @Column({ default: null })
+  public_profile_username: string;
 
   @ArrayNotEmpty()
   @Column('simple-array', { nullable: true })
