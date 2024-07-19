@@ -16,7 +16,14 @@ export class SharedService {
       return dateA - dateB;
     });
 
-    const result = positions.reduce(
+    let completedPositions = positions.filter(position => {
+      let completionPercentage = position.details
+        ? this.calculateCompletionPercentage(position)
+        : 0.0;
+      return completionPercentage == 100.0;
+    });
+    
+    const result = completedPositions.reduce(
       (acc, position) => this.calculatePositionDays(position, acc),
       { totalDays: 0, maxEndDate: null }
     );
