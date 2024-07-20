@@ -100,7 +100,9 @@ export class VerifyPositionService {
       verifyPosition.role = requestBody.role;
       verifyPosition.first_name = requestBody?.first_name;
       verifyPosition.last_name = requestBody?.last_name;
-      verifyPosition.unique_token=this.generateUniqueToken({ id: verifyPosition.id })
+      verifyPosition.unique_token = this.generateUniqueToken({
+        id: verifyPosition.id,
+      });
       const createdRequest =
         await this.verifyPositionRepository.save(verifyPosition);
 
@@ -159,13 +161,54 @@ export class VerifyPositionService {
       // Check if the requested verification exists
       const verifyPosition = await this.verifyPositionRepository.findOne({
         where: { id: request_id },
+        relations: ['position', 'position.company', 'requestBy'],
       });
+      
       if (!verifyPosition) {
         return { error: true, message: 'Verification request not found.' };
       }
       // Update the status
       verifyPosition.status = status;
       await this.verifyPositionRepository.save(verifyPosition);
+      let messageData;
+
+      if (status === 'Approved') {
+        messageData = {
+          from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+          to: verifyPosition?.requestBy?.email,
+          subject: `Your Experience Verification Update`,
+          html: `
+  
+          Hello ${verifyPosition?.requestBy?.full_name},<br/>
+          Great news. ${verifyPosition?.first_name} ${verifyPosition?.last_name} verified your ${verifyPosition?.position?.company?.name} experience as a ${verifyPosition?.role} of yours.<br/>
+       
+          Their name now appears on the Verification section of this experience on your profile. You can always edit these in your settings.<br/><br/>
+
+          Great stuff! <br/>
+          Team TrackRec <br/> 
+  
+          `,
+        };
+      } else {
+        messageData = {
+          from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+          to: verifyPosition?.requestBy?.email,
+          subject: `Your Experience Verification Update`,
+          html: `
+  
+          Hello ${verifyPosition?.requestBy?.full_name},<br/>
+          We regret to inform you that  ${verifyPosition?.first_name} ${verifyPosition?.last_name} was unable to verify your experience at ${verifyPosition?.position?.company?.name} as a ${verifyPosition?.role}.<br/>
+       
+          Their feedback has been noted, and this experience will not be listed as verified on your profile. You can review and update your experiences at any time in your settings.<br/><br/>
+
+          Great stuff! <br/>
+          Team TrackRec <br/> 
+  
+          `,
+        };
+      }
+
+      await this.mailgunService.sendMail(messageData);
 
       return {
         success: true,
@@ -181,31 +224,11 @@ export class VerifyPositionService {
 
   async getAllRequests(userId) {
     try {
-      // const requests = await this.verifyPositionRepository
-      //   .createQueryBuilder('verifyPosition')
-      //   .leftJoin('verifyPosition.requestBy', 'requestBy')
-      //   .leftJoin('verifyPosition.position', 'position')
-      //   .leftJoin('position.company', 'company')
-      //   .leftJoin('position.details', 'details')
-      //   .select([
-      //     'verifyPosition.id',
-      //     'verifyPosition.email',
-      //     'verifyPosition.created_at',
-      //     'verifyPosition.status',
-      //     'verifyPosition.updated_at',
-      //     'requestBy',
-      //     'position',
-      //     'details',
-      //     'company',
-      //   ])
-      //   .where('verifyPosition.email = :email', { email: user.email })
-      //   .getMany();
-
       // Awais Chnages
 
       // Retrieve all requests associated with the user's email
       const requests = await this.verifyPositionRepository.find({
-        where: { user: {id:userId} },
+        where: { user: { id: userId } },
         relations: [
           'requestBy',
           'position',
@@ -247,20 +270,21 @@ export class VerifyPositionService {
     }
   }
 
-  async updateUserIdInRequest(userId, body){
-    try{
-      const {request_token}= body;
+  async updateUserIdInRequest(userId, body) {
+    try {
+      const { request_token } = body;
       const verifyPosition = await this.verifyPositionRepository.findOne({
-        where: { unique_token:request_token },
+        where: { unique_token: request_token },
       });
-      if(verifyPosition && verifyPosition.user==null){
-        verifyPosition.user=userId as any;
+      if (verifyPosition && verifyPosition.user == null) {
+        verifyPosition.user = userId as any;
         await this.verifyPositionRepository.save(verifyPosition);
       }
-      return { error: false, message:"User_id updated successfully in verify request." };
-
-    }
-    catch(e){
+      return {
+        error: false,
+        message: 'User_id updated successfully in verify request.',
+      };
+    } catch (e) {
       return {
         error: true,
         message: 'Not able to update user_id in verify request.',
