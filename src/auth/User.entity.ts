@@ -61,6 +61,9 @@ export class UserAccounts {
   @Column({ default: false })
   isFirstExperienceMailSent: boolean;
 
+  @Column({ default: true })
+  is_checklist_open: boolean;
+
   @Column({ default: false })
   blocked: boolean;
 
