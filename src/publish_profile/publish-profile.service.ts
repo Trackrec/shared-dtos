@@ -220,6 +220,7 @@ export class PublishProfileService {
         'positions.details',
         'positions.company',
         'positions.verify_request',
+        'positions.verify_request.user',
       ],
     });
 
@@ -245,9 +246,23 @@ export class PublishProfileService {
       for (let i = 0; i < user.positions.length; i++) {
         let updated_verify_user = [];
         for (let j = 0; j < user.positions[i].verify_request.length; j++) {
-          postionVerifyUser = await this.userRepository.findOne({
-            where: { email: user?.positions[i].verify_request[j].email },
-          });
+          if (user?.positions[i].verify_request[j]?.status != 'Approved')
+            continue;
+          if (
+            user?.positions[i].verify_request[j]?.status === 'Approved' &&
+            user?.positions[i].verify_request[j]?.user?.id
+          ) {
+            postionVerifyUser = await this.userRepository.findOne({
+              where: { id: user?.positions[i].verify_request[j]?.user['id'] },
+            });
+          } else {
+            postionVerifyUser = await this.userRepository.findOne({
+              where: {
+                email: user?.positions[i].verify_request[j]?.email,
+              },
+            });
+          }
+
           delete postionVerifyUser?.password;
           delete postionVerifyUser?.linkedin_access_token;
           updated_verify_user.push({
