@@ -245,10 +245,8 @@ export class PublishProfileService {
       for (let i = 0; i < user.positions.length; i++) {
         let updated_verify_user = [];
         for (let j = 0; j < user.positions[i].verify_request.length; j++) {
-          if (user.positions[i].verify_request[j].status != 'Approved')
-            continue;
           postionVerifyUser = await this.userRepository.findOne({
-            where: { id: user?.positions[i].verify_request[j].user.id },
+            where: { email: user?.positions[i].verify_request[j].email },
           });
           delete postionVerifyUser?.password;
           delete postionVerifyUser?.linkedin_access_token;
