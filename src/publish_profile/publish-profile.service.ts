@@ -71,17 +71,6 @@ export class PublishProfileService {
                 color: #333;
                 line-height: 1.6;
               }
-              .container {
-                width: 80%;
-                margin: auto;
-                overflow: hidden;
-              }
-              .header, .footer {
-                background: #333;
-                color: #fff;
-                padding: 20px 0;
-                text-align: center;
-              }
               .content {
                 background: #fff;
                 padding: 20px;
@@ -100,27 +89,21 @@ export class PublishProfileService {
           </head>
           <body>
             <div class="container">
-              <div class="header">
-                <h1>Get in Touch - Inquiry</h1>
-              </div>
               <div class="content">
                 <p>Hello ${user.full_name},</p>
-                <p>You have received a new inquiry via Get in Touch.</p>
-                <p>Details of the inquiry:</p>
+                <p>You have received a new inquiry through your TrackRec profile.</p>
+                <p>Details:</p>
                 <ul>
                   <li><strong>Name:</strong> ${emailData.name}</li>
                   <li><strong>Email:</strong> ${emailData.email}</li>
                   <li><strong>Phone:</strong> ${emailData.phone}</li>
                   <li><strong>Inquiry:</strong> ${emailData.inquiry}</li>
-                </ul>
-                <p>Please respond to the inquiry as soon as possible.</p>
-               
-              </div>
-              <div class="footer">
-                <p>Best,<br>
-                  Team TrackRec<br> 
-                  <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
-                </p>
+                </ul>   
+                <br/>
+                
+                Best, <br/>
+                Team TrackRec <br/> 
+                <a href="${process.env.REACT_APP_URL}">app.trackrec.co</a> <br/>
               </div>
             </div>
           </body>
