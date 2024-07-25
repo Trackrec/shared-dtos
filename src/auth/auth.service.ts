@@ -65,7 +65,12 @@ export class AuthService {
        * search based on email, otherwise search based on username for old data
        */
       let user = await this.userRepository.findOne({
-        where: [{ email }, { username }],
+        where: [
+          { email, role: 'Applicant' },
+          { email, role: 'Super-Admin' },
+          { username, role: 'Applicant' },
+          { username, role: 'Super-Admin' },
+        ],
       });
 
       if (user) {
