@@ -105,33 +105,15 @@ export class PositionService {
                  margin: auto;
                  overflow: hidden;
                  }
-                 .header, .footer {
-                 background: #333;
-                 color: #fff;
-                 padding: 20px 0;
-                 text-align: center;
-                 }
                  .content {
                  background: #fff;
                  padding: 20px;
                  margin: 20px 0;
                  }
-                 .button {
-                 display: inline-block;
-                 background: #007bff;
-                 color: #fff;
-                 padding: 10px 15px;
-                 text-align: center;
-                 text-decoration: none;
-                 border-radius: 5px;
-                 }
               </style>
            </head>
            <body>
               <div class="container">
-                 <div class="header">
-                    <h1>Congrats on Completing Your First Experience</h1>
-                 </div>
                  <div class="content">
                     <p>Hello ${user?.full_name},</p>
                     <p>Congrats! You successfully completed your first experience on TrackRec.</p>
@@ -146,12 +128,10 @@ export class PositionService {
                     <p>Victor @ TrackRec<br>Founder</p>
                     <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
                  </div>
-                 <div class="footer">
                     <p>Best,<br>
                        Team TrackRec<br> 
                        <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
                     </p>
-                 </div>
               </div>
            </body>
         </html>        
