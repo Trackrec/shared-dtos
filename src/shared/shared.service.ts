@@ -91,15 +91,15 @@ export class SharedService {
         let totalFields = 0;
         let filledFields=0;
         if(position.details.is_leadership){
-          totalFields=22;
+          totalFields=21;
           filledFields= this.calculateIsLeadershipFields(position)
         }
         else if(position.details.is_individual_contributor){
-          totalFields=21;
+          totalFields=20;
           filledFields = this.calculateIsIndividualContributerFields(position)
         }
         else if(position.details.is_booking_meeting){
-          totalFields=15;
+          totalFields=14;
           filledFields = this.calculateIsBookingMeetingFields(position)
         }
         const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
@@ -126,7 +126,7 @@ export class SharedService {
       ];
     
       const arrayFields =[
-        "worked_in", "sold_to", "persona", "territories", "achievements"
+        "worked_in", "sold_to", "persona", "territories"
       ]
     
       arrayFields.forEach(field => {
@@ -186,7 +186,7 @@ export class SharedService {
       ];
     
       const arrayFields =[
-        "worked_in", "sold_to", "persona", "territories", "achievements"
+        "worked_in", "sold_to", "persona", "territories"
       ]
     
       // Count fields that contribute 1 to the total filled count
@@ -247,7 +247,7 @@ export class SharedService {
       ];
     
       const arrayFields =[
-        "worked_in", "sold_to", "persona", "territories", "management", "achievements"
+        "worked_in", "sold_to", "persona", "territories", "management",
       ]
       
       // Count fields that contribute 1 to the total filled count
