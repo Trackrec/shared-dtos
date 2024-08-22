@@ -174,6 +174,7 @@ export class PublishProfileService {
           email: visitor.email,
           full_name: visitor.full_name,
           linkedin_access_token: visitor.linkedin_access_token,
+          username: visitor.username,
         });
         const createdVisitor = await this.visitorRepository.save(newVisitor);
 

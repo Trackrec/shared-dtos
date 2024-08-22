@@ -13,7 +13,10 @@ export class AccountsVisitors {
   @Column()
   full_name: string;
 
-  @Column({type:"longtext"})
+  @Column({ default: null })
+  username: string;
+
+  @Column({ type: 'longtext' })
   linkedin_access_token: string;
 
   @OneToMany(() => AnalyticsAccess, analyticsAccess => analyticsAccess.accountVisitor)
