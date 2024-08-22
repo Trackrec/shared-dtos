@@ -171,6 +171,7 @@ export class VerifyPositionService {
       verifyPosition.status = status;
       await this.verifyPositionRepository.save(verifyPosition);
       let messageData;
+      const firstName = verifyPosition?.requestBy?.full_name?.split(' ')[0];
 
       if (status === 'Approved') {
         messageData = {
@@ -179,7 +180,7 @@ export class VerifyPositionService {
           subject: `Your Experience Verification Update`,
           html: `
   
-          Hello ${verifyPosition?.requestBy?.full_name},<br/>
+          Hello ${firstName},<br/>
           Great news. ${verifyPosition?.first_name} ${verifyPosition?.last_name} verified your ${verifyPosition?.position?.company?.name} experience as a ${verifyPosition?.role} of yours.<br/>
        
           Their name now appears on the Verification section of this experience on your profile. You can always edit these in your settings.<br/><br/>
@@ -196,7 +197,7 @@ export class VerifyPositionService {
           subject: `Your Experience Verification Update`,
           html: `
   
-          Hello ${verifyPosition?.requestBy?.full_name},<br/>
+          Hello ${firstName},<br/>
           We regret to inform you that  ${verifyPosition?.first_name} ${verifyPosition?.last_name} was unable to verify your experience at ${verifyPosition?.position?.company?.name} as a ${verifyPosition?.role}.<br/>
        
           Their feedback has been noted, and this experience will not be listed as verified on your profile. You can review and update your experiences at any time in your settings.<br/><br/>

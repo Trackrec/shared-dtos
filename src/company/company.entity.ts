@@ -19,6 +19,9 @@ export class Company {
   @Column({ type: 'longtext', nullable: true })
   logo_url: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  website_url: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
