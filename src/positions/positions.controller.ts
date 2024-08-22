@@ -9,7 +9,6 @@ export class PositionController {
   @Post()
   async createPosition(@Req() req, @Body() positionData: Partial<Position>) {
     try {
-      console.log("Here")
       const userId = req.user_id;
       const createdPosition = await this.positionService.createPosition(null,userId, positionData);
       return { error: false, position: createdPosition };

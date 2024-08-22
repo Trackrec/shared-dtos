@@ -38,6 +38,9 @@ export class PositionService {
           name: positionData?.company_name,
           logo_url: positionData.logo_url ? positionData.logo_url : null,
           domain: positionData.domain ? positionData.domain : null,
+          website_url: positionData.website_url
+            ? positionData.website_url
+            : null,
         });
 
       const existingPositions = await this.positionRepository.find({
