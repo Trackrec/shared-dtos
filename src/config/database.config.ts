@@ -14,6 +14,9 @@ import { AccountProject } from "src/admin/projects/project.entity";
 import { ProjectApplication } from "src/applications/application.entity";
 import { ProjectVisitors } from "src/project_visits/project_visits.entity";
 import { VerifyPosition } from "src/verify-position/verify-position.entity";
+import { RecruiterCompanyUser } from "src/recruiter/recruiter-company/recruiter-company-user.entity";
+import { RecruiterCompany } from "src/recruiter/recruiter-company/recruiter-company.entity";
+import { RecruiterProject } from "src/recruiter/projects/project.entity";
 dotenv.config();
 const { DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE } = process.env;
 
@@ -25,7 +28,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
     password: DB_PASSWORD,
     database: DB_DATABASE,
     connectTimeout: 60000,
-    entities: [UserAccounts, Position, PositionDetails, Company, City, Country, State, Keywords, AccountsVisitors, AnalyticsAccess, AccountProject, ProjectApplication,ProjectVisitors, VerifyPosition],
+    entities: [UserAccounts, Position, PositionDetails, Company, City, Country, State, Keywords, AccountsVisitors, AnalyticsAccess, AccountProject, ProjectApplication,ProjectVisitors, VerifyPosition, RecruiterCompanyUser, RecruiterCompany, RecruiterProject],
     logging: false,
     synchronize: true,
   };

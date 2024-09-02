@@ -34,7 +34,6 @@ async function bootstrap() {
       saveUninitialized: false,
     }),
   );
-  //todo: move this to .env
-  await app.listen(process.env.PORT);
+   await app.listen(process.env.PORT);
 }
 bootstrap();

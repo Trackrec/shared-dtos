@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AccountProject } from './project.entity';
+import { RecruiterProject } from './project.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { validate } from 'class-validator';
 import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { ApplicationService } from 'src/applications/application.service';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { SharedService } from 'src/shared/shared.service';
-import { PointsService } from './points.service';
+import { RecruiterPointsService } from './points.service';
 import { ProjectVisitors } from 'src/project_visits/project_visits.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 @Injectable()
-export class AccountProjectService {
+export class RecruiterProjectService {
   constructor(
-    @InjectRepository(AccountProject)
-    private readonly accountProjectRepository: Repository<AccountProject>,
+    @InjectRepository(RecruiterProject)
+    private readonly recruiterProjectRepository: Repository<RecruiterProject>,
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
     @InjectRepository(ProjectApplication)
@@ -24,7 +24,7 @@ export class AccountProjectService {
     private readonly visitorRepository: Repository<ProjectVisitors>,
     private readonly uploadService: S3UploadService,
     private readonly sharedService: SharedService,
-    private readonly pointsService: PointsService,
+    private readonly pointsService: RecruiterPointsService,
     @InjectRepository(RecruiterCompanyUser)
     private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>
   ) {}
@@ -38,9 +38,9 @@ export class AccountProjectService {
       let projects;
 
      if (user.role === "Admin") {
-           projects = await this.accountProjectRepository.find();
+           projects = await this.recruiterProjectRepository.find();
      } else {
-         projects = await this.accountProjectRepository.find({
+         projects = await this.recruiterProjectRepository.find({
            where: { user: { id: userId } },
            });
        }
@@ -68,9 +68,23 @@ export class AccountProjectService {
     }
   }
 
-  async findAllUsersProjects(): Promise<any> {
+  async findAllUsersProjects(user_id): Promise<any> {
     try {
-      const projects = await this.accountProjectRepository.find();
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: user_id } },
+        relations: ['company'],
+      });
+    
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+    
+      }
+    
+      const projects = await this.recruiterProjectRepository.find({
+        where:{
+           company: recruiterCompanyUser.company
+        }
+      });
       return { error: false, projects };
     } catch (e) {
       return { error: true, message: 'Projects not found' };
@@ -79,7 +93,7 @@ export class AccountProjectService {
 
   async findOne(id: number): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id },
       });
       // const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
@@ -94,7 +108,7 @@ export class AccountProjectService {
   }
 
   async create(
-    accountProjectData: Partial<AccountProject>,
+    accountProjectData: Partial<RecruiterProject>,
     userId: number,
   ): Promise<any> {
     try {
@@ -117,19 +131,20 @@ export class AccountProjectService {
   accountProjectData.company = recruiterCompanyUser.company;
 
   accountProjectData.user = user;
-      const project = this.accountProjectRepository.create(accountProjectData);
+      const project = this.recruiterProjectRepository.create(accountProjectData);
       const errors = await validate(project);
       console.log(errors);
       if (errors.length > 0) {
         return { error: true, message: 'Please send all the required fields.' };
       }
-      await this.accountProjectRepository.save(project);
+      await this.recruiterProjectRepository.save(project);
       return {
         error: false,
         message: 'Project created successfully.',
         project,
       };
     } catch (e) {
+      console.log(e)
       return { error: true, message: 'Project not created!' };
     }
   }
@@ -138,7 +153,7 @@ export class AccountProjectService {
     userId: number,
   ): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id: projectId, user: { id: userId } },
       });
   
@@ -156,7 +171,7 @@ export class AccountProjectService {
         project.draft = false;
         project.published = true;
   
-        await this.accountProjectRepository.save(project);
+        await this.recruiterProjectRepository.save(project);
   
         return {
           error: false,
@@ -172,7 +187,7 @@ export class AccountProjectService {
   }
   
   // Helper method to check if required fields are filled
-  private hasRequiredFields(project: AccountProject): boolean {
+  private hasRequiredFields(project: RecruiterProject): boolean {
     return !!(
       project.title &&
       project.experience !== null &&
@@ -203,10 +218,10 @@ export class AccountProjectService {
   async update(
     userId: number,
     id: number,
-    accountProjectData: Partial<AccountProject>,
+    accountProjectData: Partial<RecruiterProject>,
   ): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id, user: { id: userId } },
       });
       if (!project) {
@@ -216,7 +231,7 @@ export class AccountProjectService {
         };
       }
 
-      await this.accountProjectRepository.update(id, accountProjectData);
+      await this.recruiterProjectRepository.update(id, accountProjectData);
       return { error: false, message: 'Project updated successfully.' };
     } catch (e) {
       return { error: true, message: 'Project not updated.' };
@@ -225,7 +240,7 @@ export class AccountProjectService {
 
   async remove(id: number, userId: number): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id, user: { id: userId } },
       });
       if (!project) {
@@ -243,7 +258,7 @@ export class AccountProjectService {
         where: { project: { id: id } },
       });
       await this.visitorRepository.remove(visitors);
-      await this.accountProjectRepository.delete(id);
+      await this.recruiterProjectRepository.delete(id);
 
       return { error: false, message: 'Project Deleted Successfully' };
     } catch (e) {
@@ -258,7 +273,7 @@ export class AccountProjectService {
     user_id: number,
   ): Promise<{ error: boolean; message: string }> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id, user: { id: user_id } },
       });
       if (!project) {
@@ -273,7 +288,7 @@ export class AccountProjectService {
       );
    //   if (storedImage) project.project_image = storedImage;
 
-      await this.accountProjectRepository.save(project);
+      await this.recruiterProjectRepository.save(project);
 
       return { error: false, message: 'Project Image updated successfully' };
     } catch (error) {

@@ -4,8 +4,8 @@ import { IsNotEmpty, ValidateIf } from 'class-validator';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 
-@Entity("account_projects")
-export class AccountProject {
+@Entity()
+export class RecruiterProject {
     @PrimaryGeneratedColumn()
     id: number;
 
