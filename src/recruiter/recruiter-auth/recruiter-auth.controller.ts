@@ -71,7 +71,7 @@ import {
       
             if (user && user.token) {
               return res.redirect(
-                `${process.env.REACT_APP_URL}/?token=${user.token}`,
+                `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
               );
             } else {
               return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
@@ -100,7 +100,7 @@ import {
   
         if (user && user.token) {
           return res.redirect(
-            `${process.env.REACT_APP_URL}/?token=${user.token}`,
+            `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
           );
         } else {
           return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
