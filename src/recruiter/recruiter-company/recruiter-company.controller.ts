@@ -1,5 +1,5 @@
 // recruiter-company.controller.ts
-import { Controller, Post, Body, BadRequestException, InternalServerErrorException, Req,UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, InternalServerErrorException, Req,UseInterceptors, UploadedFile, Put, Param } from '@nestjs/common';
 import { RecruiterCompanyService } from './recruiter-company.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
@@ -33,6 +33,29 @@ export class RecruiterCompanyController {
 
     try {
       const company = await this.recruiterCompanyService.createCompany(company_name, user_id, image.buffer, imageType);
+      return { error: false, company };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  @Put(':id')
+  @UseInterceptors(FileInterceptor('logo'))
+  async updateCompany(
+    @Param('id') id: string,
+    @Body() body: { company_name?: string; },
+    @UploadedFile() image: Multer.File,
+    @Req() req
+  ): Promise<any> {
+    const user_id = req["user_id"];
+    const { company_name } = body;
+
+    if (image && !this.getImageTypeFromMimetype(image?.mimetype)) {
+      return { error: true, message: 'Please upload image in valid format.' };
+    }
+
+    try {
+      const company = await this.recruiterCompanyService.updateCompany(id,user_id, company_name,image?.buffer, image ? this.getImageTypeFromMimetype(image?.mimetype) : null);
       return { error: false, company };
     } catch (error) {
       throw new InternalServerErrorException(error.message);

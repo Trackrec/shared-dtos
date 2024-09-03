@@ -63,5 +63,57 @@ export class RecruiterCompanyService {
       company: savedCompany,
     };
   }
+
+  async updateCompany(
+    companyId: any,
+    userId: any,
+    company_name?: string,
+    buffer?: Buffer,
+    imageType?: string
+  ): Promise<any> {
+    // Find the company by ID
+    const company = await this.recruiterCompanyRepository.findOne({ where: { id: companyId } });
+  
+    if (!company) {
+      return {error: true, message: "Company not found."}
+    }
+  
+    // Check if the user has the right to update the company
+    const existingAssociation = await this.recruiterCompanyUserRepository.findOne({
+      where: { user: { id: userId }, company: { id: companyId } },
+    });
+  
+    if (!existingAssociation) {
+      return {error: true, message :"User does not have access to this company."}
+    }
+  
+    // Update company name if provided
+    if (company_name) {
+      company.company_name = company_name;
+    }
+  
+    if (buffer && imageType) {
+      await this.uploadService.deleteImage(company.logo,'recruiter_company_images' )   
+  
+      // Upload the new image
+      let storedImage = await this.uploadService.uploadNewImage(
+        buffer,
+        'recruiter_company_images',
+        imageType
+      );
+  
+      company.logo = storedImage;
+    }
+  
+    // Save the updated company
+    const updatedCompany = await this.recruiterCompanyRepository.save(company);
+  
+    return {
+      error: false,
+      message: 'Company successfully updated.',
+      company: updatedCompany,
+    };
+  }
+  
   
 }
