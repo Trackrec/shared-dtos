@@ -185,6 +185,40 @@ export class RecruiterProjectService {
       return { error: true, message: e.message || 'Failed to publish project.' };
     }
   }
+
+  async unpublishProject(
+    projectId: number,
+    userId: number,
+  ): Promise<any> {
+    try {
+      const project = await this.recruiterProjectRepository.findOne({
+        where: { id: projectId},
+      });
+  
+      if (!project) {
+        return { error: true, message: 'Project not found.' };
+      }
+  
+      if (!project.published) {
+        return { error: true, message: 'Project is already unpublished.' };
+      }
+  
+      // Set published to false and draft to true (optional depending on logic)
+      project.published = false;
+      project.draft = true;
+  
+      await this.recruiterProjectRepository.save(project);
+  
+      return {
+        error: false,
+        message: 'Project unpublished successfully.',
+        project,
+      };
+    } catch (e) {
+      return { error: true, message: e.message || 'Failed to unpublish project.' };
+    }
+  }
+  
   
   // Helper method to check if required fields are filled
   private hasRequiredFields(project: RecruiterProject): boolean {

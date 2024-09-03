@@ -67,6 +67,15 @@ export class RecruiterProjectController {
     return this.recruiterProjectService.publishProject(projectId, userId);
   }
 
+  @Post('/:id/unpublish')
+async unpublishProject(
+  @Param('id') projectId: number,
+  @Req() req: Request,
+): Promise<any> {
+  const userId = req['user_id'];
+  return this.recruiterProjectService.unpublishProject(projectId, userId);
+}
+
   @Put('/:id')
   update(
     @Param('id') id: string,
