@@ -56,6 +56,11 @@ export class RecruiterProject {
     @Column({ type: 'int', nullable: true })
     @ValidateIf(o => o.published)
     @IsNotEmpty()
+    partnership_range: number;
+
+    @Column({ type: 'int', nullable: true })
+    @ValidateIf(o => o.published)
+    @IsNotEmpty()
     inbound_range: number;
 
     @Column({ type: 'int', nullable: true })
@@ -139,6 +144,9 @@ export class RecruiterProject {
 
     @Column({ type: 'longtext', nullable: true })
     travel_requirements: string;
+
+    @UpdateDateColumn({nullable: true})
+    start_date: Date;
 
     @Column({ nullable: true })
     is_travel_requirements: boolean;

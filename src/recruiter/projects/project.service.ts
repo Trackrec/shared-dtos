@@ -197,6 +197,7 @@ export class RecruiterProjectService {
       project.description &&
       project.location &&
       project.existing_business_range !== null &&
+      project.partnership_range !==null &&
       project.business_range !== null &&
       project.inbound_range !== null &&
       project.outbound_range !== null &&
@@ -212,7 +213,8 @@ export class RecruiterProjectService {
       project.territory &&
       project.languages &&
       project.linkedin_profile &&
-      project.minimum_salecycle_type
+      project.minimum_salecycle_type &&
+      project.start_date
     );
   }
   async update(
