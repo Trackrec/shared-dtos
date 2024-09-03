@@ -148,6 +148,12 @@ export class RecruiterProject {
     @Column({nullable: true})
     start_date: Date;
 
+    @Column({ default: '$', nullable: true })
+    currency: string;
+
+    @Column({ default: 'United States Dollar (USD)', nullable: true })
+    currency_country: string;
+
     @Column({ nullable: true })
     is_travel_requirements: boolean;
 
