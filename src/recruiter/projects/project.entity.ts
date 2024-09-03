@@ -145,7 +145,7 @@ export class RecruiterProject {
     @Column({ type: 'longtext', nullable: true })
     travel_requirements: string;
 
-    @UpdateDateColumn({nullable: true})
+    @Column({nullable: true})
     start_date: Date;
 
     @Column({ nullable: true })
