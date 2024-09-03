@@ -60,11 +60,11 @@ export class RecruiterProjectController {
 
   @Post('save_and_publish')
   saveAndPublish(
-    @Body() accountProjectData: Partial<RecruiterProject>,
+    @Body() accountProjectData: RecruiterProject,
     @Req() req: Request,
   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.create(accountProjectData, user_id);
+    return this.recruiterProjectService.createAndPublish(accountProjectData, user_id);
   }
 
   @Post('/:id/publish')
