@@ -143,7 +143,7 @@ export class RecruiterProject {
     elevator_pitch: string;
 
     @Column({ type: 'longtext', nullable: true })
-    travel_requirements: string;
+    travel_requirement_percentage: string;
 
     @Column({nullable: true})
     start_date: Date;
