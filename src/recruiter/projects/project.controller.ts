@@ -41,6 +41,14 @@ export class RecruiterProjectController {
     return this.recruiterProjectService.findOne(+id);
   }
 
+  @Get(':id')
+  findOneProject(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<RecruiterProject> {
+    return this.recruiterProjectService.findOne(+id);
+  }
+
   @Post('')
   create(
     @Body() accountProjectData: Partial<RecruiterProject>,
