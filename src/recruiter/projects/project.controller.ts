@@ -67,6 +67,16 @@ export class RecruiterProjectController {
     return this.recruiterProjectService.createAndPublish(accountProjectData, user_id);
   }
 
+  @Post('update_and_publish/:id')
+  updateAndPublish(
+    @Body() accountProjectData: RecruiterProject,
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<any> {
+    const user_id = req['user_id'];
+    return this.recruiterProjectService.updateAndPublish(accountProjectData, user_id, id);
+  }
+
   @Post('/:id/publish')
   async publishProject(
     @Param('id') projectId: number,

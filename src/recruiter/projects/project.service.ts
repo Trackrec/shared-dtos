@@ -165,6 +165,67 @@ export class RecruiterProjectService {
     }
   }
   
+  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any): Promise<any> {
+    try {
+      // Find the user by userId
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      accountProjectData.user = user;
+  
+      // Check if the user is associated with a recruiter company
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: userId } },
+        relations: ['company'],
+      });
+  
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
+
+      var project = await this.recruiterProjectRepository.findOne({
+        where: { id: project_id },
+      });
+  
+      if (!project) {
+        return { error: true, message: 'Project not found.' };
+      }
+  
+      project={...accountProjectData}
+      // Set the associated company in the project data
+      project.company = recruiterCompanyUser.company;
+  
+      // Validate required fields
+      if (this.hasRequiredFields(project)) {
+        project.draft = false;
+        project.published = true;
+  
+        // Create and validate the project
+        //const project = this.recruiterProjectRepository.create(accountProjectData);
+        // const errors = await validate(project);
+  
+        // if (errors.length > 0) {
+        //   return { error: true, message: 'Please send all the required fields.' };
+        // }
+  
+        // Save the project to the database
+        await this.recruiterProjectRepository.save(project);
+        return {
+          error: false,
+          message: 'Project updated and published successfully.',
+          project,
+        };
+      } else {
+        return {
+          error: true,
+          message: 'Please fill all the required fields.',
+        };
+      }
+    } catch (e) {
+      return {
+        error: true,
+        message: 'Project not updated.',
+      };
+    }
+  }
   async create(
     accountProjectData: Partial<RecruiterProject>,
     userId: number,
