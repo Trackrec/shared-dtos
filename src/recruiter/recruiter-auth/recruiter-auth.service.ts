@@ -238,6 +238,45 @@ if (email) {
       }
     }
   
+    async updateCompanyUser(id: number, email: string, full_name: string, role: string, user_id: number) {
+      try {
+        if (!email || !full_name || !role) {
+          return { error: true, message: 'All fields are required.' };
+        }
+    
+        // Check if the current user is an admin
+        const checkAdmin = await this.userRepository.findOne({ where: { id: user_id, role: 'Admin' } });
+        if (!checkAdmin) {
+          return { error: true, message: 'You are not an admin user.' };
+        }
+    
+        // Check if the user being updated exists
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+          return { error: true, message: 'User not found.' };
+        }
+    
+        // If email is being updated, check if another user exists with the same email
+        if (email !== user.email) {
+          const existingUser = await this.userRepository.findOne({ where: { email, role: In(['User', 'Admin']) } });
+          if (existingUser) {
+            return { error: true, message: 'Another user already exists with this email.' };
+          }
+        }
+    
+        // Update user details
+        user.email = email;
+        user.full_name = full_name;
+        user.role = role;
+    
+        await this.userRepository.save(user);
+    
+        return { error: false, message: 'User updated successfully.' };
+      } catch (e) {
+        console.log(e);
+        return { error: true, message: 'User not updated.' };
+      }
+    }
     
   
     async updateUser(

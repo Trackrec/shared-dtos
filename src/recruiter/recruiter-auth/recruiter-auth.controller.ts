@@ -25,6 +25,19 @@ import {
     return await this.authService.createUser(email, full_name, role, user_id)
   }
 
+    @Put('update-user/:id')
+     async updateUser(
+         @Param('id') id: number,
+         @Body('email') email: string,
+         @Body('full_name') full_name: string,
+         @Body('role') role: string,
+         @Req() req
+         ) {
+          const user_id = req['user_id'];
+          return await this.authService.updateCompanyUser(id, email, full_name, role, user_id);
+      }
+
+
 
     @Post('register')
     async registerUser(@Body() body: any): Promise<any> {

@@ -133,11 +133,11 @@ export class RecruiterProjectService {
   
         // Create and validate the project
         const project = this.recruiterProjectRepository.create(accountProjectData);
-        const errors = await validate(project);
+        // const errors = await validate(project);
   
-        if (errors.length > 0) {
-          return { error: true, message: 'Please send all the required fields.' };
-        }
+        // if (errors.length > 0) {
+        //   return { error: true, message: 'Please send all the required fields.' };
+        // }
   
         // Save the project to the database
         await this.recruiterProjectRepository.save(project);
@@ -282,7 +282,7 @@ export class RecruiterProjectService {
       project.ote_end !== null &&
       project.location_type &&
       project.description &&
-      project.location &&
+      (project.location_type !== 'hybrid' || project.hybrid_days !== null) &&
       project.existing_business_range !== null &&
       project.partnership_range !==null &&
       project.business_range !== null &&
