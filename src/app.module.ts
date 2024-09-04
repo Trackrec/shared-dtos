@@ -175,7 +175,8 @@ export class AppModule implements NestModule {
         'recruiter/company',
         'recruiter/me',
         'recruiter/projects',
-        'recruiter/invite-user'
+        'recruiter/invite-user',
+        'recruiter/update-user'
 
       );
   }
