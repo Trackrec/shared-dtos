@@ -91,15 +91,20 @@ export class RecruiterProjectService {
     }
   }
 
-  async findOne(id: number): Promise<any> {
+  async findOne(id: number, checkPublished: any = false): Promise<any> {
     try {
       const project = await this.recruiterProjectRepository.findOne({
         where: { id },
+        relations: ['company']
       });
       // const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
 
       if (!project) {
         return { error: true, message: 'Project not found.' };
+      }
+      if(checkPublished && !project.published){
+        return { error: true, message: 'Project not published.' };
+
       }
       return { error: false, project };
     } catch (e) {

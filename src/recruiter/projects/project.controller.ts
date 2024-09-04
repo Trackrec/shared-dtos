@@ -38,7 +38,7 @@ export class RecruiterProjectController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<RecruiterProject> {
-    return this.recruiterProjectService.findOne(+id);
+    return this.recruiterProjectService.findOne(+id, true);
   }
 
   @Get(':id')
