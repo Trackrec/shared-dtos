@@ -26,7 +26,9 @@ export class RecruiterProjectService {
     private readonly sharedService: SharedService,
     private readonly pointsService: RecruiterPointsService,
     @InjectRepository(RecruiterCompanyUser)
-    private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>
+    private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>,
+    @InjectRepository(ProjectVisitors)
+    private projectVisitorsRepository: Repository<ProjectVisitors>
   ) {}
 
   async findAll(userId): Promise<any> {
@@ -619,7 +621,11 @@ export class RecruiterProjectService {
         }
       });
 
-      return { error: false, updatedApplicationsWithUserPoints, above75Count };
+      const visitorCount = await this.projectVisitorsRepository.count({
+        where: { project: { id: project_id } },
+      });
+
+      return { error: false, updatedApplicationsWithUserPoints, above75Count, visitorCount };
     } catch (e) {
       return { error: true, message: 'Error for getting ranking, try again.' };
     }
