@@ -320,6 +320,11 @@ export class RecruiterProjectService {
         };
       }
 
+      if(project.published && !this.hasRequiredFields(accountProjectData as RecruiterProject)){
+        accountProjectData.published=false;
+        accountProjectData.draft=true;
+      }
+
       await this.recruiterProjectRepository.update(id, accountProjectData);
       return { error: false, message: 'Project updated successfully.' };
     } catch (e) {
