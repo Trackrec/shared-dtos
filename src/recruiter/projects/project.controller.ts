@@ -31,6 +31,15 @@ export class RecruiterProjectController {
     return this.recruiterProjectService.checkApplied(+projectId, +user_id);
   }
 
+  @Get('candidates')
+  async getCandidates(
+    @Req() req: Request,
+
+  ): Promise<any> {
+    const user_id = req['user_id'];
+    return this.recruiterProjectService.getCandidates( +user_id);
+  }
+
   @Get()
   findAll(@Req() req: Request): Promise<any> {
     const user_id = req['user_id'];

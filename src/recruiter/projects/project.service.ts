@@ -54,6 +54,40 @@ export class RecruiterProjectService {
     }
   }
 
+  async getCandidates(userId: number): Promise<any> {
+    try {
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: userId } },
+        relations: ['company'],
+      });
+    
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+    
+      }
+      const candidates = await this.userRepository.createQueryBuilder("user")
+        .select([
+          "user.id", 
+          "user.full_name", 
+          "user.public_profile_username", 
+          "user.custom_current_role", 
+          "application", 
+          "project"
+        ])
+        .leftJoin("user.applications", "application")
+        .leftJoin("application.project", "project")
+        .leftJoin("project.company", "company")
+        .where("company.id = :companyId", { companyId: recruiterCompanyUser.company.id })
+        .getMany();
+  
+      return { error: false, candidates };
+  
+    } catch (e) {
+      return { error: true, message: "Unable to get candidates, please try again." };
+    }
+  }
+  
+
   async checkApplied(projectId: number, userId: number): Promise<any> {
     try {
       const application = await this.applicationService.findOne({
