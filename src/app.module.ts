@@ -95,6 +95,8 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     TypeOrmModule.forFeature([ProjectApplication]),
     TypeOrmModule.forFeature([ProjectVisitors]),
     TypeOrmModule.forFeature([VerifyPosition]),
+    TypeOrmModule.forFeature([RecruiterProject]),
+
     TypeOrmModule.forFeature([RecruiterCompany, RecruiterCompanyUser]),
 
   ],
