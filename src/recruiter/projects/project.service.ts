@@ -54,18 +54,18 @@ export class RecruiterProjectService {
     }
   }
 
-  async getCandidates(userId: number): Promise<any> {
+  async getCandidates(userId: number, page: number, limit: number): Promise<any> {
     try {
       const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: userId } },
         relations: ['company'],
       });
-    
+      
       if (!recruiterCompanyUser) {
         return { error: true, message: 'User is not associated with any recruiter company.' };
-    
       }
-      const candidates = await this.userRepository.createQueryBuilder("user")
+  
+      const [candidates, total] = await this.userRepository.createQueryBuilder("user")
         .select([
           "user.id", 
           "user.full_name", 
@@ -78,14 +78,23 @@ export class RecruiterProjectService {
         .leftJoin("application.project", "project")
         .leftJoin("project.company", "company")
         .where("company.id = :companyId", { companyId: recruiterCompanyUser.company.id })
-        .getMany();
+        .skip((page - 1) * limit) // Skip the previous pages
+        .take(limit) // Limit the number of records per page
+        .getManyAndCount(); // Get both data and total count
   
-      return { error: false, candidates };
+      return {
+        error: false,
+        candidates,
+        total, // Total number of candidates
+        page, // Current page number
+        limit // Number of candidates per page
+      };
   
     } catch (e) {
       return { error: true, message: "Unable to get candidates, please try again." };
     }
   }
+  
   
 
   async checkApplied(projectId: number, userId: number): Promise<any> {

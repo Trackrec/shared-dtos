@@ -30,15 +30,17 @@ export class RecruiterProjectController {
     const user_id = req['user_id'];
     return this.recruiterProjectService.checkApplied(+projectId, +user_id);
   }
-
+  
   @Get('candidates')
   async getCandidates(
     @Req() req: Request,
-
+    @Query('page') page: number = 1, // Default to page 1
+    @Query('limit') limit: number = 10 // Default to 10 items per page
   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.getCandidates( +user_id);
+    return this.recruiterProjectService.getCandidates(+user_id, +page, +limit);
   }
+  
 
   @Get()
   findAll(@Req() req: Request): Promise<any> {
