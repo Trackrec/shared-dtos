@@ -125,6 +125,6 @@ async unpublishProject(
     @Req() req: Request
   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.checkApplied(+projectId, user_id);
+    return this.recruiterProjectService.checkApplied(+projectId, +user_id);
   }
 }
