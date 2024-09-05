@@ -122,8 +122,9 @@ async unpublishProject(
   @Get('/check_applied')
   async checkApplied(
     @Query('project_id', ParseIntPipe) projectId: number,
-    @Query('user_id', ParseIntPipe) userId: string,
+    @Req() req: Request
   ): Promise<any> {
-    return this.recruiterProjectService.checkApplied(+projectId, +userId);
+    const user_id = req['user_id'];
+    return this.recruiterProjectService.checkApplied(+projectId, user_id);
   }
 }
