@@ -21,7 +21,17 @@ import { Multer } from 'multer';
 export class RecruiterProjectController {
   constructor(private readonly recruiterProjectService: RecruiterProjectService) {}
 
-  @Get('')
+  @Get('check_applied')
+  async checkApplied(
+    @Req() req: Request,
+    @Query('project_id', ParseIntPipe) projectId: number,
+
+  ): Promise<any> {
+    const user_id = req['user_id'];
+    return this.recruiterProjectService.checkApplied(+projectId, +user_id);
+  }
+
+  @Get()
   findAll(@Req() req: Request): Promise<any> {
     const user_id = req['user_id'];
     return this.recruiterProjectService.findAll(user_id);
@@ -49,7 +59,7 @@ export class RecruiterProjectController {
     return this.recruiterProjectService.findOne(+id);
   }
 
-  @Post('')
+  @Post()
   create(
     @Body() accountProjectData: Partial<RecruiterProject>,
     @Req() req: Request,
@@ -119,12 +129,6 @@ async unpublishProject(
     return await this.recruiterProjectService.getRanking(project_id, user_id);
   }
 
-  @Get('/check_applied')
-  async checkApplied(
-    @Query('project_id', ParseIntPipe) projectId: number,
-    @Req() req: Request
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    return this.recruiterProjectService.checkApplied(+projectId, +user_id);
-  }
+  
+  
 }
