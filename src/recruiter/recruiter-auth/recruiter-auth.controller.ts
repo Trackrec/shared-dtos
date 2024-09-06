@@ -84,7 +84,7 @@ import {
             
             if (user && user.token) {
               return res.redirect(
-                `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
+                `${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`,
               );
             } else {
               let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
@@ -118,7 +118,7 @@ import {
         const user = req.user;
         if (user && user.token) {
           return res.redirect(
-            `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
+            `${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`,
           );
         } else {
           let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
