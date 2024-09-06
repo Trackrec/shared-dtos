@@ -32,17 +32,15 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
       accessToken,
       loginMethod: "google"
     };
-    console.log(user)
 
     const createdUser = await this.recruiterAuthService.findOrCreate(user);
-console.log(createdUser)
     if (!createdUser.error) {
       const jwtToken = this.generateToken(createdUser.user);
       this.logger.debug(`User created: ${JSON.stringify(createdUser)}`);
 
       return done(null, { token: jwtToken });
     } else {
-      return done(null, { token: null });
+      return done(null, { token: createdUser?.message });
     }
   }
 

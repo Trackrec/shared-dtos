@@ -38,7 +38,7 @@ import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-
     async registerUser(email: string, password: string, firstName: string, lastName: string): Promise<any> {
         try {
           // Check if the email already exists
-          const existingUser = await this.userRepository.findOne({ where: { email } });
+          const existingUser = await this.userRepository.findOne({ where: { email,  role: In(['Admin', 'User']) } });
           if (existingUser) {
             return { error: true, message: 'Email is already in use.' };
           }
@@ -106,35 +106,30 @@ import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-
       } = userDto;
   
       try {
-        /** todo: Create a condition here that if email is present then
-         * search based on email, otherwise search based on username for old data
-         */
+      
 
-        console.log(email)
-        console.log(username)
         let user;
 
 if (email) {
   // Check for email and role only if email is provided
   user = await this.userRepository.findOne({
-    where: { email, role: 'Admin' },
+    where: { email, role: In(['Admin', 'User']) },
   });
+  
 } else if (username) {
   // Check for username and role only if username is provided
   user = await this.userRepository.findOne({
-    where: { username, role: 'Admin' },
+    where: { username,  role: In(['Admin', 'User']) },
   });
 }
 
 
-        console.log(user)
   
         if (user) {
           if(user.login_method==loginMethod)
           return { error: false, user };
         
           else{
-            console.log("EXITSSS")
             return {
                 error: true,
                 message: 'User with this email already exists.',

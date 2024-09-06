@@ -81,13 +81,19 @@ import {
      googleAuthRedirect(@Req() req, @Res() res) {
         try {
             const user = req.user;
-      
+            
             if (user && user.token) {
               return res.redirect(
                 `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
               );
             } else {
-              return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+              let redirectUrl = `${process.env.REACT_APP_URL}/linkedin`;
+
+              if (user && user.error) {
+               redirectUrl += `?error=${user.error}`;
+               }
+              return res.redirect(redirectUrl);
+                        
             }
           } catch (error) {
             this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
@@ -110,13 +116,17 @@ import {
     linkedinLoginCallback(@Req() req, @Res() res) {
       try {
         const user = req.user;
-  
         if (user && user.token) {
           return res.redirect(
             `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
           );
         } else {
-          return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+          let redirectUrl = `${process.env.REACT_APP_URL}/linkedin`;
+
+          if (user && user.error) {
+           redirectUrl += `?error=${user.error}`;
+           }
+          return res.redirect(redirectUrl);
         }
       } catch (error) {
         this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);

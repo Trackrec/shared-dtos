@@ -57,7 +57,7 @@ export class RecruiterLinkedinStrategy extends PassportStrategy(Strategy, 'recru
 
         return done(null, { token: jwtToken });
       } else {
-        return done(null, { token: null });
+        return done(null, { error: createdUser?.message });
       }
     } catch (error) {
       this.logger.error(
