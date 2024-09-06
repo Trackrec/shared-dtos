@@ -618,6 +618,14 @@ export class RecruiterProjectService {
   }
   async getRanking(project_id: number, user_id: number) {
     try {
+
+      const project = await this.recruiterProjectRepository.findOne({
+        where: { id: project_id },
+      });
+
+      if(!project){
+        return {error: true, message: "Project not found."}
+      }
       const applications = await this.applicationService
         .createQueryBuilder('application')
         .leftJoinAndSelect('application.project', 'project')
@@ -668,7 +676,7 @@ export class RecruiterProjectService {
         where: { project: { id: project_id } },
       });
 
-      return { error: false, updatedApplicationsWithUserPoints, above75Count, visitorCount };
+      return { error: false, updatedApplicationsWithUserPoints, above75Count, visitorCount, project };
     } catch (e) {
       return { error: true, message: 'Error for getting ranking, try again.' };
     }

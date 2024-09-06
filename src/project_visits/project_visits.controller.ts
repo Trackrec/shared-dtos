@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  Req,
 } from '@nestjs/common';
 import { ProjectVisitorsService } from './project_visits.service';
 
@@ -16,11 +17,13 @@ export class ProjectVisitorsController {
 
   @Post()
   async createProjectVisitor(
-    @Body() projectVisitorsData: { project_id: number; user_id: number },
+    @Body() projectVisitorsData: { project_id: number },
+    @Req() req: any
   ) {
     try {
+      const user_id=req['user_id']
       const visitor =
-        await this.projectVisitorssService.create(projectVisitorsData);
+        await this.projectVisitorssService.create(projectVisitorsData, user_id);
       return { error: false, position: visitor };
     } catch (error) {
       return { error: true, message: error.message };
