@@ -43,7 +43,7 @@ export class RecruiterProjectService {
       relations: ['company'],
     });
     
-    if (!recruiterCompanyUser.company) {
+    if (!recruiterCompanyUser) {
       return { error: true, message: 'User is not associated with any recruiter company.' };
     }
     let projects;
