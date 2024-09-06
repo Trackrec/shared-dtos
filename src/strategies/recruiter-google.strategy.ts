@@ -14,7 +14,7 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
     super({
       clientID: process.env.GOOGLE_CLIENT_ID, // Replace with your Google client ID
       clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Replace with your Google client secret
-      callbackURL: 'http://localhost:4000/recruiter/google-auth/callback', // Adjust callback URL as needed
+      callbackURL: process.env.PRIMARY_RECRUITER_GOOGLE_CALLBACK_URL, // Adjust callback URL as needed
       scope: ['email', 'profile'],
     });
     
