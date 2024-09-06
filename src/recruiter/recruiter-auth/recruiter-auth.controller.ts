@@ -87,7 +87,7 @@ import {
                 `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
               );
             } else {
-              let redirectUrl = `${process.env.REACT_APP_URL}/login`;
+              let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
 
               if (user && user.error) {
                redirectUrl += `?error=${user.error}`;
@@ -97,7 +97,7 @@ import {
             }
           } catch (error) {
             this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-            return res.redirect(`${process.env.REACT_APP_URL}/login`);
+            return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
           }
            }
    
@@ -121,7 +121,7 @@ import {
             `${process.env.REACT_APP_URL}/recruiter/?token=${user.token}`,
           );
         } else {
-          let redirectUrl = `${process.env.REACT_APP_URL}/login`;
+          let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
 
           if (user && user.error) {
            redirectUrl += `?error=${user.error}`;
@@ -130,7 +130,7 @@ import {
         }
       } catch (error) {
         this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-        return res.redirect(`${process.env.REACT_APP_URL}/login`);
+        return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
       }
     }
   
