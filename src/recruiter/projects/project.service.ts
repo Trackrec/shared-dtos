@@ -254,7 +254,7 @@ export class RecruiterProjectService {
         // }
   
         // Save the project to the database
-        await this.recruiterProjectRepository.save(project);
+        await this.recruiterProjectRepository.update(project_id,project);
         return {
           error: false,
           message: 'Project updated and published successfully.',
