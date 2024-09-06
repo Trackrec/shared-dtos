@@ -40,7 +40,7 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
 
       return done(null, { token: jwtToken });
     } else {
-      return done(null, { token: createdUser?.message });
+      return done(null, { error: createdUser?.message });
     }
   }
 
