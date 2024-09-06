@@ -37,16 +37,18 @@ export class RecruiterProjectService {
       if(!user){
         return {error: true, message: "You are not authorized to make this request."}
      }
-      let projects;
 
-     if (user.role === "Admin") {
-           projects = await this.recruiterProjectRepository.find();
-     } else {
-         projects = await this.recruiterProjectRepository.find({
-           where: { user: { id: userId } },
-           });
-       }
-
+     const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['company'],
+    });
+    
+    if (!recruiterCompanyUser.company) {
+      return { error: true, message: 'User is not associated with any recruiter company.' };
+    }
+    let projects;
+    projects = await this.recruiterProjectRepository.find({where:{company:{id:recruiterCompanyUser.company.id}}});
+     
       
       return { error: false, projects };
     } catch (e) {
