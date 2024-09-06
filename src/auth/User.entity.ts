@@ -159,6 +159,9 @@ export class UserAccounts {
   @CreateDateColumn({ default: null })
   last_accessed_at: Date;
 
+  @Column({  nullable: true })
+  login_method: string;
+
   @OneToMany(() => Position, (position) => position.user)
   positions: Position[];
 
@@ -174,4 +177,6 @@ export class UserAccounts {
 
   @OneToMany(() => ProjectApplication, (application) => application.user)
   applications: ProjectApplication[];
+
+
 }

@@ -8,14 +8,15 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
+import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 @Entity('project_visitors')
 export class ProjectVisitors {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(() => AccountProject, (project) => project)
+  @ManyToOne(() => RecruiterProject, (project) => project)
   @JoinColumn({ name: 'project_id' })
-  project: AccountProject;
+  project: RecruiterProject;
 
   @ManyToOne(() => UserAccounts, (user) => user)
   @JoinColumn({ name: 'user_id' })

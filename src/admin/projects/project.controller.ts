@@ -49,6 +49,15 @@ export class AccountProjectController {
     return this.accountProjectService.create(accountProjectData, user_id);
   }
 
+  @Post('account-projects/:id/publish')
+  async publishProject(
+    @Param('id') projectId: number,
+    @Req() req: Request,
+  ): Promise<any> {
+    const userId = req['user_id'];
+    return this.accountProjectService.publishProject(projectId, userId);
+  }
+
   @Put('account-projects/:id')
   update(
     @Param('id') id: string,

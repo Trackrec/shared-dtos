@@ -19,8 +19,8 @@ export class S3UploadService {
     });
   }
 
-  async uploadNewImage(imageBuffer: Buffer, folderName: string): Promise<string> {
-    const randomImageName = `${Date.now()}-${uuidv4()}.jpg`;
+  async uploadNewImage(imageBuffer: Buffer, folderName: string, imageFormat='jpg'): Promise<string> {
+    const randomImageName = `${Date.now()}-${uuidv4()}.${imageFormat}`;
 
     const uploadParams: PutObjectCommandInput = {
       Bucket: this.bucketName,

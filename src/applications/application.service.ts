@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { ProjectApplication } from './application.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { AccountProject } from 'src/admin/projects/project.entity';
+import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 @Injectable()
 export class ApplicationService {
   constructor(
@@ -13,8 +14,8 @@ export class ApplicationService {
     private readonly applicationRepository: Repository<ProjectApplication>,
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
-    @InjectRepository(AccountProject)
-    private readonly projectRepository
+    @InjectRepository(RecruiterProject)
+    private readonly projectRepository: Repository<RecruiterProject>
   ) {}
 
   async createApplication(body: any, userId: number): Promise<any> {

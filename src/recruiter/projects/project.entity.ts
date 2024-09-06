@@ -4,8 +4,8 @@ import { IsNotEmpty, ValidateIf } from 'class-validator';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 
-@Entity("account_projects")
-export class AccountProject {
+@Entity()
+export class RecruiterProject {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -52,6 +52,11 @@ export class AccountProject {
     @ValidateIf(o => o.published)
     @IsNotEmpty()
     business_range: number;
+
+    @Column({ type: 'int', nullable: true })
+    @ValidateIf(o => o.published)
+    @IsNotEmpty()
+    partnership_range: number;
 
     @Column({ type: 'int', nullable: true })
     @ValidateIf(o => o.published)
@@ -138,7 +143,16 @@ export class AccountProject {
     elevator_pitch: string;
 
     @Column({ type: 'longtext', nullable: true })
-    travel_requirements: string;
+    travel_requirement_percentage: string;
+
+    @Column({nullable: true})
+    start_date: Date;
+
+    @Column({ default: '$', nullable: true })
+    currency: string;
+
+    @Column({ default: 'United States Dollar (USD)', nullable: true })
+    currency_country: string;
 
     @Column({ nullable: true })
     is_travel_requirements: boolean;

@@ -59,7 +59,16 @@ import { State } from './location/state.entity';
 import { Country } from './location/country.entity';
 import { CronService } from './cron.service';
 import { ScheduleModule } from '@nestjs/schedule';
-
+import { RecruiterAuthController } from './recruiter/recruiter-auth/recruiter-auth.controller';
+import { RecruiterAuthService } from './recruiter/recruiter-auth/recruiter-auth.service';
+import { RecruiterLinkedinStrategy } from './strategies/recruiter-linkedin.strategy';
+import { RecruiterGoogleStrategy } from './strategies/recruiter-google.strategy';
+import { RecruiterCompanyController } from './recruiter/recruiter-company/recruiter-company.controller';
+import { RecruiterCompanyService } from './recruiter/recruiter-company/recruiter-company.service';
+import { RecruiterCompany } from './recruiter/recruiter-company/recruiter-company.entity';
+import { RecruiterCompanyUser } from './recruiter/recruiter-company/recruiter-company-user.entity';
+import { RecruiterProjectModule } from './recruiter/projects/project.module';
+import { RecruiterProject } from './recruiter/projects/project.entity';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
@@ -67,6 +76,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     loggerConfig,
     AuthModule,
     PassportModule,
+    RecruiterProjectModule,
     //todo: remove unused code
     TypeOrmModule.forFeature([UserAccounts]),
     TypeOrmModule.forFeature([Position]),
@@ -85,9 +95,14 @@ import { ScheduleModule } from '@nestjs/schedule';
     TypeOrmModule.forFeature([ProjectApplication]),
     TypeOrmModule.forFeature([ProjectVisitors]),
     TypeOrmModule.forFeature([VerifyPosition]),
+    TypeOrmModule.forFeature([RecruiterProject]),
+
+    TypeOrmModule.forFeature([RecruiterCompany, RecruiterCompanyUser]),
+
   ],
   controllers: [
     AuthController,
+    RecruiterAuthController,
     AppController,
     PositionController,
     PositionDetailsController,
@@ -101,9 +116,13 @@ import { ScheduleModule } from '@nestjs/schedule';
     ProjectApplicationController,
     ProjectVisitorsController,
     VerifyPositionController,
+    RecruiterCompanyController
   ],
   providers: [
     AuthService,
+    RecruiterAuthService,
+    RecruiterLinkedinStrategy,
+    RecruiterGoogleStrategy,
     AppService,
     CompanyService,
     PositionService,
@@ -122,6 +141,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ProjectVisitorsService,
     VerifyPositionService,
     CronService,
+    RecruiterCompanyService
   ],
 })
 export class AppModule implements NestModule {
@@ -154,6 +174,13 @@ export class AppModule implements NestModule {
         'project_ranking',
         'verify',
         'preference',
+        'recruiter/company',
+        'recruiter/me',
+        'recruiter/projects',
+        'recruiter/invite-user',
+        'recruiter/update-user',
+        'project_visitor'
+
       );
   }
 }
