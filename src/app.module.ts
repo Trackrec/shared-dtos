@@ -148,6 +148,9 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
+      .exclude(
+        'recruiter/projects/project-view/(.*)' 
+      )
       .forRoutes(
         'me',
         'positions',
