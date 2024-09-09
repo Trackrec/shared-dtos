@@ -72,7 +72,7 @@ import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-
 
       async loginUser(email: string, password: string): Promise<any> {
         try {
-          const user = await this.userRepository.findOne({ where: { email } });
+          const user = await this.userRepository.findOne({ where: { email, role: In(['Admin', 'User']) } });
           if (!user) {
             return { error: true, message: 'Invalid email or password.' };
           }
