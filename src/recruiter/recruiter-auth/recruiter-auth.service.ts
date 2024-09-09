@@ -330,7 +330,7 @@ if (email) {
       // Find the user by their ID
       const user = await this.userRepository.findOne({
         where: { id: userId },
-        select: ['id', 'full_name', 'email', 'role'], 
+        select: ['id', 'full_name', 'email', 'role', 'login_method'], 
       });
     
       if (!user) {
