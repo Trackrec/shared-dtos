@@ -395,7 +395,7 @@ export class RecruiterProjectService {
       project.ote_end !== null &&
       project.location_type &&
       project.description &&
-      (project.location_type !== 'hybrid' || project.hybrid_days !== null) &&
+       (project.location_type !== 'hybrid' || project.hybrid_days !== null) &&
       project.existing_business_range !== null &&
       project.partnership_range !==null &&
       project.business_range !== null &&
@@ -406,7 +406,6 @@ export class RecruiterProjectService {
       project.enterprise !== null &&
       project.minimum_deal_size !== null &&
       project.minimum_sale_cycle !== null &&
-      project.hybrid_days !== null &&
       project.Industry_Works_IN &&
       project.Industry_Sold_To &&
       project.selectedPersona &&
