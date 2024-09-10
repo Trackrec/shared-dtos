@@ -140,7 +140,12 @@ export class RecruiterCompanyService {
       'user.login_method',
     ])
     .getMany();
-    return {error: false, users}
+
+    const formattedUsers = users.map(({ id, user }) => ({
+      id,
+      ...user, 
+    }));
+    return {error: false, users: formattedUsers}
   }
   catch(e){
     return {error: true, message: "Something went wrong, try again."}
