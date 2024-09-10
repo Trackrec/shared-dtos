@@ -552,5 +552,44 @@ if (email) {
     }
 }
 
+async deleteUser(userId: number): Promise<{ error: boolean; message: string }> {
+  try {
+    // Find the user
+    const user = await this.userRepository.findOne({
+      where: { id: userId , role: In(['User', 'Admin']) },
+      relations: ['companyCreated'],
+    });
+
+    if (!user) {
+      return { error: true, message: 'User does not exist.' };
+    }
+
+    // Check if the user is linked with any company
+    const companyUser = await this.recruiterCompanyUserRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['company'],
+    });
+
+    if (companyUser) {
+      // If the user is the owner of the company
+      if (user.companyCreated && user.companyCreated.id === companyUser.company.id) {
+        return { error: true, message: 'Cannot delete user as they are the owner of a company.' };
+      }
+
+      // Delete the user's association with the company
+      await this.recruiterCompanyUserRepository.delete({ user: { id: userId } });
+    }
+
+     // Mark the user as deleted
+     user.is_deleted = true;
+     await this.userRepository.save(user);    
+     return { error: false, message: 'User deleted successfully.' };
+  } catch (e) {
+    console.log(e)
+    return { error: true, message: 'Something went wrong. Please try again.' };
+  }
+}
+
+
   }
   

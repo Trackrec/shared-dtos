@@ -80,6 +80,9 @@ export class UserAccounts {
   @Column({ default: 0 })
   preference_step: number;
 
+  @Column({ default: false })
+  is_deleted: boolean;
+
   @Column({ type: 'bigint', nullable: true })
   current_ote: number;
 

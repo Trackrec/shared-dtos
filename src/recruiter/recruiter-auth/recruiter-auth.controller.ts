@@ -9,6 +9,8 @@ import {
     Body,
     Param,
     Post,
+    Delete,
+    ParseIntPipe,
   
   } from '@nestjs/common';
   import { AuthGuard } from '@nestjs/passport';
@@ -164,6 +166,12 @@ import {
     const user_id=req['user_id'];
     return await this.authService.changePassword(body, user_id);
   }
+
+  @Delete('delete-user/:id')
+  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<any> {
+    return await this.authService.deleteUser(id);
+  }
+   
   
    
   
