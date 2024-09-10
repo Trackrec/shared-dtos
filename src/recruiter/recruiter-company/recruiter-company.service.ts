@@ -40,7 +40,7 @@ export class RecruiterCompanyService {
       imageType
     );
   
-    const company = this.recruiterCompanyRepository.create({ company_name, logo: storedImage });
+    const company = this.recruiterCompanyRepository.create({ company_name, logo: storedImage,created_by: {id: userId} });
     const savedCompany = await this.recruiterCompanyRepository.save(company);
   
     const user = await this.userRepository.findOne({ where: { id: userId } });
