@@ -131,15 +131,17 @@ export class RecruiterCompanyService {
     const users = await this.recruiterCompanyUserRepository.createQueryBuilder('recruiterCompanyUser')
     .innerJoinAndSelect('recruiterCompanyUser.user', 'user')
     .where('recruiterCompanyUser.company.id = :companyId', { companyId })
+    .andWhere('user.is_deleted = :isDeleted', { isDeleted: false })
     .select([
       'recruiterCompanyUser.id',   
-      'user.id',                  
+      'user.id',                   
       'user.full_name',
       'user.email',
       'user.role',
       'user.login_method',
     ])
     .getMany();
+
 
     const formattedUsers = users.map(({ id, user }) => ({
       id,
