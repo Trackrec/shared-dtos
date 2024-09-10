@@ -114,6 +114,39 @@ export class RecruiterCompanyService {
       company: updatedCompany,
     };
   }
+
+  async findAllUsersInCompany(userId: number): Promise<any> {
+    try{
+    // Fetch the company associated with the given userId
+    const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['company'], 
+    });
+  
+    if (!recruiterCompanyUser || !recruiterCompanyUser.company) {
+      return {error: true, message: "Company not found for the given user"}
+    }
+  
+    const companyId = recruiterCompanyUser.company.id;
+    const users = await this.recruiterCompanyUserRepository.createQueryBuilder('recruiterCompanyUser')
+    .innerJoinAndSelect('recruiterCompanyUser.user', 'user')
+    .where('recruiterCompanyUser.company.id = :companyId', { companyId })
+    .select([
+      'recruiterCompanyUser.id',   
+      'user.id',                  
+      'user.full_name',
+      'user.email',
+      'user.role',
+      'user.login_method',
+    ])
+    .getMany();
+    return {error: false, users}
+  }
+  catch(e){
+    return {error: true, message: "Something went wrong, try again."}
+  }
+  }
+  
   
   
 }

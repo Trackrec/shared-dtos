@@ -1,5 +1,5 @@
 // recruiter-company.controller.ts
-import { Controller, Post, Body, BadRequestException, InternalServerErrorException, Req,UseInterceptors, UploadedFile, Put, Param } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, InternalServerErrorException, Req,UseInterceptors, UploadedFile, Put, Param, Get } from '@nestjs/common';
 import { RecruiterCompanyService } from './recruiter-company.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
@@ -38,6 +38,13 @@ export class RecruiterCompanyController {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  @Get('/all-users')
+  findAllUsersProjects(@Req() req: any): Promise<any> {
+    const user_id=req['user_id']
+    return this.recruiterCompanyService.findAllUsersInCompany(user_id);
+  }
+
 
   @Put(':id')
   @UseInterceptors(FileInterceptor('logo'))
