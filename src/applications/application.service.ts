@@ -71,4 +71,22 @@ export class ApplicationService {
         return {error: true, message: "Not able to get applications."}
     }
   }
+
+  async deleteApplicationsForUserAndCompany(userId: number, companyId: number, loggedInUser: number): Promise<any> {
+  try{
+    const checkAdmin=await this.userRepository.findOne({where:{id: loggedInUser, role: "Admin"}})
+    if(!checkAdmin){
+      return {error: true, message: "You are not admin User."}
+    }
+    
+    await this.applicationRepository.delete({
+      user: { id: userId },
+      project: { company: { id: companyId } },
+    });
+    return {error: false, message: "Applications deleted successfully."}
+   }
+   catch(e){
+    return {error: true, message: "Something went wrong, please try again."}
+   }
+  }
 }
