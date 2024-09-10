@@ -248,7 +248,7 @@ if (email) {
     
         // Check if the user being updated exists
         const user = await this.userRepository.findOne({
-          where: { id },
+          where: { id,  role: In(['User', 'Admin']) },
         });
         if (!user) {
           return { error: true, message: 'User not found.' };
@@ -341,7 +341,7 @@ if (email) {
     async getMe(userId: number): Promise<any> {
       // Find the user by their ID
       const user = await this.userRepository.findOne({
-        where: { id: userId },
+        where: { id: userId,  role: In(['User', 'Admin']) },
         select: ['id', 'full_name', 'email', 'role', 'login_method'], 
       });
     
@@ -513,7 +513,8 @@ if (email) {
         }
         const user = await this.userRepository.findOne({
             where: {
-                id: user_id
+                id: user_id,
+                role: In(['User', 'Admin'])
             }
         });
 

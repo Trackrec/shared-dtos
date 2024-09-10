@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RecruiterProject } from './project.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { validate } from 'class-validator';
@@ -33,7 +33,7 @@ export class RecruiterProjectService {
 
   async findAll(userId): Promise<any> {
     try {
-      const user= await this.userRepository.findOne({where:{id:userId}})
+      const user= await this.userRepository.findOne({where:{id:userId,  role: In(['User', 'Admin'])}})
       if(!user){
         return {error: true, message: "You are not authorized to make this request."}
      }
@@ -162,7 +162,7 @@ export class RecruiterProjectService {
   async createAndPublish(accountProjectData: RecruiterProject, userId: number): Promise<any> {
     try {
       // Find the user by userId
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
       // Check if the user is associated with a recruiter company
@@ -215,7 +215,7 @@ export class RecruiterProjectService {
   async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any): Promise<any> {
     try {
       // Find the user by userId
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
       // Check if the user is associated with a recruiter company
@@ -278,7 +278,7 @@ export class RecruiterProjectService {
     userId: number,
   ): Promise<any> {
     try {
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const user = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
 
 
