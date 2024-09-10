@@ -182,7 +182,8 @@ export class AppModule implements NestModule {
         'recruiter/projects',
         'recruiter/invite-user',
         'recruiter/update-user',
-        'project_visitor'
+        'project_visitor',
+        'recruiter/change-password'
 
       );
   }
