@@ -19,7 +19,7 @@ export class ProjectApplicationController {
     return await this.applicationService.getMyApplications(user_id)
   }
 
-  @Delete('delete-user-applications/:userId/:companyId')
+  @Delete('delete-user-applications/:userId')
   async deleteUserApplications(
     @Param('userId') userId: number,
     @Req() req: Request
