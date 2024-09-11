@@ -22,11 +22,10 @@ export class ProjectApplicationController {
   @Delete('delete-user-applications/:userId/:companyId')
   async deleteUserApplications(
     @Param('userId') userId: number,
-    @Param('companyId') companyId: number,
     @Req() req: Request
   ): Promise<void> {
     const loggedInUser= req['user_id']
-    return await this.applicationService.deleteApplicationsForUserAndCompany(userId, companyId, loggedInUser);
+    return await this.applicationService.deleteApplicationsForUserAndCompany(userId, loggedInUser);
   }
 }
 
