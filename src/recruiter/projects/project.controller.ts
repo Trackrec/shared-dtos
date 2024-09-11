@@ -43,9 +43,12 @@ export class RecruiterProjectController {
   
 
   @Get()
-  findAll(@Req() req: Request): Promise<any> {
+  findAll(@Req() req: Request,
+  @Query('page') page: number = 1, // Default to page 1
+  @Query('limit') limit: number = 10 // Default to 10 items per page
+   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.findAll(user_id);
+    return this.recruiterProjectService.findAll(user_id, page, limit);
   }
 
   @Get('/all-users')

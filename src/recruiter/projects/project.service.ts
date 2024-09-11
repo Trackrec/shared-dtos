@@ -31,30 +31,47 @@ export class RecruiterProjectService {
     private projectVisitorsRepository: Repository<ProjectVisitors>
   ) {}
 
-  async findAll(userId): Promise<any> {
+  async findAll(userId: number, page: number, limit: number): Promise<any> {
     try {
-      const user= await this.userRepository.findOne({where:{id:userId,  role: In(['User', 'Admin'])}})
-      if(!user){
-        return {error: true, message: "You are not authorized to make this request."}
-     }
-
-     const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
-      where: { user: { id: userId } },
-      relations: ['company'],
-    });
-    
-    if (!recruiterCompanyUser) {
-      return { error: true, message: 'User is not associated with any recruiter company.' };
-    }
-    let projects;
-    projects = await this.recruiterProjectRepository.find({where:{company:{id:recruiterCompanyUser.company.id}}});
-     
+      // Check if the user exists and has the correct role
+      const user = await this.userRepository.findOne({
+        where: { id: userId, role: In(['User', 'Admin']) },
+      });
       
-      return { error: false, projects };
+      if (!user) {
+        return { error: true, message: 'You are not authorized to make this request.' };
+      }
+  
+      // Find the recruiter company user
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: userId } },
+        relations: ['company'],
+      });
+      
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
+  
+      // Get the paginated projects
+      const [projects, total] = await this.recruiterProjectRepository.createQueryBuilder('project')
+        .where('project.company.id = :companyId', { companyId: recruiterCompanyUser.company.id })
+        .skip((page - 1) * limit) // Skip the previous pages
+        .take(limit) // Limit the number of records per page
+        .getManyAndCount(); // Get both data and total count
+  
+      return {
+        error: false,
+        projects,
+        total, // Total number of projects
+        page, // Current page number
+        limit // Number of projects per page
+      };
+  
     } catch (e) {
       return { error: true, message: 'Projects not found' };
     }
   }
+  
 
   async getCandidates(userId: number, page: number, limit: number): Promise<any> {
     try {
