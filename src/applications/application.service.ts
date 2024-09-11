@@ -73,20 +73,29 @@ export class ApplicationService {
   }
 
   async deleteApplicationsForUserAndCompany(userId: number, companyId: number, loggedInUser: number): Promise<any> {
-  try{
-    const checkAdmin=await this.userRepository.findOne({where:{id: loggedInUser, role: "Admin"}})
-    if(!checkAdmin){
-      return {error: true, message: "You are not admin User."}
+    try {
+      // Check if the logged-in user is an Admin
+      const checkAdmin = await this.userRepository.findOne({
+        where: { id: loggedInUser, role: 'Admin' },
+      });
+  
+      if (!checkAdmin) {
+        return { error: true, message: 'You are not an admin User.' };
+      }
+  
+      // Delete applications for the specified user and company
+      await this.applicationRepository.createQueryBuilder()
+        .delete()
+        .from(ProjectApplication)
+        .where('userId = :userId', { userId })
+        .andWhere('projectId IN (SELECT id FROM recruiter_project WHERE companyId = :companyId)', { companyId })
+        .execute();
+  
+      return { error: false, message: 'Applications deleted successfully.' };
+    } catch (e) {
+      console.log(e);
+      return { error: true, message: 'Something went wrong, please try again.' };
     }
-    
-    await this.applicationRepository.delete({
-      user: { id: userId },
-      project: { company: { id: companyId } },
-    });
-    return {error: false, message: "Applications deleted successfully."}
-   }
-   catch(e){
-    return {error: true, message: "Something went wrong, please try again."}
-   }
   }
+  
 }

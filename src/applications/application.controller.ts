@@ -26,7 +26,7 @@ export class ProjectApplicationController {
     @Req() req: Request
   ): Promise<void> {
     const loggedInUser= req['user_id']
-    await this.applicationService.deleteApplicationsForUserAndCompany(userId, companyId, loggedInUser);
+    return await this.applicationService.deleteApplicationsForUserAndCompany(userId, companyId, loggedInUser);
   }
 }
 
