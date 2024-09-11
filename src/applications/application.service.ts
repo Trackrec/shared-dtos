@@ -87,7 +87,7 @@ export class ApplicationService {
       }
 
       const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
-        where: { user: { id: userId } },
+        where: { user: { id: loggedInUser } },
         relations: ['company'],
       });
       
