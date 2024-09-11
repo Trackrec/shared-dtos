@@ -31,13 +31,21 @@ export class RecruiterProjectService {
     private projectVisitorsRepository: Repository<ProjectVisitors>
   ) {}
 
-  async findAll(userId: number, page: number, limit: number): Promise<any> {
+  async findAll(
+    userId: number,
+    page: number,
+    limit: number,
+    title?: string, // Project title
+    startDate?: Date,
+    status?: 'published' | 'draft',
+    ref?: number // Project ID
+  ): Promise<any> {
     try {
       // Check if the user exists and has the correct role
       const user = await this.userRepository.findOne({
         where: { id: userId, role: In(['User', 'Admin']) },
       });
-      
+  
       if (!user) {
         return { error: true, message: 'You are not authorized to make this request.' };
       }
@@ -47,14 +55,38 @@ export class RecruiterProjectService {
         where: { user: { id: userId } },
         relations: ['company'],
       });
-      
+  
       if (!recruiterCompanyUser) {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
   
-      // Get the paginated projects
-      const [projects, total] = await this.recruiterProjectRepository.createQueryBuilder('project')
-        .where('project.company.id = :companyId', { companyId: recruiterCompanyUser.company.id })
+      // Build the query dynamically based on filters
+      const queryBuilder = this.recruiterProjectRepository.createQueryBuilder('project')
+        .where('project.company.id = :companyId', { companyId: recruiterCompanyUser.company.id });
+  
+      // Apply filters if provided
+      if (title) {
+        queryBuilder.andWhere('project.title LIKE :title', { title: `%${title}%` });
+      }
+      
+      if (startDate) {
+        queryBuilder.andWhere('project.start_date = :startDate', { startDate });
+      }
+  
+      if (status) {
+        if (status === 'published') {
+          queryBuilder.andWhere('project.published = true');
+        } else if (status === 'draft') {
+          queryBuilder.andWhere('project.draft = true');
+        }
+      }
+  
+      if (ref) {
+        queryBuilder.andWhere('project.id = :ref', { ref });
+      }
+  
+      // Add pagination
+      const [projects, total] = await queryBuilder
         .skip((page - 1) * limit) // Skip the previous pages
         .take(limit) // Limit the number of records per page
         .getManyAndCount(); // Get both data and total count
@@ -71,6 +103,7 @@ export class RecruiterProjectService {
       return { error: true, message: 'Projects not found' };
     }
   }
+  
   
 
   async getCandidates(userId: number, page: number, limit: number): Promise<any> {

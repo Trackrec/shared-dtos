@@ -43,12 +43,19 @@ export class RecruiterProjectController {
   
 
   @Get()
-  findAll(@Req() req: Request,
-  @Query('page') page: number = 1, // Default to page 1
-  @Query('limit') limit: number = 10 // Default to 10 items per page
-   ): Promise<any> {
+  async findAll(
+    @Req() req: Request,
+    @Query('page') page = 1, 
+    @Query('limit') limit = 10,
+    @Query('role') title?: string, // Project title
+    @Query('startDate') startDate?: string,
+    @Query('status') status?: 'published' | 'draft',
+    @Query('ref') ref?: number // Project ID
+  ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.findAll(user_id, page, limit);
+    const parsedStartDate = startDate ? new Date(startDate) : undefined;
+
+    return this.recruiterProjectService.findAll(user_id, +page, +limit, title, parsedStartDate, status, ref);
   }
 
   @Get('/all-users')
