@@ -235,33 +235,38 @@ if (email) {
   
     async updateCompanyUser(id: number, email: string, full_name: string, role: string, user_id: number) {
       try {
-        if (!email || !full_name || !role) {
+        // Ensure all fields are provided
+        if (!email.trim() || !full_name.trim() || !role.trim()) {
           return { error: true, message: 'All fields are required.' };
         }
     
         // Check if the current user is an admin
-        const checkAdmin = await this.userRepository.findOne({ where: { id: user_id, role: 'Admin' } ,relations: ['companyCreated'],
+        const checkAdmin = await this.userRepository.findOne({
+          where: { id: user_id, role: 'Admin' },
+          relations: ['companyCreated'],
         });
+        
         if (!checkAdmin) {
           return { error: true, message: 'You are not an admin user.' };
         }
     
         // Check if the user being updated exists
         const user = await this.userRepository.findOne({
-          where: { id,  role: In(['User', 'Admin']) },
+          where: { id, role: In(['User', 'Admin']) },
+          relations: ['companyCreated'],
+
         });
         if (!user) {
           return { error: true, message: 'User not found.' };
         }
-
-   // Checking user company
-    const existingAssociation = await this.recruiterCompanyUserRepository.findOne({
-      where: { user: { id } },
-    });
-
-        
     
-        // If email is being updated, check if another user exists with the same email
+        // Check existing user-company association
+        const existingAssociation = await this.recruiterCompanyUserRepository.findOne({
+          where: { user: { id } },
+          relations: ["company", "user"],
+        });
+    
+        // If email is being updated, ensure no user exists with the same email
         if (email !== user.email) {
           const existingUser = await this.userRepository.findOne({ where: { email, role: In(['User', 'Admin']) } });
           if (existingUser) {
@@ -270,20 +275,25 @@ if (email) {
         }
     
         // Update user details
-        user.email = email;
-        user.full_name = full_name;
-        if(existingAssociation.company.id!=checkAdmin.companyCreated.id){
+        user.email = email.trim();
+        user.full_name = full_name.trim();
+    
+        // Only update role if company ID matches
+        if (existingAssociation?.company?.id !== user?.companyCreated?.id) {
           user.role = role;
         }
     
+        // Save updated user
         await this.userRepository.save(user);
     
         return { error: false, message: 'User updated successfully.' };
+    
       } catch (e) {
-        console.log(e);
-        return { error: true, message: 'User not updated.' };
+        console.error('Error updating user:', e);
+        return { error: true, message: 'User not updated due to an error.' };
       }
     }
+    
     
   
     async updateUser(
