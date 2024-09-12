@@ -15,6 +15,7 @@ import {
 import { MailgunService } from 'src/mailgun/mailgun.service';
 
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
+import { RecruiterProject } from '../projects/project.entity';
 
 
   @Injectable()
@@ -30,6 +31,8 @@ import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-
       private readonly sharedService: SharedService,
       @InjectRepository(RecruiterCompanyUser)
       private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>,
+      @InjectRepository(RecruiterProject)
+      private recruiterProjectRepository: Repository<RecruiterProject>,
       private readonly mailgunService: MailgunService
 
     ) {}
@@ -591,9 +594,22 @@ async deleteUser(userId: number): Promise<{ error: boolean; message: string }> {
       await this.recruiterCompanyUserRepository.delete({ user: { id: userId } });
     }
 
-     // Mark the user as deleted
-     user.is_deleted = true;
-     await this.userRepository.save(user);    
+      // Find all projects associated with this user and set user to null
+      const userProjects = await this.recruiterProjectRepository.find({
+        where: { user: { id: userId } },
+      });
+  
+      if (userProjects.length > 0) {
+        // Update each project to set user to null
+        for (const project of userProjects) {
+          project.user = null;
+          await this.recruiterProjectRepository.save(project);
+        }
+      }
+  
+
+       // Delete the user from the repository
+       await this.userRepository.delete({ id: userId });  
      return { error: false, message: 'User deleted successfully.' };
   } catch (e) {
     console.log(e)
