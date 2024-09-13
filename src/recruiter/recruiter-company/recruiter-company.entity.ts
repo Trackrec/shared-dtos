@@ -14,6 +14,9 @@ export class RecruiterCompany {
   @Column({  length: 255 })
   logo: string; 
 
+  @Column({ length: 10, default: 'jpg' }) 
+  logo_type: string;
+
   @OneToMany(() => RecruiterCompanyUser, (recruiterCompanyUser) => recruiterCompanyUser.company)
   recruiters: RecruiterCompanyUser[];
 

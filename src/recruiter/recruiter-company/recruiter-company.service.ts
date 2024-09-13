@@ -20,6 +20,7 @@ export class RecruiterCompanyService {
   ) {}
 
   async createCompany(company_name: string, userId: number, buffer, imageType): Promise<any> {
+
     // Check if the user already has a company associated with them
     const existingAssociation = await this.recruiterCompanyUserRepository.findOne({
       where: { user: { id: userId } },
@@ -40,7 +41,7 @@ export class RecruiterCompanyService {
       imageType
     );
   
-    const company = this.recruiterCompanyRepository.create({ company_name, logo: storedImage,created_by: {id: userId} });
+    const company = this.recruiterCompanyRepository.create({ company_name, logo: storedImage, logo_type: imageType,created_by: {id: userId} });
     const savedCompany = await this.recruiterCompanyRepository.save(company);
   
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -72,6 +73,7 @@ export class RecruiterCompanyService {
     imageType?: string
   ): Promise<any> {
     // Find the company by ID
+    console.log(imageType)
     const company = await this.recruiterCompanyRepository.findOne({ where: { id: companyId } });
   
     if (!company) {
@@ -103,6 +105,7 @@ export class RecruiterCompanyService {
       );
   
       company.logo = storedImage;
+      company.logo_type = imageType;
     }
   
     // Save the updated company

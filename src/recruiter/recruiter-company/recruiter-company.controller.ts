@@ -17,18 +17,16 @@ export class RecruiterCompanyController {
   ): Promise<any> {
     const user_id=req.user_id;
     const { company_name } = body;
-    console.log(image)
-    if(!image){
-      return { error: true, message: 'Please upload image first.' };
+    if(!image && !company_name){
+      return { error: true, message: 'Company name, logo are required.' };
     }
     const imageType = this.getImageTypeFromMimetype(image?.mimetype);
-    if(!imageType){
-      return { error: true, message: 'Please upload image in valid format.' };
+    // List of allowed image types
+    const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
 
-    }
-
-    if (!company_name ) {
-      throw new BadRequestException('Company name, logo are required.');
+    // Validate image type
+    if (!imageType || !allowedImageTypes.includes(imageType)) {
+    return { error: true, message: 'Please upload an image in a valid format (svg, png, jpg, jpeg, gif).' };
     }
 
     try {
@@ -50,34 +48,53 @@ export class RecruiterCompanyController {
   @UseInterceptors(FileInterceptor('logo'))
   async updateCompany(
     @Param('id') id: string,
-    @Body() body: { company_name?: string; },
+    @Body() body: { company_name?: string },
     @UploadedFile() image: Multer.File,
     @Req() req
   ): Promise<any> {
     const user_id = req["user_id"];
     const { company_name } = body;
-
-    if (image && !this.getImageTypeFromMimetype(image?.mimetype)) {
-      return { error: true, message: 'Please upload image in valid format.' };
+  
+    // Check if an image is uploaded
+    if (image) {
+      const imageType = this.getImageTypeFromMimetype(image.mimetype);
+      // List of allowed image types
+      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+      // Validate image type
+      if (!imageType || !allowedImageTypes.includes(imageType)) {
+        return { error: true, message: 'Please upload an image in a valid format (svg, png, jpg, jpeg, gif).' };
+      }
     }
-
+  
     try {
-      const company = await this.recruiterCompanyService.updateCompany(id,user_id, company_name,image?.buffer, image ? this.getImageTypeFromMimetype(image?.mimetype) : null);
+      const company = await this.recruiterCompanyService.updateCompany(
+        id,
+        user_id,
+        company_name,
+        image?.buffer,
+        image ? this.getImageTypeFromMimetype(image.mimetype) : null
+      );
       return { error: false, company };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
+  
 
-  getImageTypeFromMimetype(mimetype) {
+  getImageTypeFromMimetype(mimetype: string): string | null {
     // Split the mimetype string by '/'
     const parts = mimetype.split('/');
   
     // Check if the first part is 'image'
     if (parts[0] === 'image' && parts[1]) {
+      // Special case for 'svg+xml' which should be treated as 'svg'
+      if (parts[1] === 'svg+xml') {
+        return 'svg';
+      }
       return parts[1]; // The second part is the image type
     } else {
       return null; // Not a valid image mimetype
     }
   }
+  
 }
