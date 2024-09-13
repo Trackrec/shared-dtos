@@ -496,7 +496,7 @@ if (email) {
           `
        };
     
-      //  await this.mailgunService.sendMail(messageData);
+       await this.mailgunService.sendMail(messageData);
       
   
         return {error: false, message: "User created successfully."}
