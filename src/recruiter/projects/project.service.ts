@@ -86,17 +86,19 @@ export class RecruiterProjectService {
       }
   
       // Add pagination
-      const [projects, total] = await queryBuilder
-        .skip((page - 1) * limit) // Skip the previous pages
-        .take(limit) // Limit the number of records per page
-        .getManyAndCount(); // Get both data and total count
+      // const [projects, total] = await queryBuilder
+      //   .skip((page - 1) * limit) // Skip the previous pages
+      //   .take(limit) // Limit the number of records per page
+      //   .getManyAndCount(); // Get both data and total count
+
+       const projects = await queryBuilder.getMany();
   
       return {
         error: false,
         projects,
-        total, // Total number of projects
-        page, // Current page number
-        limit // Number of projects per page
+        // total, // Total number of projects
+        // page, // Current page number
+        // limit // Number of projects per page
       };
   
     } catch (e) {
