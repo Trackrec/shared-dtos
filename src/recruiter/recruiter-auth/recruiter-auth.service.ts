@@ -647,9 +647,12 @@ async sendResetEmail(email: string): Promise<any> {
       from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
       to: user.email,
       subject: 'Password Reset Request',
-      html: `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p>
-    <p>Please click on the following link to complete the process:</p>
-    <a href='${process.env.REACT_APP_URL}/recruiter/reset-password/${token}'>Reset Password</a><br/>
+      html: `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+      Please click on the following link, or paste this into your browser to complete the process:</p>
+    <a href='${process.env.REACT_APP_URL}/recruiter/reset-password/${token}'>Reset Password</a><br/><br/>
+
+    ${process.env.REACT_APP_URL}/recruiter/reset-password/${token} <br/><br/>
+
     If you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
 
