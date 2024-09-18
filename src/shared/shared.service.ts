@@ -145,17 +145,17 @@ export class SharedService {
       // Check additional conditions
 
 
-      if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise)
+      if (parseInt(position.details.segment_smb) || parseInt(position.details.segment_mid_market) || parseInt(position.details.segment_enterprise))
       {
         totalFilled++;
       }
      
-      if (position.details.existing_business || position.details.new_business) {
+      if (parseInt(position.details.existing_business) || parseInt(position.details.new_business)) {
         totalFilled++;
       }
       if(position.start_month && position.start_year)
         totalFilled+=1;
-      if (position.details.outbound || position.details.inbound) {
+      if (parseInt(position.details.outbound) || parseInt(position.details.inbound)) {
         totalFilled++;
       }
       if(!position.details.is_prospecting_channel_relevant &&( position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage)){
