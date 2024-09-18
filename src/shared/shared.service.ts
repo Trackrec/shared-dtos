@@ -99,7 +99,7 @@ export class SharedService {
           filledFields = this.calculateIsIndividualContributerFields(position)
         }
         else if(position.details.is_booking_meeting){
-          totalFields=16;
+          totalFields=15;
           filledFields = this.calculateIsBookingMeetingFields(position)
         }
         const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
