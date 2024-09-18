@@ -184,4 +184,10 @@ export class UserAccounts {
 
   @OneToOne(() => RecruiterCompany, (company) => company.created_by)
   companyCreated: RecruiterCompany;
+
+   @Column({ nullable: true })
+   reset_password_token: string;
+ 
+   @Column({  nullable: true })
+   reset_password_expires: Date;
 }

@@ -2,7 +2,7 @@ import {
     Injectable,
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
-  import { In, Repository } from 'typeorm';
+  import { In, MoreThan, Repository } from 'typeorm';
   import { UserAccounts } from 'src/auth/User.entity';
   import axios from 'axios';
   import { CompanyService } from 'src/company/company.service';
@@ -470,7 +470,8 @@ if (email) {
           role,
           email,
           password: await bcrypt.hash(generatedPassword, 10), 
-          otp: true
+          otp: true,
+          login_method:"invite"
         });
   
         await this.userRepository.save(newUser);
@@ -616,6 +617,101 @@ async deleteUser(userId: number): Promise<{ error: boolean; message: string }> {
     return { error: true, message: 'Something went wrong. Please try again.' };
   }
 }
+
+
+async sendResetEmail(email: string): Promise<any> {
+  try {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+        role: In(['User', 'Admin']),
+        login_method: In(['register', 'invite']),
+      },
+    });
+
+    if (!user) {
+      return { error: true, message: "No user found with that email." };
+    }
+
+    // Generate reset token
+    const token = randomBytes(20).toString('hex');
+
+    // Set token and expiration date (1 hour from now)
+    user.reset_password_token = token;
+    user.reset_password_expires = new Date(Date.now() + 3600000); // 1 hour from now
+
+    await this.userRepository.update({ id: user.id }, user);
+
+    // Sending password reset email
+    const messageData = {
+      from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+      to: user.email,
+      subject: 'Password Reset Request',
+      html: `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p>
+    <p>Please click on the following link to complete the process:</p>
+    <a href='${process.env.REACT_APP_URL}/recruiter/reset-password/${token}'>Reset Password</a><br/>
+    If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    await this.mailgunService.sendMail(messageData);
+
+    return { error: false, message: "Password reset email sent." };
+  } catch (e) {
+    console.log(e)
+    return { error: true, message: "No user found with that email." };
+  }
+}
+
+async verifyToken(token:string): Promise<any>{
+  try {
+    const user = await this.userRepository.findOne({
+      where: {
+        reset_password_token: token,
+        reset_password_expires: MoreThan(new Date()),
+        role: In(['User', 'Admin']),
+        login_method: In(['register', 'invite'])
+      },
+    });
+
+    if (!user) {
+      return {error: true, message:"Password reset token is invalid or has expired."}
+    }
+    
+    return {error: false, message: "Token verified", token }
+  } catch (error) {
+    return {error: true, message:"Password reset token is invalid or has expired."}
+  }
+}
+
+async resetPassword(token, new_password){
+  try {
+    const user = await this.userRepository.findOne({where:{
+      reset_password_token: token,
+      reset_password_expires: MoreThan(new Date()),
+      role: In(['User', 'Admin']),
+        login_method: In(['register', 'invite'])
+    }});
+
+    if (!user) {
+      return {error: true, message:"Password reset token is invalid or has expired."}
+    }
+
+   
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    user.password =hashedPassword;
+    user.reset_password_expires = null;
+    user.reset_password_token = null;
+
+    await this.userRepository.update({ id: user.id }, user);
+
+    return {error: false, message:"Password has been successfully reset."}
+  } catch (error) {
+    console.log(error)
+    return {error: true, message:"Password reset token is invalid or has expired."}
+  }
+}
+
 
 
   }

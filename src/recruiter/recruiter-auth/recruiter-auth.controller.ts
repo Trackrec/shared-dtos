@@ -11,6 +11,7 @@ import {
     Post,
     Delete,
     ParseIntPipe,
+    HttpStatus,
   
   } from '@nestjs/common';
   import { AuthGuard } from '@nestjs/passport';
@@ -171,8 +172,22 @@ import {
   async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return await this.authService.deleteUser(id);
   }
-   
   
+
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) : Promise<any>{
+      return await this.authService.sendResetEmail(email);
+  }
+  
+  @Post('verify-token')
+  async verifyPassword(@Body('token') token: string) : Promise<any>{
+      return await this.authService.verifyToken(token);
+  }
+
+  @Post('reset-password/:token')
+  async resetPassword(@Param('token') token: string, @Body('new_password') new_password: string): Promise<any> {
+    return await this.authService.resetPassword(token, new_password);
+  }
    
   
 
