@@ -446,10 +446,32 @@ export class SharedService {
         let weightedAverageMidmarket = totalMidmarket / totalDuration;
         let weightedAverageEnterprise = totalEnterprise / totalDuration;
       
-        return {
-          smb_average: Math.round(weightedAverageSmb),
-          midmarket_average: Math.round(weightedAverageMidmarket),
-          enterprise_average: Math.round(weightedAverageEnterprise)
+       // Round the averages
+       let smb_average = Math.round(weightedAverageSmb);
+       let midmarket_average = Math.round(weightedAverageMidmarket);
+       let enterprise_average = Math.round(weightedAverageEnterprise);
+
+       // Ensure the sum of averages is exactly 100
+       let totalAverage = smb_average + midmarket_average + enterprise_average;
+
+       // Adjust values if the sum is not 100
+       let difference = 100 - totalAverage;
+
+       // Distribute the difference to the segment with the largest average
+       if (difference !== 0) {
+           if (smb_average >= midmarket_average && smb_average >= enterprise_average) {
+             smb_average += difference;
+           } else if (midmarket_average >= smb_average && midmarket_average >= enterprise_average) {
+             midmarket_average += difference;
+           } else {
+             enterprise_average += difference;
+        }
+       }
+
+      return {
+         smb_average,
+         midmarket_average,
+         enterprise_average
         };
       }
 }
