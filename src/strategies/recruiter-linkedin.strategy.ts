@@ -47,6 +47,7 @@ export class RecruiterLinkedinStrategy extends PassportStrategy(Strategy, 'recru
         profilePicture: photos[0]?.value,
         accessToken: accessToken,
         username: vanityName,
+         loginMethod: "linkedin"
       };
 
       const createdUser = await this.recruiterAuthService.findOrCreate(user);
