@@ -335,8 +335,35 @@ export class SharedService {
         let weightedAverageExistingBusiness = totalWeightedExistingBusiness / totalDuration;
         let weightedAverageNewBusiness = totalWeightedNewBusiness / totalDuration;
         let weightedAveragePartnershipBusiness = totalWeightedPartnershipBusiness / totalDuration;
+
+        // Round the averages
+        let existing_business_average = Math.round(weightedAverageExistingBusiness);
+        let new_business_average = Math.round(weightedAverageNewBusiness);
+        let partnership_average = Math.round(weightedAveragePartnershipBusiness);
+
+        // Ensure the sum of averages is exactly 100
+        let totalAverage = existing_business_average + new_business_average + partnership_average;
+
+       // Adjust values if the sum is not 100
+        let difference = 100 - totalAverage;
+
+       // Distribute the difference to the segment with the largest average
+      if (difference !== 0) {
+          if (existing_business_average >= new_business_average && existing_business_average >= partnership_average) {
+             existing_business_average += difference;
+          } else if (new_business_average >= existing_business_average && new_business_average >= partnership_average) {
+             new_business_average += difference;
+          } else {
+          partnership_average += difference;
+         }
+       }
+
+       return {
+          existing_business_average,
+          new_business_average,
+          partnership_average
+       };
       
-        return { existing_business_average: Math.round(weightedAverageExistingBusiness), new_business_average: Math.round(weightedAverageNewBusiness) ,partnership_average:Math.round(weightedAveragePartnershipBusiness)};
       }
 
       calculateDuration(startMonth, startYear, endMonth, endYear) {
@@ -394,7 +421,29 @@ export class SharedService {
         let weightedAverageOutbound = totalWeightedOutbound / totalDuration;
         let weightedAverageInbound = totalWeightedInbound / totalDuration;
       
-        return { outbound_average: Math.round(weightedAverageOutbound), inbound_average: Math.round(weightedAverageInbound) };
+       // Round the averages
+        let outbound_average = Math.round(weightedAverageOutbound);
+        let inbound_average = Math.round(weightedAverageInbound);
+
+       // Ensure the sum of averages is exactly 100
+       let totalAverage = outbound_average + inbound_average;
+
+       // Adjust values if the sum is not 100
+       let difference = 100 - totalAverage;
+
+       // Distribute the difference to the larger average
+      if (difference !== 0) {
+         if (outbound_average >= inbound_average) {
+           outbound_average += difference;
+        } else {
+           inbound_average += difference;
+       }
+      }
+
+     return {
+       outbound_average,
+       inbound_average
+      };
       }
       
       
