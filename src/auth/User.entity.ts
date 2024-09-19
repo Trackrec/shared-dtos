@@ -22,6 +22,7 @@ import { Keywords } from 'src/keywords/keyword.entity';
 import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
 import { AccountProject } from 'src/admin/projects/project.entity';
 import { ProjectApplication } from 'src/applications/application.entity';
+import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 export enum LocationPreference {
   ONSITE = 'onsite',
   REMOTE = 'remote',
@@ -78,6 +79,9 @@ export class UserAccounts {
 
   @Column({ default: 0 })
   preference_step: number;
+
+  @Column({ default: false })
+  is_deleted: boolean;
 
   @Column({ type: 'bigint', nullable: true })
   current_ote: number;
@@ -159,6 +163,9 @@ export class UserAccounts {
   @CreateDateColumn({ default: null })
   last_accessed_at: Date;
 
+  @Column({  nullable: true })
+  login_method: string;
+
   @OneToMany(() => Position, (position) => position.user)
   positions: Position[];
 
@@ -174,4 +181,13 @@ export class UserAccounts {
 
   @OneToMany(() => ProjectApplication, (application) => application.user)
   applications: ProjectApplication[];
+
+  @OneToOne(() => RecruiterCompany, (company) => company.created_by)
+  companyCreated: RecruiterCompany;
+
+   @Column({ nullable: true })
+   reset_password_token: string;
+ 
+   @Column({  nullable: true })
+   reset_password_expires: Date;
 }

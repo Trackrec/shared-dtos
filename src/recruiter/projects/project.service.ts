@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AccountProject } from './project.entity';
+import { In, Repository } from 'typeorm';
+import { RecruiterProject } from './project.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { validate } from 'class-validator';
 import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { ApplicationService } from 'src/applications/application.service';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { SharedService } from 'src/shared/shared.service';
-import { PointsService } from './points.service';
+import { RecruiterPointsService } from './points.service';
 import { ProjectVisitors } from 'src/project_visits/project_visits.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 @Injectable()
-export class AccountProjectService {
+export class RecruiterProjectService {
   constructor(
-    @InjectRepository(AccountProject)
-    private readonly accountProjectRepository: Repository<AccountProject>,
+    @InjectRepository(RecruiterProject)
+    private readonly recruiterProjectRepository: Repository<RecruiterProject>,
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
     @InjectRepository(ProjectApplication)
@@ -24,33 +24,132 @@ export class AccountProjectService {
     private readonly visitorRepository: Repository<ProjectVisitors>,
     private readonly uploadService: S3UploadService,
     private readonly sharedService: SharedService,
-    private readonly pointsService: PointsService,
+    private readonly pointsService: RecruiterPointsService,
     @InjectRepository(RecruiterCompanyUser)
-    private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>
+    private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>,
+    @InjectRepository(ProjectVisitors)
+    private projectVisitorsRepository: Repository<ProjectVisitors>
   ) {}
 
-  async findAll(userId): Promise<any> {
+  async findAll(
+    userId: number,
+    page: number,
+    limit: number,
+    title?: string, // Project title
+    startDate?: Date,
+    status?: 'published' | 'draft',
+    ref?: number // Project ID
+  ): Promise<any> {
     try {
-      const user= await this.userRepository.findOne({where:{id:userId}})
-      if(!user){
-        return {error: true, message: "You are not authorized to make this request."}
-     }
-      let projects;
-
-     if (user.role === "Admin") {
-           projects = await this.accountProjectRepository.find();
-     } else {
-         projects = await this.accountProjectRepository.find({
-           where: { user: { id: userId } },
-           });
-       }
-
+      // Check if the user exists and has the correct role
+      const user = await this.userRepository.findOne({
+        where: { id: userId, role: In(['User', 'Admin']) },
+      });
+  
+      if (!user) {
+        return { error: true, message: 'You are not authorized to make this request.' };
+      }
+  
+      // Find the recruiter company user
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: userId } },
+        relations: ['company'],
+      });
+  
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
+  
+      // Build the query dynamically based on filters
+      const queryBuilder = this.recruiterProjectRepository.createQueryBuilder('project')
+        .where('project.company.id = :companyId', { companyId: recruiterCompanyUser.company.id });
+  
+      // Apply filters if provided
+      if (title) {
+        queryBuilder.andWhere('project.title LIKE :title', { title: `%${title}%` });
+      }
       
-      return { error: false, projects };
+      if (startDate) {
+        queryBuilder.andWhere('project.start_date = :startDate', { startDate });
+      }
+  
+      if (status) {
+        if (status === 'published') {
+          queryBuilder.andWhere('project.published = true');
+        } else if (status === 'draft') {
+          queryBuilder.andWhere('project.draft = true');
+        }
+      }
+  
+      if (ref) {
+        queryBuilder.andWhere('project.id = :ref', { ref });
+      }
+  
+      // Add pagination
+      // const [projects, total] = await queryBuilder
+      //   .skip((page - 1) * limit) // Skip the previous pages
+      //   .take(limit) // Limit the number of records per page
+      //   .getManyAndCount(); // Get both data and total count
+
+       const projects = await queryBuilder.getMany();
+  
+      return {
+        error: false,
+        projects,
+        // total, // Total number of projects
+        // page, // Current page number
+        // limit // Number of projects per page
+      };
+  
     } catch (e) {
       return { error: true, message: 'Projects not found' };
     }
   }
+  
+  
+
+  async getCandidates(userId: number, page: number, limit: number): Promise<any> {
+    try {
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: userId } },
+        relations: ['company'],
+      });
+      
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
+  
+      const [candidates, total] = await this.userRepository.createQueryBuilder("user")
+        .select([
+          "user.id", 
+          "user.full_name", 
+          "user.public_profile_username", 
+          "user.custom_current_role", 
+          "application", 
+          "project"
+        ])
+        .leftJoin("user.applications", "application")
+        .leftJoin("application.project", "project")
+        .leftJoin("project.company", "company")
+        .where("company.id = :companyId", { companyId: recruiterCompanyUser.company.id })
+        .skip((page - 1) * limit) // Skip the previous pages
+        .take(limit) // Limit the number of records per page
+        .getManyAndCount(); // Get both data and total count
+  
+      return {
+        error: false,
+        candidates,
+        total, // Total number of candidates
+        page, // Current page number
+        limit // Number of candidates per page
+      };
+  
+    } catch (e) {
+      return { error: true, message: "Unable to get candidates, please try again." };
+    }
+  }
+  
+  
 
   async checkApplied(projectId: number, userId: number): Promise<any> {
     try {
@@ -68,24 +167,43 @@ export class AccountProjectService {
     }
   }
 
-  async findAllUsersProjects(): Promise<any> {
+  async findAllUsersProjects(user_id): Promise<any> {
     try {
-      const projects = await this.accountProjectRepository.find();
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: user_id } },
+        relations: ['company'],
+      });
+    
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+    
+      }
+    
+      const projects = await this.recruiterProjectRepository.find({
+        where:{
+           company: recruiterCompanyUser.company
+        }
+      });
       return { error: false, projects };
     } catch (e) {
       return { error: true, message: 'Projects not found' };
     }
   }
 
-  async findOne(id: number): Promise<any> {
+  async findOne(id: number, checkPublished: any = false): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id },
+        relations: ['company']
       });
       // const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
 
       if (!project) {
         return { error: true, message: 'Project not found.' };
+      }
+      if(checkPublished && !project.published){
+        return { error: true, message: 'Project not published.' };
+
       }
       return { error: false, project };
     } catch (e) {
@@ -93,12 +211,126 @@ export class AccountProjectService {
     }
   }
 
+  async createAndPublish(accountProjectData: RecruiterProject, userId: number): Promise<any> {
+    try {
+      // Find the user by userId
+      const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
+      accountProjectData.user = user;
+  
+      // Check if the user is associated with a recruiter company
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: userId } },
+        relations: ['company'],
+      });
+  
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
+  
+      // Set the associated company in the project data
+      accountProjectData.company = recruiterCompanyUser.company;
+  
+      // Validate required fields
+      if (this.hasRequiredFields(accountProjectData)) {
+        accountProjectData.draft = false;
+        accountProjectData.published = true;
+  
+        // Create and validate the project
+        const project = this.recruiterProjectRepository.create(accountProjectData);
+        // const errors = await validate(project);
+  
+        // if (errors.length > 0) {
+        //   return { error: true, message: 'Please send all the required fields.' };
+        // }
+  
+        // Save the project to the database
+        await this.recruiterProjectRepository.save(project);
+        return {
+          error: false,
+          message: 'Project created successfully.',
+          project,
+        };
+      } else {
+        return {
+          error: true,
+          message: 'Please fill all the required fields.',
+        };
+      }
+    } catch (e) {
+      return {
+        error: true,
+        message: 'Project not created.',
+      };
+    }
+  }
+  
+  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any): Promise<any> {
+    try {
+      // Find the user by userId
+      const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
+      accountProjectData.user = user;
+  
+      // Check if the user is associated with a recruiter company
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: userId } },
+        relations: ['company'],
+      });
+  
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
+
+      var project = await this.recruiterProjectRepository.findOne({
+        where: { id: project_id },
+      });
+  
+      if (!project) {
+        return { error: true, message: 'Project not found.' };
+      }
+  
+      project={...accountProjectData}
+      // Set the associated company in the project data
+      project.company = recruiterCompanyUser.company;
+  
+      // Validate required fields
+      if (this.hasRequiredFields(project)) {
+        project.draft = false;
+        project.published = true;
+  
+        // Create and validate the project
+        //const project = this.recruiterProjectRepository.create(accountProjectData);
+        // const errors = await validate(project);
+  
+        // if (errors.length > 0) {
+        //   return { error: true, message: 'Please send all the required fields.' };
+        // }
+  
+        // Save the project to the database
+        await this.recruiterProjectRepository.update(project_id,project);
+        return {
+          error: false,
+          message: 'Project updated and published successfully.',
+          project,
+        };
+      } else {
+        return {
+          error: true,
+          message: 'Please fill all the required fields.',
+        };
+      }
+    } catch (e) {
+      return {
+        error: true,
+        message: 'Project not updated.',
+      };
+    }
+  }
   async create(
-    accountProjectData: Partial<AccountProject>,
+    accountProjectData: Partial<RecruiterProject>,
     userId: number,
   ): Promise<any> {
     try {
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const user = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
 
 
@@ -117,19 +349,20 @@ export class AccountProjectService {
   accountProjectData.company = recruiterCompanyUser.company;
 
   accountProjectData.user = user;
-      const project = this.accountProjectRepository.create(accountProjectData);
+      const project = this.recruiterProjectRepository.create(accountProjectData);
       const errors = await validate(project);
       console.log(errors);
       if (errors.length > 0) {
         return { error: true, message: 'Please send all the required fields.' };
       }
-      await this.accountProjectRepository.save(project);
+      await this.recruiterProjectRepository.save(project);
       return {
         error: false,
         message: 'Project created successfully.',
         project,
       };
     } catch (e) {
+      console.log(e)
       return { error: true, message: 'Project not created!' };
     }
   }
@@ -138,7 +371,7 @@ export class AccountProjectService {
     userId: number,
   ): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id: projectId, user: { id: userId } },
       });
   
@@ -156,7 +389,7 @@ export class AccountProjectService {
         project.draft = false;
         project.published = true;
   
-        await this.accountProjectRepository.save(project);
+        await this.recruiterProjectRepository.save(project);
   
         return {
           error: false,
@@ -170,9 +403,43 @@ export class AccountProjectService {
       return { error: true, message: e.message || 'Failed to publish project.' };
     }
   }
+
+  async unpublishProject(
+    projectId: number,
+    userId: number,
+  ): Promise<any> {
+    try {
+      const project = await this.recruiterProjectRepository.findOne({
+        where: { id: projectId},
+      });
+  
+      if (!project) {
+        return { error: true, message: 'Project not found.' };
+      }
+  
+      if (!project.published) {
+        return { error: true, message: 'Project is already unpublished.' };
+      }
+  
+      // Set published to false and draft to true (optional depending on logic)
+      project.published = false;
+      project.draft = true;
+  
+      await this.recruiterProjectRepository.save(project);
+  
+      return {
+        error: false,
+        message: 'Project unpublished successfully.',
+        project,
+      };
+    } catch (e) {
+      return { error: true, message: e.message || 'Failed to unpublish project.' };
+    }
+  }
+  
   
   // Helper method to check if required fields are filled
-  private hasRequiredFields(project: AccountProject): boolean {
+  private hasRequiredFields(project: RecruiterProject): boolean {
     return !!(
       project.title &&
       project.experience !== null &&
@@ -180,33 +447,37 @@ export class AccountProjectService {
       project.ote_end !== null &&
       project.location_type &&
       project.description &&
-      project.location &&
+       (project.location_type !== 'hybrid' || project.hybrid_days !== null) &&
       project.existing_business_range !== null &&
+      project.partnership_range !==null &&
       project.business_range !== null &&
+      ((project.business_range + project.existing_business_range + project.partnership_range)==100) &&
       project.inbound_range !== null &&
+      ((project.inbound_range + project.outbound_range)==100) &&
       project.outbound_range !== null &&
       project.smb !== null &&
       project.midmarket !== null &&
       project.enterprise !== null &&
+      ((project.smb + project.midmarket + project.enterprise)==100) &&
       project.minimum_deal_size !== null &&
       project.minimum_sale_cycle !== null &&
-      project.hybrid_days !== null &&
       project.Industry_Works_IN &&
       project.Industry_Sold_To &&
       project.selectedPersona &&
       project.territory &&
       project.languages &&
       project.linkedin_profile &&
-      project.minimum_salecycle_type
+      project.minimum_salecycle_type &&
+      project.start_date
     );
   }
   async update(
     userId: number,
     id: number,
-    accountProjectData: Partial<AccountProject>,
+    accountProjectData: Partial<RecruiterProject>,
   ): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id, user: { id: userId } },
       });
       if (!project) {
@@ -216,7 +487,12 @@ export class AccountProjectService {
         };
       }
 
-      await this.accountProjectRepository.update(id, accountProjectData);
+      if(project.published && !this.hasRequiredFields(accountProjectData as RecruiterProject)){
+        accountProjectData.published=false;
+        accountProjectData.draft=true;
+      }
+
+      await this.recruiterProjectRepository.update(id, accountProjectData);
       return { error: false, message: 'Project updated successfully.' };
     } catch (e) {
       return { error: true, message: 'Project not updated.' };
@@ -225,7 +501,7 @@ export class AccountProjectService {
 
   async remove(id: number, userId: number): Promise<any> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id, user: { id: userId } },
       });
       if (!project) {
@@ -243,7 +519,7 @@ export class AccountProjectService {
         where: { project: { id: id } },
       });
       await this.visitorRepository.remove(visitors);
-      await this.accountProjectRepository.delete(id);
+      await this.recruiterProjectRepository.delete(id);
 
       return { error: false, message: 'Project Deleted Successfully' };
     } catch (e) {
@@ -258,7 +534,7 @@ export class AccountProjectService {
     user_id: number,
   ): Promise<{ error: boolean; message: string }> {
     try {
-      const project = await this.accountProjectRepository.findOne({
+      const project = await this.recruiterProjectRepository.findOne({
         where: { id, user: { id: user_id } },
       });
       if (!project) {
@@ -273,7 +549,7 @@ export class AccountProjectService {
       );
    //   if (storedImage) project.project_image = storedImage;
 
-      await this.accountProjectRepository.save(project);
+      await this.recruiterProjectRepository.save(project);
 
       return { error: false, message: 'Project Image updated successfully' };
     } catch (error) {
@@ -398,6 +674,14 @@ export class AccountProjectService {
   }
   async getRanking(project_id: number, user_id: number) {
     try {
+
+      const project = await this.recruiterProjectRepository.findOne({
+        where: { id: project_id },
+      });
+
+      if(!project){
+        return {error: true, message: "Project not found."}
+      }
       const applications = await this.applicationService
         .createQueryBuilder('application')
         .leftJoinAndSelect('application.project', 'project')
@@ -444,7 +728,11 @@ export class AccountProjectService {
         }
       });
 
-      return { error: false, updatedApplicationsWithUserPoints, above75Count };
+      const visitorCount = await this.projectVisitorsRepository.count({
+        where: { project: { id: project_id } },
+      });
+
+      return { error: false, updatedApplicationsWithUserPoints, above75Count, visitorCount, project };
     } catch (e) {
       return { error: true, message: 'Error for getting ranking, try again.' };
     }

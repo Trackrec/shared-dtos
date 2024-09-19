@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { ProjectApplication } from './application.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { AccountProject } from 'src/admin/projects/project.entity';
+import { RecruiterProject } from 'src/recruiter/projects/project.entity';
+import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 @Injectable()
 export class ApplicationService {
   constructor(
@@ -13,8 +15,10 @@ export class ApplicationService {
     private readonly applicationRepository: Repository<ProjectApplication>,
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
-    @InjectRepository(AccountProject)
-    private readonly projectRepository
+    @InjectRepository(RecruiterProject)
+    private readonly projectRepository: Repository<RecruiterProject>,
+    @InjectRepository(RecruiterCompanyUser)
+    private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>,
   ) {}
 
   async createApplication(body: any, userId: number): Promise<any> {
@@ -70,4 +74,40 @@ export class ApplicationService {
         return {error: true, message: "Not able to get applications."}
     }
   }
+
+  async deleteApplicationsForUserAndCompany(userId: number, loggedInUser: number): Promise<any> {
+    try {
+      // Check if the logged-in user is an Admin
+      const checkAdmin = await this.userRepository.findOne({
+        where: { id: loggedInUser, role: 'Admin' },
+      });
+  
+      if (!checkAdmin) {
+        return { error: true, message: 'You are not an admin User.' };
+      }
+
+      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        where: { user: { id: loggedInUser } },
+        relations: ['company'],
+      });
+      
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
+  
+      // Delete applications for the specified user and company
+      await this.applicationRepository.createQueryBuilder()
+        .delete()
+        .from(ProjectApplication)
+        .where('userId = :userId', { userId })
+        .andWhere('projectId IN (SELECT id FROM recruiter_project WHERE companyId = :companyId)', { companyId:recruiterCompanyUser.company.id })
+        .execute();
+  
+      return { error: false, message: 'Applications deleted successfully.' };
+    } catch (e) {
+      console.log(e);
+      return { error: true, message: 'Something went wrong, please try again.' };
+    }
+  }
+  
 }
