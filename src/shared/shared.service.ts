@@ -158,7 +158,7 @@ export class SharedService {
       if (parseInt(position.details.outbound) || parseInt(position.details.inbound)) {
         totalFilled++;
       }
-      if(!position.details.is_prospecting_channel_relevant &&( position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage)){
+      if(!position.details.is_prospecting_channel_relevant &&( parseInt(position.details.linkedin_percentage) || parseInt(position.details.email_percentage) || parseInt(position.details.cold_call_percentage) || parseInt(position.details.tradeshow_percentage) || parseInt(position.details.refferals_percentage))){
         totalFilled++;
       }
       else if(position.details.is_prospecting_channel_relevant){
@@ -209,18 +209,18 @@ export class SharedService {
       });
     
       // Check additional conditions
-      if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
+      if (parseInt(position.details.segment_smb) || parseInt(position.details.segment_mid_market) || parseInt(position.details.segment_enterprise)) {
         totalFilled++;
       }
-      if (position.details.existing_business || position.details.new_business) {
+      if (parseInt(position.details.existing_business) || parseInt(position.details.new_business)) {
         totalFilled++;
       }
-      if(position.start_month && position.start_year)
+      if(parseInt(position.start_month) && parseInt(position.start_year))
         totalFilled+=1;
-      if (position.details.outbound || position.details.inbound) {
+      if (parseInt(position.details.outbound) || parseInt(position.details.inbound)) {
         totalFilled++;
       }
-      if(!position.details.is_prospecting_channel_relevant &&( position.details.linkedin_percentage || position.details.email_percentage || position.details.cold_call_percentage || position.details.tradeshow_percentage || position.details.refferals_percentage)){
+      if(!position.details.is_prospecting_channel_relevant &&( parseInt(position.details.linkedin_percentage) || parseInt(position.details.email_percentage) || parseInt(position.details.cold_call_percentage) || parseInt(position.details.tradeshow_percentage) || parseInt(position.details.refferals_percentage))){
         totalFilled++;
       }
       else if(position.details.is_prospecting_channel_relevant){
@@ -233,7 +233,6 @@ export class SharedService {
     
     calculateIsLeadershipFields(position) {
       let totalFilled = 1;
-     
       const positionFields=[
         'company', 'role'
       ]
@@ -243,6 +242,7 @@ export class SharedService {
           totalFilled++;
         }
       })
+
       // Define fields that contribute 1 to the count
       const detailFields = [
         'quota_achievements', 
@@ -262,25 +262,29 @@ export class SharedService {
           totalFilled++;
         }
       });
-      
+ 
       arrayFields.forEach(field => {
         if (position.details[field] && position.details[field].length>0) {
           totalFilled++;
         }
       });
-    
+  
       // Check additional conditions
-      if (position.details.segment_smb || position.details.segment_mid_market || position.details.segment_enterprise) {
+      if (parseInt(position.details.segment_smb) || parseInt(position.details.segment_mid_market) || parseInt(position.details.segment_enterprise)) {
         totalFilled++;
       }
-      if (position.details.existing_business || position.details.new_business) {
+
+      if (parseInt(position.details.existing_business) || parseInt(position.details.new_business)) {
         totalFilled++;
       }
-      if(position.start_month && position.start_year)
+    
+      if(parseInt(position.start_month) && parseInt(position.start_year))
         totalFilled+=1;
-      if (position.details.outbound || position.details.inbound) {
+
+      if (parseInt(position.details.outbound) || parseInt(position.details.inbound)) {
         totalFilled++;
       }
+     
       return totalFilled;
     }
 
