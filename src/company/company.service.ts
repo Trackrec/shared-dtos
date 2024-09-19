@@ -57,7 +57,7 @@ export class CompanyService {
             }
         }
         const resp = await axios.get(
-            `https://api.apollo.io/api/v1/mixed_companies/search?api_key=${"OxlHrj_L0t16QUJvC-7nrA"}&q_organization_name=${company_name}&per_page=5`
+            `https://api.apollo.io/api/v1/mixed_companies/search?api_key=${"OxlHrj_L0t16QUJvC-7nrA"}&q_organization_name=${company_name}`
         );
 
         return {
