@@ -1,7 +1,7 @@
 // city.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, getRepository } from 'typeorm';
+import { In, Repository, getRepository } from 'typeorm';
 import { City } from './city.entity';
 import { Country } from './country.entity';
 import { State } from './state.entity';
@@ -59,9 +59,17 @@ export class CityService {
     const countries = await this.searchCountries(searchTerm);
     const states = await this.searchStates(searchTerm);
     const cities = await this.searchCities(searchTerm);
-
-    const places = [countries, states, cities]
-      .flat()
+  
+    let places = [states, cities].flat();
+  
+    // If a country is found, retrieve its associated cities
+    if (countries.length > 0) {
+      const countryIds = countries.map(country => country.id);
+      const countryCities = await this.searchCitiesByCountryIds(countryIds);
+      places = [...places, ...countryCities];
+    }
+  
+    const filteredPlaces = places
       .map((item) => this.buildPlace(item))
       .map((place) => this.buildName(place))
       .map((place) => this.buildId(place))
@@ -69,20 +77,21 @@ export class CityService {
         (value, index, self) =>
           self.findIndex((p) => p.name === value.name) === index,
       );
-
-    return places;
+  
+    return filteredPlaces;
   }
-
+  
+  // New method to fetch cities by country IDs
+  async searchCitiesByCountryIds(countryIds) {
+    // Implement logic to fetch cities based on country IDs
+    // This could be a database query or another API call
+    return await this.cityRepository.find({ where: { countryId: In(countryIds) } });
+  }
+  
   buildPlace(obj) {
     let place = {};
-
-    if (obj instanceof Country) {
-      place = {
-        label: 'Country',
-        country_id: obj.id,
-        country_name: obj.name,
-      };
-    } else if (obj instanceof State) {
+  
+    if (obj instanceof State) {
       place = {
         label: 'State',
         state_id: obj.id,
@@ -101,22 +110,23 @@ export class CityService {
         country_name: obj.countryName,
       };
     }
-
+  
     return place;
   }
-
+  
   buildName(place) {
     const name = [place.country_name, place.state_name, place.city_name]
       .filter((i) => i !== null && i !== undefined)
       .join(' > ');
-
+  
     return { ...place, name };
   }
-
+  
   buildId(place) {
     const { country_id, state_id, city_id } = place;
     return { ...place, id: `${country_id}-${state_id}-${city_id}` };
   }
+  
 
   async searchCities2(
     searchTerm: string,
