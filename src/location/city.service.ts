@@ -85,7 +85,7 @@ export class CityService {
   async searchCitiesByCountryIds(countryIds) {
     // Implement logic to fetch cities based on country IDs
     // This could be a database query or another API call
-    return await this.cityRepository.find({ where: { countryId: In(countryIds) } });
+    return await this.cityRepository.find({ where: { countryId: In(countryIds) }, take:20 });
   }
   
   buildPlace(obj) {
