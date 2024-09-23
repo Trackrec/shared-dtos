@@ -123,17 +123,14 @@ export class VerifyPositionService {
         subject: `Requesting verification of experience`,
         html: `
 
-        Hello ${requestBody?.first_name} ${requestBody?.last_name}, <br/><br/>
-        ${requestBy.full_name} has listed you as someone who can attest to their professional accomplishments during their time at ${position?.company?.name}.<br/><br/>
-        Your verification would greatly assist ${requestBy.full_name} in substantiating their sales achievements and would contribute to the credibility of their profile.<br/><br/>
-        If you could take a few moments to verify ${requestBy.full_name}'s sales achievements, it would be highly appreciated.<br/><br/>
-        Your response will only take a few minutes and can be completed directly through our platform. <br/><br/>
+        Hello ${requestBody?.first_name}, <br/><br/>
+        ${requestBy.full_name} is asking for your help! Like thousands of high level Sales pros, ${requestBy.full_name.split(' ')[0]} has built an impressive portfolio of their Sales achievements on TrackRec.<br/>
+        Now, they listed you as someone who can attest to their professional accomplishments during their time at ${position?.company?.name}.<br/>
+        ${requestBy.full_name.split(' ')[0]} needs 1 minute of your time to verify their experience with ${position?.company?.name} to solidify their sales achievements and help them land their next big role.<br/>
+        Here's the link to help ${requestBy.full_name.split(' ')[0]}.<br/><br/>
         <a href="${process.env.REACT_APP_URL}/?approval_request=true&request_token=${verifyPosition.unique_token}">Click here</a> <br/><br/>
 
-        Best, <br/>
-        Team TrackRec <br/> 
-        app.trackrec.co <br/>
-
+        And then, if you want to checkout the platform:  <a href="${process.env.REACT_APP_URL}">app.trackrec.co</a>
         `,
       };
 
@@ -163,7 +160,7 @@ export class VerifyPositionService {
         where: { id: request_id },
         relations: ['position', 'position.company', 'requestBy'],
       });
-      
+
       if (!verifyPosition) {
         return { error: true, message: 'Verification request not found.' };
       }
