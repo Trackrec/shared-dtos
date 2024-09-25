@@ -478,12 +478,12 @@ export class RecruiterProjectService {
   ): Promise<any> {
     try {
       const project = await this.recruiterProjectRepository.findOne({
-        where: { id, user: { id: userId } },
+        where: { id},
       });
       if (!project) {
         return {
           error: true,
-          message: 'Project not found or does not belong to the user.',
+          message: 'Project not found.',
         };
       }
 
@@ -502,12 +502,12 @@ export class RecruiterProjectService {
   async remove(id: number, userId: number): Promise<any> {
     try {
       const project = await this.recruiterProjectRepository.findOne({
-        where: { id, user: { id: userId } },
+        where: { id},
       });
       if (!project) {
         return {
           error: true,
-          message: 'Project not found or does not belong to the user.',
+          message: 'Project not found.',
         };
       }
       const applications = await this.applicationService.find({
@@ -535,12 +535,12 @@ export class RecruiterProjectService {
   ): Promise<{ error: boolean; message: string }> {
     try {
       const project = await this.recruiterProjectRepository.findOne({
-        where: { id, user: { id: user_id } },
+        where: { id},
       });
       if (!project) {
         return {
           error: true,
-          message: 'Project not found or you are not the owner of project.',
+          message: 'Project not found.',
         };
       }
       let storedImage = await this.uploadService.uploadNewImage(
