@@ -283,6 +283,9 @@ export class RecruiterProjectService {
   async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType): Promise<any> {
     try {
       // Find the user by userId
+
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+
       const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
@@ -535,6 +538,7 @@ export class RecruiterProjectService {
     imageType: any
   ): Promise<any> {
     try {
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
       const project = await this.recruiterProjectRepository.findOne({
         where: { id},
       });
@@ -838,18 +842,18 @@ export class RecruiterProjectService {
     parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
   
     // Parse simple-array fields
-    parsedData.Industry_Works_IN = data.Industry_Works_IN ? data.Industry_Works_IN.split(',') : [];
-    parsedData.Industry_Sold_To = data.Industry_Sold_To ? data.Industry_Sold_To.split(',') : [];
-    parsedData.selectedPersona = data.selectedPersona ? data.selectedPersona.split(',') : [];
-    parsedData.territory = data.territory ? data.territory.split(',') : [];
-    parsedData.languages = data.languages ? data.languages.split(',') : [];
+    parsedData.Industry_Works_IN = data.Industry_Works_IN ? data.Industry_Works_IN.split(',') : null;
+    parsedData.Industry_Sold_To = data.Industry_Sold_To ? data.Industry_Sold_To.split(',') : null;
+    parsedData.selectedPersona = data.selectedPersona ? data.selectedPersona.split(',') : null;
+    parsedData.territory = data.territory ? data.territory.split(',') : null;
+    parsedData.languages = data.languages ? data.languages.split(',') : null;
   
     // Parse string fields
     parsedData.title = data.title || null;
     parsedData.company_name = data.company_name || null;
     parsedData.logo = data.logo || null;
     parsedData.logo_type = data.logo_type || null;
-    parsedData.location_type = data.location_type || '';
+    parsedData.location_type = data.location_type || null;
     parsedData.description = data.description || null;
     parsedData.location = data.location || null;
     parsedData.linkedin_profile = data.linkedin_profile || null;
