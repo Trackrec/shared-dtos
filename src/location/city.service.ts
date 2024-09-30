@@ -66,7 +66,7 @@ export class CityService {
     if (countries.length > 0) {
       const countryIds = countries.map(country => country.id);
       const countryCities = await this.searchCitiesByCountryIds(countryIds);
-      places = [...places, ...countryCities];
+      places = [ ...countryCities,...places];
     }
   
     const filteredPlaces = places
