@@ -214,6 +214,8 @@ export class RecruiterProjectService {
   async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any): Promise<any> {
     try {
       // Find the user by userId
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+
       const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
@@ -366,6 +368,9 @@ export class RecruiterProjectService {
     imageType: any
   ): Promise<any> {
     try {
+
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+
       const user = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
 
@@ -802,5 +807,66 @@ export class RecruiterProjectService {
     } catch (e) {
       return { error: true, message: 'Error for getting ranking, try again.' };
     }
+  }
+
+
+   parseRecruiterProjectData(data: any): RecruiterProject {
+    const parsedData = new RecruiterProject();
+  
+    // Parse numeric fields
+    parsedData.experience = data.experience ? parseInt(data.experience) : null;
+    parsedData.ote_start = data.ote_start ? parseInt(data.ote_start) : null;
+    parsedData.ote_end = data.ote_end ? parseInt(data.ote_end) : null;
+    parsedData.existing_business_range = data.existing_business_range ? parseInt(data.existing_business_range) : null;
+    parsedData.business_range = data.business_range ? parseInt(data.business_range) : null;
+    parsedData.partnership_range = data.partnership_range ? parseInt(data.partnership_range) : null;
+    parsedData.inbound_range = data.inbound_range ? parseInt(data.inbound_range) : null;
+    parsedData.outbound_range = data.outbound_range ? parseInt(data.outbound_range) : null;
+    parsedData.smb = data.smb ? parseInt(data.smb) : null;
+    parsedData.midmarket = data.midmarket ? parseInt(data.midmarket) : null;
+    parsedData.enterprise = data.enterprise ? parseInt(data.enterprise) : null;
+    parsedData.minimum_deal_size = data.minimum_deal_size ? parseInt(data.minimum_deal_size) : null;
+    parsedData.minimum_sale_cycle = data.minimum_sale_cycle ? parseInt(data.minimum_sale_cycle) : null;
+    parsedData.hybrid_days = data.hybrid_days ? parseInt(data.hybrid_days) : null;
+  
+    // Parse boolean fields
+    parsedData.draft = data.draft === 'true';
+    parsedData.published = data.published === 'true';
+    parsedData.is_travel_requirements = data.is_travel_requirements === 'true';
+  
+    // Parse date fields
+    parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
+  
+    // Parse simple-array fields
+    parsedData.Industry_Works_IN = data.Industry_Works_IN ? data.Industry_Works_IN.split(',') : [];
+    parsedData.Industry_Sold_To = data.Industry_Sold_To ? data.Industry_Sold_To.split(',') : [];
+    parsedData.selectedPersona = data.selectedPersona ? data.selectedPersona.split(',') : [];
+    parsedData.territory = data.territory ? data.territory.split(',') : [];
+    parsedData.languages = data.languages ? data.languages.split(',') : [];
+  
+    // Parse string fields
+    parsedData.title = data.title || '';
+    parsedData.company_name = data.company_name || '';
+    parsedData.logo = data.logo || '';
+    parsedData.logo_type = data.logo_type || '';
+    parsedData.location_type = data.location_type || '';
+    parsedData.description = data.description || '';
+    parsedData.location = data.location || '';
+    parsedData.linkedin_profile = data.linkedin_profile || '';
+    parsedData.minimum_salecycle_type = data.minimum_salecycle_type || '';
+    parsedData.timeline = data.timeline || '';
+    parsedData.benefits = data.benefits || '';
+    parsedData.elevator_pitch = data.elevator_pitch || '';
+    parsedData.travel_requirement_percentage = data.travel_requirement_percentage || '';
+    parsedData.report_to = data.report_to || '';
+    parsedData.hiring_process = data.hiring_process || '';
+    parsedData.growth_opportunities = data.growth_opportunities || '';
+  
+    // Parse other fields
+    parsedData.visits_count = data.visits_count ? parseInt(data.visits_count) : 0;
+    parsedData.currency = data.currency || '$';
+    parsedData.currency_country = data.currency_country || 'United States Dollar (USD)';
+  
+    return parsedData;
   }
 }
