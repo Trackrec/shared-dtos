@@ -13,6 +13,15 @@ export class RecruiterProject {
     @IsNotEmpty()
     title: string;
 
+    @Column({ length: 255, nullable: true })
+    company_name: string;
+
+    @Column({  length: 255, nullable: true })
+    logo: string; 
+
+    @Column({ length: 10, nullable: true }) 
+    logo_type: string;
+
     @Column({ type: 'int', nullable: true })
     @ValidateIf(o => o.published)  // Only validate if published is true
     @IsNotEmpty()

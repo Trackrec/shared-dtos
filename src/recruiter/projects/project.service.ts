@@ -211,7 +211,7 @@ export class RecruiterProjectService {
     }
   }
 
-  async createAndPublish(accountProjectData: RecruiterProject, userId: number): Promise<any> {
+  async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any): Promise<any> {
     try {
       // Find the user by userId
       const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
@@ -227,6 +227,20 @@ export class RecruiterProjectService {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
   
+      if(imageType){
+           // Upload the new image for the company
+          let storedImage = await this.uploadService.uploadNewImage(
+             buffer,
+            'recruiter_project_images',
+             imageType
+           );
+
+         if(storedImage){
+              accountProjectData.logo=storedImage;
+             accountProjectData.logo_type=imageType;
+        }
+
+      }
       // Set the associated company in the project data
       accountProjectData.company = recruiterCompanyUser.company;
   
@@ -264,7 +278,7 @@ export class RecruiterProjectService {
     }
   }
   
-  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any): Promise<any> {
+  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType): Promise<any> {
     try {
       // Find the user by userId
       const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
@@ -280,7 +294,7 @@ export class RecruiterProjectService {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
 
-      var project = await this.recruiterProjectRepository.findOne({
+      let project = await this.recruiterProjectRepository.findOne({
         where: { id: project_id },
       });
   
@@ -288,11 +302,31 @@ export class RecruiterProjectService {
         return { error: true, message: 'Project not found.' };
       }
   
-      project={...accountProjectData}
-      // Set the associated company in the project data
-      project.company = recruiterCompanyUser.company;
+     
   
+      if(imageType){
+        // Upload the new image for the company
+       let storedImage = await this.uploadService.uploadNewImage(
+          buffer,
+         'recruiter_project_images',
+          imageType
+        );
+
+        console.log(storedImage)
+      if(storedImage){
+        accountProjectData.logo=storedImage;
+        accountProjectData.logo_type=imageType;
+     }
+
+   }
+
+   project={...accountProjectData}
+   // Set the associated company in the project data
+   project.company = recruiterCompanyUser.company;
       // Validate required fields
+
+      await this.recruiterProjectRepository.update(project_id,project);
+
       if (this.hasRequiredFields(project)) {
         project.draft = false;
         project.published = true;
@@ -328,6 +362,8 @@ export class RecruiterProjectService {
   async create(
     accountProjectData: Partial<RecruiterProject>,
     userId: number,
+    buffer: any,
+    imageType: any
   ): Promise<any> {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
@@ -344,6 +380,20 @@ export class RecruiterProjectService {
     return { error: true, message: 'User is not associated with any recruiter company.' };
 
   }
+
+  if(imageType){
+   // Upload the new image for the company
+   let storedImage = await this.uploadService.uploadNewImage(
+    buffer,
+    'recruiter_project_images',
+    imageType
+  );
+
+  if(storedImage){
+    accountProjectData.logo=storedImage;
+    accountProjectData.logo_type=imageType;
+  }
+}
 
   // Set the user in the project data
   accountProjectData.company = recruiterCompanyUser.company;
@@ -442,6 +492,9 @@ export class RecruiterProjectService {
   private hasRequiredFields(project: RecruiterProject): boolean {
     return !!(
       project.title &&
+      project.company_name && 
+      project.logo &&
+      project.logo_type &&
       project.experience !== null &&
       project.ote_start !== null &&
       project.ote_end !== null &&
@@ -466,7 +519,6 @@ export class RecruiterProjectService {
       project.selectedPersona &&
       project.territory &&
       project.languages &&
-      project.linkedin_profile &&
       project.minimum_salecycle_type &&
       project.start_date
     );
@@ -475,6 +527,8 @@ export class RecruiterProjectService {
     userId: number,
     id: number,
     accountProjectData: Partial<RecruiterProject>,
+    buffer:any,
+    imageType: any
   ): Promise<any> {
     try {
       const project = await this.recruiterProjectRepository.findOne({
@@ -486,6 +540,19 @@ export class RecruiterProjectService {
           message: 'Project not found.',
         };
       }
+      if(imageType){
+        // Upload the new image for the company
+        let storedImage = await this.uploadService.uploadNewImage(
+         buffer,
+         'recruiter_project_images',
+         imageType
+       );
+     
+       if(storedImage){
+        accountProjectData.logo=storedImage;
+        accountProjectData.logo_type=imageType;
+       }
+     }
 
       if(project.published && !this.hasRequiredFields(accountProjectData as RecruiterProject)){
         accountProjectData.published=false;
