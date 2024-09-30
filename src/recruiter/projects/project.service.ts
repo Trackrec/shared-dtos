@@ -494,7 +494,6 @@ export class RecruiterProjectService {
       project.title &&
       project.company_name && 
       project.logo &&
-      project.logo_type &&
       project.experience !== null &&
       project.ote_start !== null &&
       project.ote_end !== null &&

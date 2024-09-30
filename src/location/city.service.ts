@@ -1,7 +1,7 @@
 // city.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, getRepository } from 'typeorm';
+import { In, Like, Repository, getRepository } from 'typeorm';
 import { City } from './city.entity';
 import { Country } from './country.entity';
 import { State } from './state.entity';
@@ -143,4 +143,24 @@ export class CityService {
       return { error: true, message: error.message };
     }
   }
+
+  async searchLocationCountries(searchTerm) {
+    try { 
+      const like = `${searchTerm.toLowerCase()}`;
+      const countries =  await this.countryRepository
+      .createQueryBuilder('country')
+      .select(['country.id', 'country.name'])
+      .where('LOWER(country.name) LIKE :like', { like: `%${like}%` })
+      .orderBy('country.name')
+      .limit(30)
+      .getMany();
+  
+      return { error: false, countries };
+    } catch (e) {
+      console.log(e)
+      return { error: true, message: "Something went wrong, please try again." };
+    }
+  }
+  
+  
 }
