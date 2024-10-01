@@ -321,6 +321,7 @@ export class RecruiterProjectService {
       if(storedImage){
         accountProjectData.logo=storedImage;
         accountProjectData.logo_type=imageType;
+        await this.uploadService.deleteImage(project.logo,'recruiter_project_images' )   
      }
 
    }
@@ -559,6 +560,9 @@ export class RecruiterProjectService {
        if(storedImage){
         accountProjectData.logo=storedImage;
         accountProjectData.logo_type=imageType;
+
+        await this.uploadService.deleteImage(project.logo,'recruiter_project_images' )   
+
        }
      }
 
@@ -594,6 +598,7 @@ export class RecruiterProjectService {
         where: { project: { id: id } },
       });
       await this.visitorRepository.remove(visitors);
+      await this.uploadService.deleteImage(project.logo,'recruiter_project_images' )   
       await this.recruiterProjectRepository.delete(id);
 
       return { error: false, message: 'Project Deleted Successfully' };
