@@ -15,7 +15,7 @@ export class TokenMiddleware implements NestMiddleware {
     const token = req.headers.authorization?.split(' ')[1];
     
     // Check if the current request path matches the dynamic route pattern
-    if (!token && !req.originalUrl.startsWith("/p/")) {
+    if (!token) {
       res.status(401).json({ authError: true, message: 'No Token Provided' });
       return;
     }
@@ -32,9 +32,7 @@ export class TokenMiddleware implements NestMiddleware {
       } catch (err) {
         res.status(401).json({ error: true, message: 'No Token Provided' });
       }
-    } else if(req.originalUrl.startsWith("/p/")){
-      next(); 
-    }
+    } 
     else{
       res.status(401).json({ error: true, message: 'No Token Provided' });
 
