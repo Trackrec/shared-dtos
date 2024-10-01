@@ -836,7 +836,7 @@ export class RecruiterProjectService {
     // Parse boolean fields
     parsedData.draft = data.draft === 'true';
     parsedData.published = data.published === 'true';
-    parsedData.is_travel_requirements = data.is_travel_requirements === 'true';
+    parsedData.is_travel_requirements = data.is_travel_requirements == 'Yes';
   
     // Parse date fields
     parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
