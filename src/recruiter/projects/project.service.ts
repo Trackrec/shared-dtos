@@ -373,7 +373,7 @@ export class RecruiterProjectService {
     try {
 
       accountProjectData = this.parseRecruiterProjectData(accountProjectData);
-
+      console.log(accountProjectData)
       const user = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
 
@@ -841,12 +841,28 @@ export class RecruiterProjectService {
     // Parse date fields
     parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
   
+
     // Parse simple-array fields
-    parsedData.Industry_Works_IN = data.Industry_Works_IN ? data.Industry_Works_IN.split(',') : null;
-    parsedData.Industry_Sold_To = data.Industry_Sold_To ? data.Industry_Sold_To.split(',') : null;
-    parsedData.selectedPersona = data.selectedPersona ? data.selectedPersona.split(',') : null;
-    parsedData.territory = data.territory ? data.territory.split(',') : null;
-    parsedData.languages = data.languages ? data.languages.split(',') : null;
+    parsedData.Industry_Works_IN = data.Industry_Works_IN 
+    ? data.Industry_Works_IN.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+// Handle other fields which might need splitting and joining as comma-separated strings
+parsedData.Industry_Sold_To = data.Industry_Sold_To 
+    ? data.Industry_Sold_To.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+parsedData.selectedPersona = data.selectedPersona 
+    ? data.selectedPersona.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+parsedData.territory = data.territory 
+    ? data.territory.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+parsedData.languages = data.languages 
+    ? data.languages.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
   
     // Parse string fields
     parsedData.title = data.title || null;
