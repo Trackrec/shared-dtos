@@ -834,14 +834,11 @@ export class RecruiterProjectService {
     parsedData.hybrid_days = data.hybrid_days ? parseInt(data.hybrid_days) : null;
   
     // Parse boolean fields
-    parsedData.draft = data.draft === 'true';
-    parsedData.published = data.published === 'true';
     parsedData.is_travel_requirements = data.is_travel_requirements == 'Yes';
   
     // Parse date fields
     parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
   
-
     // Parse simple-array fields
     parsedData.Industry_Works_IN = data.Industry_Works_IN 
     ? data.Industry_Works_IN.replace(/[\[\]']+/g, '').split(',').join(',') 
