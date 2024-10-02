@@ -81,31 +81,70 @@ export class RecruiterProjectController {
   }
 
   @Post()
+  @UseInterceptors(FileInterceptor('logo'))
   create(
     @Body() accountProjectData: Partial<RecruiterProject>,
+    @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.create(accountProjectData, user_id);
+    let imageType=null;
+    if(image){
+      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      // List of allowed image types
+      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+  
+      // Validate image type
+      if (imgType || allowedImageTypes.includes(imgType)) {
+        imageType=imgType;
+      }
+    }
+    return this.recruiterProjectService.create(accountProjectData, user_id, image?.buffer, imageType);
   }
 
   @Post('save_and_publish')
+  @UseInterceptors(FileInterceptor('logo'))
   saveAndPublish(
     @Body() accountProjectData: RecruiterProject,
+    @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.createAndPublish(accountProjectData, user_id);
+    let imageType=null;
+    if(image){
+      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      // List of allowed image types
+      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+  
+      // Validate image type
+      if (imgType || allowedImageTypes.includes(imgType)) {
+        imageType=imgType;
+      }
+    }
+    return this.recruiterProjectService.createAndPublish(accountProjectData, user_id,  image?.buffer, imageType);
   }
 
   @Post('update_and_publish/:id')
+  @UseInterceptors(FileInterceptor('logo'))
   updateAndPublish(
     @Body() accountProjectData: RecruiterProject,
     @Req() req: Request,
+    @UploadedFile() image: Multer.File,
     @Param('id') id: string,
   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.updateAndPublish(accountProjectData, user_id, id);
+    let imageType=null;
+    if(image){
+      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      // List of allowed image types
+      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+  
+      // Validate image type
+      if (imgType || allowedImageTypes.includes(imgType)) {
+        imageType=imgType;
+      }
+    }
+    return this.recruiterProjectService.updateAndPublish(accountProjectData, user_id, id, image?.buffer, imageType);
   }
 
   @Post('/:id/publish')
@@ -127,13 +166,26 @@ async unpublishProject(
 }
 
   @Put('/:id')
+  @UseInterceptors(FileInterceptor('logo'))
   update(
     @Param('id') id: string,
     @Body() accountProjectData: Partial<RecruiterProject>,
+    @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<any> {
     const user_id = req['user_id'];
-    return this.recruiterProjectService.update(user_id, +id, accountProjectData);
+    let imageType=null;
+    if(image){
+      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      // List of allowed image types
+      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+  
+      // Validate image type
+      if (imgType || allowedImageTypes.includes(imgType)) {
+        imageType=imgType;
+      }
+    }
+    return this.recruiterProjectService.update(user_id, +id, accountProjectData, image?.buffer, imageType);
   }
 
   @Delete('/:id')
@@ -148,6 +200,22 @@ async unpublishProject(
   async getRanking(@Param('id') project_id: number, @Req() req: Request) {
     const user_id = req['user_id'];
     return await this.recruiterProjectService.getRanking(project_id, user_id);
+  }
+
+  getImageTypeFromMimetype(mimetype: string): string | null {
+    // Split the mimetype string by '/'
+    const parts = mimetype.split('/');
+  
+    // Check if the first part is 'image'
+    if (parts[0] === 'image' && parts[1]) {
+      // Special case for 'svg+xml' which should be treated as 'svg'
+      if (parts[1] === 'svg+xml') {
+        return 'svg';
+      }
+      return parts[1]; // The second part is the image type
+    } else {
+      return null; // Not a valid image mimetype
+    }
   }
 
   

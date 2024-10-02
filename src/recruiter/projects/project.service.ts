@@ -211,9 +211,11 @@ export class RecruiterProjectService {
     }
   }
 
-  async createAndPublish(accountProjectData: RecruiterProject, userId: number): Promise<any> {
+  async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any): Promise<any> {
     try {
       // Find the user by userId
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+
       const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
@@ -227,6 +229,20 @@ export class RecruiterProjectService {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
   
+      if(imageType){
+           // Upload the new image for the company
+          let storedImage = await this.uploadService.uploadNewImage(
+             buffer,
+            'recruiter_project_images',
+             imageType
+           );
+
+         if(storedImage){
+              accountProjectData.logo=storedImage;
+             accountProjectData.logo_type=imageType;
+        }
+
+      }
       // Set the associated company in the project data
       accountProjectData.company = recruiterCompanyUser.company;
   
@@ -264,9 +280,12 @@ export class RecruiterProjectService {
     }
   }
   
-  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any): Promise<any> {
+  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType): Promise<any> {
     try {
       // Find the user by userId
+
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+
       const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
@@ -280,7 +299,7 @@ export class RecruiterProjectService {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
 
-      var project = await this.recruiterProjectRepository.findOne({
+      let project = await this.recruiterProjectRepository.findOne({
         where: { id: project_id },
       });
   
@@ -288,11 +307,32 @@ export class RecruiterProjectService {
         return { error: true, message: 'Project not found.' };
       }
   
-      project={...accountProjectData}
-      // Set the associated company in the project data
-      project.company = recruiterCompanyUser.company;
+     
   
+      if(imageType){
+        // Upload the new image for the company
+       let storedImage = await this.uploadService.uploadNewImage(
+          buffer,
+         'recruiter_project_images',
+          imageType
+        );
+
+        console.log(storedImage)
+      if(storedImage){
+        accountProjectData.logo=storedImage;
+        accountProjectData.logo_type=imageType;
+        await this.uploadService.deleteImage(project.logo,'recruiter_project_images' )   
+     }
+
+   }
+
+   project={...accountProjectData}
+   // Set the associated company in the project data
+   project.company = recruiterCompanyUser.company;
       // Validate required fields
+
+      await this.recruiterProjectRepository.update(project_id,project);
+
       if (this.hasRequiredFields(project)) {
         project.draft = false;
         project.published = true;
@@ -328,8 +368,13 @@ export class RecruiterProjectService {
   async create(
     accountProjectData: Partial<RecruiterProject>,
     userId: number,
+    buffer: any,
+    imageType: any
   ): Promise<any> {
     try {
+
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+      console.log(accountProjectData)
       const user = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
 
@@ -344,6 +389,20 @@ export class RecruiterProjectService {
     return { error: true, message: 'User is not associated with any recruiter company.' };
 
   }
+
+  if(imageType){
+   // Upload the new image for the company
+   let storedImage = await this.uploadService.uploadNewImage(
+    buffer,
+    'recruiter_project_images',
+    imageType
+  );
+
+  if(storedImage){
+    accountProjectData.logo=storedImage;
+    accountProjectData.logo_type=imageType;
+  }
+}
 
   // Set the user in the project data
   accountProjectData.company = recruiterCompanyUser.company;
@@ -442,6 +501,8 @@ export class RecruiterProjectService {
   private hasRequiredFields(project: RecruiterProject): boolean {
     return !!(
       project.title &&
+      project.company_name && 
+      project.logo &&
       project.experience !== null &&
       project.ote_start !== null &&
       project.ote_end !== null &&
@@ -466,7 +527,6 @@ export class RecruiterProjectService {
       project.selectedPersona &&
       project.territory &&
       project.languages &&
-      project.linkedin_profile &&
       project.minimum_salecycle_type &&
       project.start_date
     );
@@ -475,8 +535,11 @@ export class RecruiterProjectService {
     userId: number,
     id: number,
     accountProjectData: Partial<RecruiterProject>,
+    buffer:any,
+    imageType: any
   ): Promise<any> {
     try {
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
       const project = await this.recruiterProjectRepository.findOne({
         where: { id},
       });
@@ -486,6 +549,22 @@ export class RecruiterProjectService {
           message: 'Project not found.',
         };
       }
+      if(imageType){
+        // Upload the new image for the company
+        let storedImage = await this.uploadService.uploadNewImage(
+         buffer,
+         'recruiter_project_images',
+         imageType
+       );
+     
+       if(storedImage){
+        accountProjectData.logo=storedImage;
+        accountProjectData.logo_type=imageType;
+
+        await this.uploadService.deleteImage(project.logo,'recruiter_project_images' )   
+
+       }
+     }
 
       if(project.published && !this.hasRequiredFields(accountProjectData as RecruiterProject)){
         accountProjectData.published=false;
@@ -519,6 +598,7 @@ export class RecruiterProjectService {
         where: { project: { id: id } },
       });
       await this.visitorRepository.remove(visitors);
+      await this.uploadService.deleteImage(project.logo,'recruiter_project_images' )   
       await this.recruiterProjectRepository.delete(id);
 
       return { error: false, message: 'Project Deleted Successfully' };
@@ -736,5 +816,79 @@ export class RecruiterProjectService {
     } catch (e) {
       return { error: true, message: 'Error for getting ranking, try again.' };
     }
+  }
+
+
+   parseRecruiterProjectData(data: any): RecruiterProject {
+    const parsedData = new RecruiterProject();
+  
+    // Parse numeric fields
+    parsedData.experience = data.experience ? parseInt(data.experience) : null;
+    parsedData.ote_start = data.ote_start ? parseInt(data.ote_start) : null;
+    parsedData.ote_end = data.ote_end ? parseInt(data.ote_end) : null;
+    parsedData.existing_business_range = data.existing_business_range ? parseInt(data.existing_business_range) : null;
+    parsedData.business_range = data.business_range ? parseInt(data.business_range) : null;
+    parsedData.partnership_range = data.partnership_range ? parseInt(data.partnership_range) : null;
+    parsedData.inbound_range = data.inbound_range ? parseInt(data.inbound_range) : null;
+    parsedData.outbound_range = data.outbound_range ? parseInt(data.outbound_range) : null;
+    parsedData.smb = data.smb ? parseInt(data.smb) : null;
+    parsedData.midmarket = data.midmarket ? parseInt(data.midmarket) : null;
+    parsedData.enterprise = data.enterprise ? parseInt(data.enterprise) : null;
+    parsedData.minimum_deal_size = data.minimum_deal_size ? parseInt(data.minimum_deal_size) : null;
+    parsedData.minimum_sale_cycle = data.minimum_sale_cycle ? parseInt(data.minimum_sale_cycle) : null;
+    parsedData.hybrid_days = data.hybrid_days ? parseInt(data.hybrid_days) : null;
+  
+    // Parse boolean fields
+    parsedData.is_travel_requirements = data.is_travel_requirements == 'Yes';
+  
+    // Parse date fields
+    parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
+  
+    // Parse simple-array fields
+    parsedData.Industry_Works_IN = data.Industry_Works_IN 
+    ? data.Industry_Works_IN.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+// Handle other fields which might need splitting and joining as comma-separated strings
+parsedData.Industry_Sold_To = data.Industry_Sold_To 
+    ? data.Industry_Sold_To.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+parsedData.selectedPersona = data.selectedPersona 
+    ? data.selectedPersona.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+parsedData.territory = data.territory 
+    ? data.territory.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+
+parsedData.languages = data.languages 
+    ? data.languages.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
+  
+    // Parse string fields
+    parsedData.title = data.title || null;
+    parsedData.company_name = data.company_name || null;
+    parsedData.logo = data.logo || null;
+    parsedData.logo_type = data.logo_type || null;
+    parsedData.location_type = data.location_type || null;
+    parsedData.description = data.description || null;
+    parsedData.location = data.location || null;
+    parsedData.linkedin_profile = data.linkedin_profile || null;
+    parsedData.minimum_salecycle_type = data.minimum_salecycle_type || null;
+    parsedData.timeline = data.timeline || null;
+    parsedData.benefits = data.benefits || null;
+    parsedData.elevator_pitch = data.elevator_pitch || null;
+    parsedData.travel_requirement_percentage = data.travel_requirement_percentage || null;
+    parsedData.report_to = data.report_to || null;
+    parsedData.hiring_process = data.hiring_process || null;
+    parsedData.growth_opportunities = data.growth_opportunities || null;
+  
+    // Parse other fields
+    parsedData.visits_count = data.visits_count ? parseInt(data.visits_count) : 0;
+    parsedData.currency = data.currency || '$';
+    parsedData.currency_country = data.currency_country || 'United States Dollar (USD)';
+  
+    return parsedData;
   }
 }
