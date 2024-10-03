@@ -18,8 +18,13 @@ export class CityController {
   }
 
   @Get('locations/search')
-  async searchLocations(@Query('term') searchTerm: string): Promise<{ error: boolean, cities?: City[], message?: string }> {
+  async searchLocations(@Query('term') searchTerm: string): Promise<any> {
     return this.cityService.searchLocations(searchTerm);
+  }
+
+  @Get('get_countries_states/search')
+  async searchCountriesStates(@Query('term') searchTerm: string): Promise<any> {
+    return this.cityService.searchCountriesStates(searchTerm);
   }
 
 }

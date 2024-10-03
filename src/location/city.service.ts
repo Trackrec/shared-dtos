@@ -242,6 +242,39 @@ export class CityService {
     }
   }
 
+  async searchPlaces3(searchTerm) {
+    const countries = await this.searchCountries(searchTerm);
+    const states = await this.searchStates(searchTerm);
+
+    const places = [countries, states]
+      .flat()
+      .map((item) => this.buildPlace2(item))
+      .map((place) => this.buildName(place))
+      .map((place) => this.buildId(place))
+      .filter(
+        (value, index, self) =>
+          self.findIndex((p) => p.name === value.name) === index,
+      );
+
+    return places;
+  }
+
+
+  async searchCountriesStates(
+    searchTerm: string,
+  ): Promise<{ error: boolean; locations?: any; message?: string }> {
+    try {
+      if (!searchTerm) {
+        throw new BadRequestException('Search term is required');
+      }
+
+      const locations = await this.searchPlaces3(searchTerm);
+      return { error: false, locations };
+    } catch (error) {
+      console.log(error);
+      return { error: true, message: error.message };
+    }
+  }
   
   
 }
