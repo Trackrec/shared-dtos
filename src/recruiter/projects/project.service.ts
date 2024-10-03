@@ -509,17 +509,11 @@ export class RecruiterProjectService {
       project.location_type &&
       project.description &&
        (project.location_type !== 'hybrid' || project.hybrid_days !== null) &&
-      project.existing_business_range !== null &&
-      project.partnership_range !==null &&
-      project.business_range !== null &&
-      ((project.business_range + project.existing_business_range + project.partnership_range)==100) &&
-      project.inbound_range !== null &&
-      ((project.inbound_range + project.outbound_range)==100) &&
-      project.outbound_range !== null &&
-      project.smb !== null &&
-      project.midmarket !== null &&
-      project.enterprise !== null &&
-      ((project.smb + project.midmarket + project.enterprise)==100) &&
+       ((project.business_range ?? 0) + 
+       (project.existing_business_range ?? 0) + 
+       (project.partnership_range ?? 0) === 100) &&
+       ((project.inbound_range ?? 0) + (project.outbound_range ?? 0) === 100) &&
+       ((project.smb ?? 0) + (project.midmarket ?? 0) + (project.enterprise ?? 0) === 100) &&
       project.minimum_deal_size !== null &&
       project.minimum_sale_cycle !== null &&
       project.Industry_Works_IN &&
