@@ -17,4 +17,9 @@ export class CityController {
     return this.cityService.searchLocationCountries(searchTerm);
   }
 
+  @Get('locations/search')
+  async searchLocations(@Query('term') searchTerm: string): Promise<{ error: boolean, cities?: City[], message?: string }> {
+    return this.cityService.searchLocations(searchTerm);
+  }
+
 }
