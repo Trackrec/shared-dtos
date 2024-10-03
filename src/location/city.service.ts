@@ -228,14 +228,14 @@ export class CityService {
 
   async searchLocations(
     searchTerm: string,
-  ): Promise<{ error: boolean; cities?: any; message?: string }> {
+  ): Promise<{ error: boolean; locations?: any; message?: string }> {
     try {
       if (!searchTerm) {
         throw new BadRequestException('Search term is required');
       }
 
-      const cities = await this.searchPlaces2(searchTerm);
-      return { error: false, cities };
+      const locations = await this.searchPlaces2(searchTerm);
+      return { error: false, locations };
     } catch (error) {
       console.log(error);
       return { error: true, message: error.message };
