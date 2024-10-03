@@ -506,6 +506,7 @@ export class RecruiterProjectService {
       project.experience !== null &&
       project.ote_start !== null &&
       project.ote_end !== null &&
+      project.location !=null &&
       project.location_type &&
       project.description &&
        (project.location_type !== 'hybrid' || project.hybrid_days !== null) &&
