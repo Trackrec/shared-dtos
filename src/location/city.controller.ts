@@ -17,4 +17,14 @@ export class CityController {
     return this.cityService.searchLocationCountries(searchTerm);
   }
 
+  @Get('locations/search')
+  async searchLocations(@Query('term') searchTerm: string): Promise<any> {
+    return this.cityService.searchLocations(searchTerm);
+  }
+
+  @Get('get_countries_states/search')
+  async searchCountriesStates(@Query('term') searchTerm: string): Promise<any> {
+    return this.cityService.searchCountriesStates(searchTerm);
+  }
+
 }
