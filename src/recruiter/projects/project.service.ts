@@ -865,7 +865,6 @@ parsedData.languages = data.languages
     parsedData.title = data.title || null;
     parsedData.company_name = data.company_name || null;
     parsedData.logo = data.logo || null;
-    parsedData.logo_type = data.logo_type || null;
     parsedData.location_type = data.location_type || null;
     parsedData.description = data.description || null;
     parsedData.location = data.location || null;
