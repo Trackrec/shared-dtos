@@ -47,10 +47,10 @@ export class RecruiterProject {
     @IsNotEmpty()
     description: string;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
+    @Column({ type: 'simple-array', nullable: true })
     @ValidateIf(o => o.published)
     @IsNotEmpty()
-    location: string;
+    location: string[];
 
     @Column({ type: 'int', nullable: true })
     @ValidateIf(o => o.published)

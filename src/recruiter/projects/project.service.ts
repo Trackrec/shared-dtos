@@ -867,7 +867,9 @@ parsedData.languages = data.languages
     parsedData.logo = data.logo || null;
     parsedData.location_type = data.location_type || null;
     parsedData.description = data.description || null;
-    parsedData.location = data.location || null;
+    parsedData.location = data.location 
+    ? data.location.replace(/[\[\]']+/g, '').split(',').join(',') 
+    : null;
     parsedData.linkedin_profile = data.linkedin_profile || null;
     parsedData.minimum_salecycle_type = data.minimum_salecycle_type || null;
     parsedData.timeline = data.timeline || null;
