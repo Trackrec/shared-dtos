@@ -715,7 +715,14 @@ export class RecruiterProjectService {
       };
       let sum = this.sumObjectValues(points);
       const maxPossibleSum = 10 * Object.keys(points).length;
-      const percentage = (sum / maxPossibleSum) * 100;
+      let percentage = (sum / maxPossibleSum) * 100;
+      // Round off the value to a whole number
+      percentage = Math.round(percentage);
+
+      // Ensure the percentage doesn't exceed 100
+      if (percentage > 100) {
+          percentage = 100;
+       }
       return { points, percentage };
     } catch (e) {
       console.log('ERROR');
