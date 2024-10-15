@@ -285,6 +285,9 @@ if (email) {
         if (existingAssociation?.company?.id !== user?.companyCreated?.id) {
           user.role = role;
         }
+        else{
+          return { error: true, message: 'You cannot update company owner.' };
+        }
     
         // Save updated user
         await this.userRepository.save(user);
