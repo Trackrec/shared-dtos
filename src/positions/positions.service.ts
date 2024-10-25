@@ -42,6 +42,15 @@ export class PositionService {
             ? positionData.website_url
             : null,
         });
+      else {
+        if (
+          positionData?.website_url &&
+          company.website_url !== positionData.website_url
+        ) {
+          company.website_url = positionData.website_url;
+          company = await this.companyRepository.save(company);
+        }
+      }
 
       const existingPositions = await this.positionRepository.find({
         where: { user: { id: userId } },
