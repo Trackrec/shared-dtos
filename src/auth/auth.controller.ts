@@ -24,15 +24,17 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Get('linkedin')
   setLinkedinSession(
-    @Query('request_token') request_token,
+    @Query() queryParams: Record<string, string>,
     @Req() req,
     @Res() res,
   ) {
-    req.session.request_token = request_token;
-
+    req.session.savedQueryParams = new URLSearchParams(queryParams).toString();
+    console.log(queryParams);
     this.logger.log('LinkedIn session value set');
-    if (request_token) return res.redirect('/secondary_linkedin/set-session');
-    else return res.redirect('/linkedin/set-session');
+    const redirectPath = queryParams.request_token
+      ? '/secondary_linkedin/set-session'
+      : '/linkedin/set-session';
+    return res.redirect(redirectPath);
   }
   @Get('linkedin/set-session')
   @UseGuards(AuthGuard('linkedin'))
@@ -52,12 +54,17 @@ export class AuthController {
     try {
       const user = req.user;
 
+      // Retrieve saved query parameters from session
+      const savedQueryParams = req.session.savedQueryParams || '';
+
       if (user && user.token) {
         return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}`,
+          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
         );
       } else {
-        return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`,
+        );
       }
     } catch (error) {
       this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
@@ -70,13 +77,16 @@ export class AuthController {
   secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
+      const savedQueryParams = req.session.savedQueryParams || '';
 
       if (user && user.token) {
         return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}`,
+          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
         );
       } else {
-        return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`,
+        );
       }
     } catch (error) {
       this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
