@@ -37,7 +37,8 @@ export class PositionDetailsService {
                 company_id: data?.company_id,
                 name: companyData?.name,
                 logo_url: data.logo_url ? data.logo_url : null,
-                domain: data.domain ? data.domain : null
+                domain: data.domain ? data.domain : null,
+                website_url: data.website_url ? data.website_url : null,
             });
 
             if (newCompany.error) {
