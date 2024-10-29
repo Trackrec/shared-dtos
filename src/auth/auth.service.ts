@@ -436,12 +436,22 @@ export class AuthService {
             where: [{ name: experience.company }],
           });
           let newCompany = null;
-          if (!company)
+          if (!company){
+            let appoloCompany= await this.companyService.searchCompany({company_name: experience.company})
+            const website_url = 
+                 appoloCompany && !appoloCompany.error 
+                    ? (
+                      Array.isArray(appoloCompany.data?.organizations) && appoloCompany.data.organizations.length > 0 
+                      ? appoloCompany.data.organizations[0]?.website_url : null
+                     ) : null;
+
             newCompany = await this.companyService.createCompany({
               name: experience.company,
               logo_url: experience.logo_url ? experience.logo_url : null,
               domain: experience.domain ? experience.domain : null,
+              website_url:website_url
             });
+          }
 
           const positionData = {
             start_month: experience.starts_at
