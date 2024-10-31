@@ -8,6 +8,7 @@ import { UserAccounts } from 'src/auth/User.entity';
 import { AccountProject } from 'src/admin/projects/project.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
+import { MailgunService } from 'src/mailgun/mailgun.service';
 @Injectable()
 export class ApplicationService {
   constructor(
@@ -19,6 +20,7 @@ export class ApplicationService {
     private readonly projectRepository: Repository<RecruiterProject>,
     @InjectRepository(RecruiterCompanyUser)
     private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>,
+    private readonly mailgunService: MailgunService,
   ) {}
 
   async createApplication(body: any, userId: number): Promise<any> {
@@ -46,6 +48,20 @@ export class ApplicationService {
             application.project= project
  
             await this.applicationRepository.save(application);
+
+            const messageData = {
+              from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+              to: user?.email,
+              subject: `Application for ${application.project.title}`,
+              html: `
+              Hello ${user?.full_name.split(' ')[0]}, <br/><br/>
+              Thank you for applying to the ${application.project.title} with ${application.project.company_name}.
+              We sent your TrackRec and Sales Fit Score to their Hiring Manager, they'll be in touch regarding next steps.<br/><br/>
+              All the best!<br/>
+              Team TrackRec
+            `,
+            };
+            await this.mailgunService.sendMail(messageData);
  
             return {error: false, message: "Application created successfully."}
           }else{
