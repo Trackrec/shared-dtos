@@ -985,7 +985,7 @@ parsedData.languages = data.languages
     parsedData.visits_count = data.visits_count ? parseInt(data.visits_count) : 0;
     parsedData.currency = data.currency || '$';
     parsedData.currency_country = data.currency_country || 'United States Dollar (USD)';
-  
+    parsedData.project_custom_url = data.project_custom_url;
     return parsedData;
   }
 
