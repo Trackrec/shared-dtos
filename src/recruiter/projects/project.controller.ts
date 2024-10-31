@@ -64,12 +64,12 @@ export class RecruiterProjectController {
     return this.recruiterProjectService.findAllUsersProjects(user_id);
   }
 
-  @Get('project-view/:id')
+  @Get('project-view/:project_url')
   findOne(
-    @Param('id') id: string,
+    @Param('project_url') project_url: string,
     @Req() req: Request,
   ): Promise<RecruiterProject> {
-    return this.recruiterProjectService.findOne(+id);
+    return this.recruiterProjectService.findOneByUrl(project_url);
   }
 
   @Get(':id')

@@ -178,6 +178,9 @@ export class RecruiterProject {
     @Column({ type: 'int', default: 0 })
     visits_count: number;
 
+    @Column({ default: null })
+    project_custom_url: string;
+
     // New fields for draft and publish status
     @Column({ type: 'boolean', default: true })
     draft: boolean;

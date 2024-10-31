@@ -211,6 +211,25 @@ export class RecruiterProjectService {
     }
   }
 
+  async findOneByUrl(project_url: string): Promise<any> {
+    try {
+      const project = await this.recruiterProjectRepository.findOne({
+        where: { project_custom_url: project_url },
+        relations: ['company']
+      });
+      // const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
+      if (!project || !project.published) {
+        return { error: true, message: 'Project not found.' };
+      }
+      // if(!project.published){
+      //   return { error: true, message: 'Project not published.' };
+      // }
+      return { error: false, project };
+    } catch (e) {
+      return { error: true, message: 'Project not found.' };
+    }
+  }
+
   async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any): Promise<any> {
     try {
       // Find the user by userId
@@ -228,6 +247,23 @@ export class RecruiterProjectService {
       if (!recruiterCompanyUser) {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
+
+      if(!accountProjectData.project_custom_url)
+        accountProjectData.project_custom_url= await this.generateUniqueProjectUrl(accountProjectData.title)
+      else{
+        const urlExist = await this.recruiterProjectRepository.findOne({
+          where: {
+             project_custom_url: accountProjectData.project_custom_url,
+           },
+         });
+    
+      if (urlExist) {
+          return {
+             error: true,
+             message: 'This job custom url already exists.',
+          };
+        }
+      } 
   
       if(imageType){
            // Upload the new image for the company
@@ -307,6 +343,20 @@ export class RecruiterProjectService {
         return { error: true, message: 'Project not found.' };
       }
   
+      if(accountProjectData.project_custom_url){
+        const urlExist = await this.recruiterProjectRepository.findOne({
+            where: {
+               project_custom_url: accountProjectData.project_custom_url,
+             },
+           });
+     
+        if (urlExist && urlExist.id != project.id) {
+            return {
+               error: true,
+               message: 'This job custom url already exists.',
+            };
+        }
+      }
      
   
       if(imageType){
@@ -389,6 +439,23 @@ export class RecruiterProjectService {
     return { error: true, message: 'User is not associated with any recruiter company.' };
 
   }
+
+  if(!accountProjectData.project_custom_url)
+    accountProjectData.project_custom_url= await this.generateUniqueProjectUrl(accountProjectData.title)
+  else{
+    const urlExist = await this.recruiterProjectRepository.findOne({
+      where: {
+         project_custom_url: accountProjectData.project_custom_url,
+       },
+     });
+  if (urlExist) {
+      return {
+         error: true,
+         message: 'This job custom url already exists.',
+      };
+    }
+  } 
+
 
   if(imageType){
    // Upload the new image for the company
@@ -544,6 +611,23 @@ export class RecruiterProjectService {
           message: 'Project not found.',
         };
       }
+
+      if(accountProjectData.project_custom_url){
+        const urlExist = await this.recruiterProjectRepository.findOne({
+            where: {
+               project_custom_url: accountProjectData.project_custom_url,
+             },
+           });
+     
+        if (urlExist && urlExist.id != project.id) {
+            return {
+               error: true,
+               message: 'This job custom url already exists.',
+            };
+        }
+      }
+
+
       if(imageType){
         // Upload the new image for the company
         let storedImage = await this.uploadService.uploadNewImage(
@@ -893,5 +977,20 @@ parsedData.languages = data.languages
     parsedData.currency_country = data.currency_country || 'United States Dollar (USD)';
   
     return parsedData;
+  }
+
+  private async generateUniqueProjectUrl(projectName: string): Promise<string> {
+    let baseProjectName = projectName.toLowerCase().replace(/\s+/g, '-');
+    let project_name = baseProjectName;
+    let counter = 2;
+    while (
+      await this.recruiterProjectRepository.findOne({
+        where: { project_custom_url: project_name },
+      })
+    ) {
+      project_name = `${baseProjectName}-${counter}`;
+      counter++;
+    }
+    return project_name;
   }
 }
