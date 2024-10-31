@@ -839,12 +839,21 @@ export class RecruiterProjectService {
   }
   async getRanking(project_id: number, user_id: number) {
     try {
+        // Check if the user is associated with a company
+       const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+          where: { user: { id: user_id } },
+          relations: ['company'],
+        });
+
+      if (!recruiterCompanyUser) {
+        return { error: true, message: 'User is not associated with any recruiter company.' };
+      }
 
       const project = await this.recruiterProjectRepository.findOne({
         where: { id: project_id },
       });
 
-      if(!project){
+      if(!project || project.company.id!=recruiterCompanyUser.company.id){
         return {error: true, message: "Project not found."}
       }
       const applications = await this.applicationService
