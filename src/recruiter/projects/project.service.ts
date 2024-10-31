@@ -851,8 +851,10 @@ export class RecruiterProjectService {
 
       const project = await this.recruiterProjectRepository.findOne({
         where: { id: project_id },
+        relations: ['company']
       });
 
+      console.log(project)
       if(!project || project.company.id!=recruiterCompanyUser.company.id){
         return {error: true, message: "Project not found."}
       }
