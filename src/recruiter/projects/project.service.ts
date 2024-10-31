@@ -589,8 +589,7 @@ export class RecruiterProjectService {
       project.selectedPersona &&
       project.territory &&
       project.languages &&
-      project.minimum_salecycle_type &&
-      project.start_date
+      project.minimum_salecycle_type
     );
   }
   async update(
