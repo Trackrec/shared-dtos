@@ -1,5 +1,5 @@
 import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
-
+import OpenAI from 'openai';
 
 @Injectable()
 export class RecruiterPointsService {
@@ -24,45 +24,137 @@ export class RecruiterPointsService {
         }
     }
 
-    points_for_worked_in(positions, Industry_Works_IN) {
-        let combinedWorkedIn = [];
-    
-        positions.forEach(position => {
-            combinedWorkedIn.push(...position?.details?.worked_in);
+    async points_for_worked_in(positions, Industry_Works_IN) {
+      const client = new OpenAI({
+        apiKey: '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',
+
+      });
+
+      const workedIn = positions.flatMap(position => position?.details?.worked_in || []);
+      const prompt = `
+          You are an expert at assessing job title matches. I will give you two lists:
+          1. A list of industries the candidate has worked in.
+          2. A list of industries required for the target role.
+
+        Experience Weighting:
+        Weight similar past experience more heavily if it aligns closely with the requirements of the job post, even if exact matches are not found.
+
+          Your task is to compare the two lists and assign a score from 0 to 10 based on how well the candidate's experience aligns with the target industries:
+          - 10: All required industries are covered.
+          - 7-9: Most industries match.
+          - 4-6: Some industries match.
+          - 1-3: Very few industries match.
+          - 0: No relevant industries match.
+
+          Consider synonyms and similar roles. Provide only the score as the output. You example output will be a number from 0 to 10.
+
+          Candidate's industries: ${JSON.stringify(workedIn)}
+          Target industries: ${JSON.stringify(Industry_Works_IN)}
+      `;
+
+        const chatCompletion = await client.chat.completions.create({
+            messages: [{ role: 'user', content: prompt }],
+            model: 'gpt-4o-mini',
         });
-    
-        const uniqueWorkedIn = [...new Set([...combinedWorkedIn, ...Industry_Works_IN])];
-    
-        const allElementsPresent = Industry_Works_IN.every(element => uniqueWorkedIn.includes(element));
-    
-        if (allElementsPresent) {
-            return 10;
-        } else {
-            const commonElements = Industry_Works_IN.filter(element => uniqueWorkedIn.includes(element));
-            const points = (commonElements.length / Industry_Works_IN.length) * 10;
-            return points;
-        }
+        const result = parseInt(chatCompletion.choices[0].message.content);
+        return result;
     }
 
-    points_for_sold_to(positions, Industry_Sold_To) {
-        let combinedWorkedIn = [];
-    
-        positions.forEach(position => {
-            combinedWorkedIn.push(...position.details.sold_to);
+    async points_for_sold_to(positions, Sold_In) {
+      const client = new OpenAI({
+        apiKey: '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',
+
+      });
+
+      const soldIn = positions.flatMap(position => position?.details?.sold_to || []);
+      const prompt = `
+          You are an expert at assessing job title matches. I will give you two lists:
+          1. A list of industries the candidate has sold to.
+          2. A list of industries required for the target role.
+
+        Experience Weighting:
+        Weight similar past experience more heavily if it aligns closely with the requirements of the job post, even if exact matches are not found.
+
+        Recency Weighting: an experience from 1/2/3 years ago is far more significant than something from 10 years ago 
+
+          Your task is to compare the two lists and assign a score from 0 to 10 based on how well the candidate's experience aligns with the target industries:
+          - 10: All required industries are covered.
+          - 7-9: Most industries match.
+          - 4-6: Some industries match.
+          - 1-3: Very few industries match.
+          - 0: No relevant industries match.
+
+          Consider synonyms and similar roles. Provide only the score as the output. You example output will be a number from 0 to 10.
+
+          Candidate's industries: ${JSON.stringify(soldIn)}
+          Target industries: ${JSON.stringify(Sold_In)}
+            Position:${JSON.stringify(positions)}
+      `;
+        console.log(prompt)
+
+        const chatCompletion = await client.chat.completions.create({
+            messages: [{ role: 'user', content: prompt }],
+            model: 'gpt-4o-mini',
         });
-    
-        const uniqueWorkedIn = [...new Set([...combinedWorkedIn, ...Industry_Sold_To])];
-    
-        const allElementsPresent = Industry_Sold_To.every(element => uniqueWorkedIn.includes(element));
-    
-        if (allElementsPresent) {
-            return 10;
-        } else {
-            const commonElements = Industry_Sold_To.filter(element => uniqueWorkedIn.includes(element));
-            const points = (commonElements.length / Industry_Sold_To.length) * 10;
-            return points;
-        }
+        const result = parseInt(chatCompletion.choices[0].message.content);
+        return result;
     }
+
+async points_for_sales_cycle(positions, project) {
+    const client = new OpenAI({
+        apiKey: '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',
+    });
+
+    const salesCycles = positions.map(position => ({
+        value: position.details.average_sales_cycle,
+        type: position.details.type || 'Unknown'
+    }));
+
+    const prompt = `
+        You are an expert at analyzing sales cycle compatibility. Compare:
+        1. Candidate's sales cycles: ${JSON.stringify(salesCycles)}
+        2. Required minimum cycle: ${project.minimum_sale_cycle} ${project.minimum_salecycle_type}
+
+        Score from 0-10 based on:
+        - Sales cycle length similarity
+        - Business type matching (B2B/B2C)
+        - Industry complexity correlation
+        - Deal size implications
+        
+        Consider:
+        - Long-cycle B2B (6+ months) vs short-cycle B2C (1-3 months)
+        - Enterprise vs SMB sales patterns
+        - Industry-specific cycle norms
+
+        Output only the numerical score (0-10).`;
+
+    const chatCompletion = await client.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'gpt-4o-mini',
+    });
+
+    return parseInt(chatCompletion.choices[0].message.content);
+}
+
+    // points_for_sold_to(positions, Industry_Sold_To) {
+    //     let combinedWorkedIn = [];
+    // 
+    //     positions.forEach(position => {
+    //         combinedWorkedIn.push(...position.details.sold_to);
+    //     });
+    // 
+    //     const uniqueWorkedIn = [...new Set([...combinedWorkedIn, ...Industry_Sold_To])];
+    // 
+    //     const allElementsPresent = Industry_Sold_To.every(element => uniqueWorkedIn.includes(element));
+    // 
+    //     if (allElementsPresent) {
+    //         return 10;
+    //     } else {
+    //         const commonElements = Industry_Sold_To.filter(element => uniqueWorkedIn.includes(element));
+    //         const points = (commonElements.length / Industry_Sold_To.length) * 10;
+    //         return points;
+    //     }
+    // }
     segment_percent(positions) {
         // Filter positions for each segment and calculate total
         const total_smb = positions
@@ -126,88 +218,123 @@ export class RecruiterPointsService {
     }
     
 
-    points_for_sales_cycle( positions, project) {
-        return this.points_for_sales_cycle_helper(project, positions, 0);
-    }
-    
-    points_for_sales_cycle_helper(project, positions, score) {
-        if (positions.length === 0) {
-            return score;
-        }
-    
-        const position = positions[0];
-        const rest = positions.slice(1);
-    
-        // Extracting average sales cycle value and unit from the position object
-        const averageSalesCycle = position.details.average_sales_cycle;
-        const [value, unit] = averageSalesCycle.split(" ");
-        const numericValue = parseInt(value);
-    
-        let temp_score;
-    
-        if (project.minimum_salecycle_type === "Week") {
-            if (unit === "weeks") {
-                if (numericValue >= project.minimum_sale_cycle) {
-                    temp_score = 10;
-                } else {
-                    const ratio = numericValue / project.minimum_sale_cycle;
-                    temp_score = Math.round(ratio * 10);
-                }
-            } else if (unit === "months") {
-                const weeks_in_a_month = 4.33;
-                const weeks = numericValue * weeks_in_a_month;
-                if (weeks >= project.minimum_sale_cycle) {
-                    temp_score = 10;
-                } else {
-                    const ratio = weeks / project.minimum_sale_cycle;
-                    temp_score = Math.round(ratio * 10);
-                }
-            }
-        } else {
-            if (unit === "weeks") {
-                if (numericValue >= project.minimum_sale_cycle) {
-                    temp_score = 10;
-                } else {
-                    const ratio = numericValue / project.minimum_sale_cycle;
-                    temp_score = Math.round(ratio * 10);
-                }
-            } else if (unit === "months") {
-                const weeks_in_a_month = 4.33;
-                const months = numericValue;
-                const weeks = months * weeks_in_a_month;
-                if (weeks >= project.minimum_sale_cycle) {
-                    temp_score = 10;
-                } else {
-                    const ratio = weeks / project.minimum_sale_cycle;
-                    temp_score = Math.round(ratio * 10);
-                }
-            }
-        }
-    
-        const updated_score = temp_score > score ? temp_score : score;
-    
-        return this.points_for_sales_cycle_helper(project, rest, updated_score);
-    }
+    // points_for_sales_cycle( positions, project) {
+    //     return this.points_for_sales_cycle_helper(project, positions, 0);
+    // }
+    // 
+    // points_for_sales_cycle_helper(project, positions, score) {
+    //     if (positions.length === 0) {
+    //         return score;
+    //     }
+    // 
+    //     const position = positions[0];
+    //     const rest = positions.slice(1);
+    // 
+    //     // Extracting average sales cycle value and unit from the position object
+    //     const averageSalesCycle = position.details.average_sales_cycle;
+    //     const [value, unit] = averageSalesCycle.split(" ");
+    //     const numericValue = parseInt(value);
+    // 
+    //     let temp_score;
+    // 
+    //     if (project.minimum_salecycle_type === "Week") {
+    //         if (unit === "weeks") {
+    //             if (numericValue >= project.minimum_sale_cycle) {
+    //                 temp_score = 10;
+    //             } else {
+    //                 const ratio = numericValue / project.minimum_sale_cycle;
+    //                 temp_score = Math.round(ratio * 10);
+    //             }
+    //         } else if (unit === "months") {
+    //             const weeks_in_a_month = 4.33;
+    //             const weeks = numericValue * weeks_in_a_month;
+    //             if (weeks >= project.minimum_sale_cycle) {
+    //                 temp_score = 10;
+    //             } else {
+    //                 const ratio = weeks / project.minimum_sale_cycle;
+    //                 temp_score = Math.round(ratio * 10);
+    //             }
+    //         }
+    //     } else {
+    //         if (unit === "weeks") {
+    //             if (numericValue >= project.minimum_sale_cycle) {
+    //                 temp_score = 10;
+    //             } else {
+    //                 const ratio = numericValue / project.minimum_sale_cycle;
+    //                 temp_score = Math.round(ratio * 10);
+    //             }
+    //         } else if (unit === "months") {
+    //             const weeks_in_a_month = 4.33;
+    //             const months = numericValue;
+    //             const weeks = months * weeks_in_a_month;
+    //             if (weeks >= project.minimum_sale_cycle) {
+    //                 temp_score = 10;
+    //             } else {
+    //                 const ratio = weeks / project.minimum_sale_cycle;
+    //                 temp_score = Math.round(ratio * 10);
+    //             }
+    //         }
+    //     }
+    // 
+    //     const updated_score = temp_score > score ? temp_score : score;
+    // 
+    //     return this.points_for_sales_cycle_helper(project, rest, updated_score);
+    // }
     
 
-    points_for_dealsize(positions, project) {
-        return positions.reduce((score, position) => {
-            if (position.details && position.details.average_deal_size) {
-                let temp_score = 0;
-                if (position.details.average_deal_size >= 1) {
-                    const dealsize = position.details.average_deal_size
-                    if (dealsize >= project.minimum_deal_size) {
-                        temp_score = 10;
-                    } else {
-                        temp_score = Math.ceil(10 * (dealsize / project.minimum_deal_size));
-                        temp_score = Math.max(0, temp_score);
-                    }
-                }
-                return temp_score > score ? temp_score : score;
-            } else {
-                return Math.max(0, score);
-            }
-        }, 0);
+    // points_for_dealsize(positions, project) {
+    //     return positions.reduce((score, position) => {
+    //         if (position.details && position.details.average_deal_size) {
+    //             let temp_score = 0;
+    //             if (position.details.average_deal_size >= 1) {
+    //                 const dealsize = position.details.average_deal_size
+    //                 if (dealsize >= project.minimum_deal_size) {
+    //                     temp_score = 10;
+    //                 } else {
+    //                     temp_score = Math.ceil(10 * (dealsize / project.minimum_deal_size));
+    //                     temp_score = Math.max(0, temp_score);
+    //                 }
+    //             }
+    //             return temp_score > score ? temp_score : score;
+    //         } else {
+    //             return Math.max(0, score);
+    //         }
+    //     }, 0);
+    // }
+    async points_for_dealsize(positions, project) {
+      const client = new OpenAI({
+        apiKey: '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',
+
+      });
+    
+        const dealsizes = positions.map(position => position?.details?.average_deal_size || 0);
+        const prompt = `
+            You are an expert at evaluating sales experience alignment. Compare:
+            1. Candidate's average deal size(s): ${JSON.stringify(dealsizes)}
+            2. Required deal size: ${project.minimum_deal_size}
+    
+            Score from 0-10 based on deal size alignment:
+            - 10: Equal or higher deal size
+            - 7-9: Within 20% lower (shows ability to handle similar scale)
+            - 4-6: Within 50% lower (demonstrates growth potential)
+            - 1-3: >50% lower but still significant deals
+            - 0: Deal size too small to be relevant
+    
+            Consider: Selling $50K products shows readiness for $60K sales, but $1K to $60K is too big a gap.
+            Provide only the numeric score (0-10).
+        `;
+    
+        try {
+            const response = await client.chat.completions.create({
+                messages: [{ role: 'user', content: prompt }],
+                model: 'gpt-4o-mini',
+            });
+            
+            return parseInt(response.choices[0].message.content) || 0;
+        } catch (error) {
+            console.error('Error calculating dealsize points:', error);
+            return 0;
+        }
     }
 
     points_for_new_business(positions, project) {
@@ -315,6 +442,7 @@ export class RecruiterPointsService {
         totalYears = Object.keys(uniquePeriods).length / 12;
         return totalYears;
     }
+
     points_for_years(positions, project) {
         const totalYears = this.calculateTotalYears(positions);
     
@@ -326,14 +454,4 @@ export class RecruiterPointsService {
             return Math.round(ratio * 10);
         }
     }
-
-    
-    
-    
-    
-    
-    
-    
-    
-
 }

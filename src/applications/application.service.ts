@@ -125,5 +125,4 @@ export class ApplicationService {
       return { error: true, message: 'Something went wrong, please try again.' };
     }
   }
-  
 }

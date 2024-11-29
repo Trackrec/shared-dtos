@@ -17,7 +17,9 @@ import { RecruiterProject } from './project.entity';
 import { RecruiterProjectService } from './project.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+
 @Controller('recruiter/projects')
+
 export class RecruiterProjectController {
   constructor(private readonly recruiterProjectService: RecruiterProjectService) {}
 
