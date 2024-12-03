@@ -1,8 +1,22 @@
 import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import OpenAI from 'openai';
+import dotenv from 'dotenv';
+
+
 
 @Injectable()
 export class RecruiterPointsService {
+    private openAIClient: OpenAI;
+
+    constructor() {
+        // Load environment variables from .env file
+        dotenv.config();
+        // Initialize the OpenAI client as a class-level property
+        this.openAIClient = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY, // Ensure the API key is loaded from environment variables
+        });
+    }
+
     points_for_ote(user_ote, project_ote) {
         if (!user_ote) {
             user_ote = 0;
@@ -25,10 +39,7 @@ export class RecruiterPointsService {
     }
 
     async points_for_worked_in(positions, Industry_Works_IN) {
-      const client = new OpenAI({
-        apiKey: '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',
-
-      });
+      const client = this.openAIClient;
 
       const workedIn = positions.flatMap(position => position?.details?.worked_in || []);
       const prompt = `
@@ -61,10 +72,7 @@ export class RecruiterPointsService {
     }
 
     async points_for_sold_to(positions, Sold_In) {
-      const client = new OpenAI({
-        apiKey: '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',
-
-      });
+      const client = this.openAIClient
 
       const soldIn = positions.flatMap(position => position?.details?.sold_to || []);
       const prompt = `
@@ -101,9 +109,7 @@ export class RecruiterPointsService {
     }
 
 async points_for_sales_cycle(positions, project) {
-    const client = new OpenAI({
-        apiKey: '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',
-    });
+    const client = this.openAIClient
 
     const salesCycles = positions.map(position => ({
         value: position.details.average_sales_cycle,
@@ -302,10 +308,7 @@ async points_for_sales_cycle(positions, project) {
     //     }, 0);
     // }
     async points_for_dealsize(positions, project) {
-      const client = new OpenAI({
-        apiKey: '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',
-
-      });
+        const client = this.openAIClient
     
         const dealsizes = positions.map(position => position?.details?.average_deal_size || 0);
         const prompt = `

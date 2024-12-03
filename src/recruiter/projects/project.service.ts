@@ -759,10 +759,10 @@ export class RecruiterProjectService {
           this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona),
           this.pointsService.points_for_years(application.user.positions, application.project)
         ]);
-        console.log(worked_in_points)
-        console.log(sold_to_points)
-        console.log(dealsize_points)
-        console.log(newbusiness_points)
+        // console.log(worked_in_points)
+        // console.log(sold_to_points)
+        // console.log(dealsize_points)
+        // console.log(newbusiness_points)
     
         Object.assign(points, {
           ote_points: otepoints,
@@ -913,7 +913,7 @@ parsedData.Industry_Sold_To = data.Industry_Sold_To
 
 parsedData.selectedPersona = data.selectedPersona 
     ? data.selectedPersona.replace(/[\[\]']+/g, '').split(',').join(',') 
-    : "France";
+    : null;
 
 parsedData.territory = data.territory 
     ? data.territory.replace(/[\[\]']+/g, '').split(',').join(',') 
