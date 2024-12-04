@@ -19,6 +19,9 @@ export class ProjectApplication {
   @JoinColumn()
   user: UserAccounts;
 
+  @Column({ type: 'int', nullable: true })
+  position_id: number;
+
   @ManyToOne(() => RecruiterProject, project => project.applications)
   @JoinColumn()
   project: RecruiterProject;
