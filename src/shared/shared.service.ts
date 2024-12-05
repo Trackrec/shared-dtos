@@ -4,7 +4,7 @@ import { Injectable, ConflictException, InternalServerErrorException } from '@ne
 @Injectable()
 export class SharedService {
 
-  calculateExperience(positions) {
+  calculateExperience(positions, type='all') {
     if (positions.length === 0) {
       return "N/A";
     }
@@ -22,6 +22,21 @@ export class SharedService {
         : 0.0;
       return completionPercentage == 100.0;
     });
+
+    if (type !== 'all') {
+      completedPositions = completedPositions.filter(position => {
+        switch (type) {
+          case 'bdr':
+            return position.details?.is_booking_meeting === true;
+          case 'individual_contributor':
+            return position.details?.is_individual_contributor === true;
+          case 'leadership':
+            return position.details?.is_leadership === true;
+          default:
+            return false;
+        }
+      });
+    }
     
     const result = completedPositions.reduce(
       (acc, position) => this.calculatePositionDays(position, acc),
@@ -74,13 +89,11 @@ export class SharedService {
     const months = Math.floor(remainingDays / 30.44); // Average number of days in a month
 
     if (years > 0 && months === 0) {
-      return `${years} year${years !== 1 ? "s" : ""}`;
+      return `${years} yrs`;
     } else if (years > 0 && months > 0) {
-      return `${years} year${years !== 1 ? "s" : ""}, ${months} month${
-        months !== 1 ? "s" : ""
-      }`;
+      return `${years} yrs, ${months} mo`;
     } else if (months > 0) {
-      return `${months} month${months !== 1 ? "s" : ""}`;
+      return `${months} mo`;
     } else {
       return "N/A";
     }

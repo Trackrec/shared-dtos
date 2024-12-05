@@ -25,8 +25,8 @@ export class ApplicationService {
 
   async createApplication(body: any, userId: number): Promise<any> {
     try{
-           const {project_id, ote, available}=body;
-           if(!project_id || !ote || !available){
+           const {project_id, ote, available, position_id}=body;
+           if(!project_id || !ote || !available || !position_id){
             return {error: true, message: "Please send all the required fields."}
            }
            const user=await this.userRepository.findOne({where:{id: userId}})
@@ -46,6 +46,7 @@ export class ApplicationService {
             application.available = available;
             application.user=user;
             application.project= project
+            application.position_id = position_id;
  
             await this.applicationRepository.save(application);
 
