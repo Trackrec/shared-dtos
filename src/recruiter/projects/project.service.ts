@@ -11,6 +11,7 @@ import { SharedService } from 'src/shared/shared.service';
 import { RecruiterPointsService } from './points.service';
 import { ProjectVisitors } from 'src/project_visits/project_visits.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
+
 @Injectable()
 export class RecruiterProjectService {
   constructor(
@@ -715,103 +716,9 @@ export class RecruiterProjectService {
     }
   }
 
-  calculatePointsForUser = (application) => {
-    try {
-      let otePoints: any = 0.0;
-      let worked_in_points: any = 0.0;
-      let sold_to_points: any = 0.0;
-      let segment_points: any = 0.0;
-      let salescycle_points: any = 0.0;
-      let dealsize_points: any = 0.0;
-      let newbusiness_points: any = 0.0;
-      let outbound_points: any = 0.0;
-      let points_for_persona: any = 0.0;
-      let points_for_experience: any = 0.0;
-      if (application.user.positions.length == 0) {
-        return {
-          points: {
-            ote_points: 0,
-            worked_in_points: 0,
-            sold_to_points: 0,
-            segment_points: 0,
-            salescycle_points: 0,
-            dealsize_points: 0,
-            newbusiness_points: 0,
-            outbound_points: 0,
-            points_for_persona: 0,
-            points_for_experience: 0,
-          },
-          percentage: 0,
-        };
-      }
-      otePoints = this.pointsService.points_for_ote(
-        parseInt(application.user.ote_expectation),
-        parseInt(application.ote),
-      );
-      worked_in_points = this.pointsService.points_for_worked_in(
-        application.user.positions,
-        application.project.Industry_Works_IN,
-      );
-      sold_to_points = this.pointsService.points_for_sold_to(
-        application.user.positions,
-        application.project.Industry_Sold_To,
-      );
-      segment_points = this.pointsService.points_for_segment(
-        application.user.positions,
-        application.project,
-      );
-      salescycle_points = this.pointsService.points_for_sales_cycle(
-        application.user.positions,
-        application.project,
-      );
-      dealsize_points = this.pointsService.points_for_dealsize(
-        application.user.positions,
-        application.project,
-      );
-      newbusiness_points = this.pointsService.points_for_new_business(
-        application.user.positions,
-        application.project,
-      );
-      outbound_points = this.pointsService.points_for_outbound(
-        application.user.positions,
-        application.project,
-      );
-      points_for_persona = this.pointsService.points_for_persona(
-        application.user.positions,
-        application.project.selectedPersona,
-      );
-      points_for_experience = this.pointsService.points_for_years(
-        application.user.positions,
-        application.project,
-      );
-      let points = {
-        ote_points: otePoints,
-        worked_in_points,
-        sold_to_points,
-        segment_points,
-        salescycle_points,
-        dealsize_points,
-        newbusiness_points,
-        outbound_points,
-        points_for_persona,
-        points_for_experience,
-      };
-      let sum = this.sumObjectValues(points);
-      const maxPossibleSum = 10 * Object.keys(points).length;
-      let percentage = (sum / maxPossibleSum) * 100;
-      // Round off the value to a whole number
-      percentage = Math.round(percentage);
-
-      // Ensure the percentage doesn't exceed 100
-      if (percentage > 100) {
-          percentage = 100;
-       }
-      return { points, percentage };
-    } catch (e) {
-      console.log('ERROR');
-      console.log(e);
-      return {
-        points: {
+    calculatePointsForUser = async (application) => {
+      try {
+        const points = {
           ote_points: 0,
           worked_in_points: 0,
           sold_to_points: 0,
@@ -821,13 +728,66 @@ export class RecruiterProjectService {
           newbusiness_points: 0,
           outbound_points: 0,
           points_for_persona: 0,
-          points_for_experience: 0,
-        },
-        percentage: 0,
-      };
-    }
-  };
-
+          points_for_experience: 0
+        };
+    
+        if (application.user.positions.length === 0) {
+          return { points, percentage: 0 };
+        }
+    
+        // Wait for all point calculations to complete
+        const [
+          otepoints,
+          worked_in_points,
+          sold_to_points,
+          segment_points,
+          salescycle_points,
+          dealsize_points,
+          newbusiness_points,
+          outbound_points,
+          points_for_persona,
+          points_for_experience
+        ] = await Promise.all([
+          this.pointsService.points_for_ote(parseInt(application.user.ote_expectation), parseInt(application.ote)),
+          this.pointsService.points_for_worked_in(application.user.positions, application.project.Industry_Works_IN),
+          this.pointsService.points_for_sold_to(application.user.positions, application.project.Industry_Sold_To),
+          this.pointsService.points_for_segment(application.user.positions, application.project),
+          this.pointsService.points_for_sales_cycle(application.user.positions, application.project),
+          this.pointsService.points_for_dealsize(application.user.positions, application.project),
+          this.pointsService.points_for_new_business(application.user.positions, application.project),
+          this.pointsService.points_for_outbound(application.user.positions, application.project),
+          this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona),
+          this.pointsService.points_for_years(application.user.positions, application.project)
+        ]);
+        // console.log(worked_in_points)
+        // console.log(sold_to_points)
+        // console.log(dealsize_points)
+        // console.log(newbusiness_points)
+    
+        Object.assign(points, {
+          ote_points: otepoints,
+          worked_in_points,
+          sold_to_points,
+          segment_points,
+          salescycle_points,
+          dealsize_points,
+          newbusiness_points,
+          outbound_points,
+          points_for_persona,
+          points_for_experience
+        });
+    
+        const sum = this.sumObjectValues(points);
+        const maxpossiblesum = 10 * Object.keys(points).length;
+        let percentage = Math.round((sum / maxpossiblesum) * 100);
+        percentage = Math.min(percentage, 100);
+    
+        return { points, percentage };
+      } catch (e) {
+        console.error('Error calculating points:', e);
+        return { points: {}, percentage: 0 };
+      }
+    };
   sumObjectValues(obj) {
     let sum = 0;
     for (let key in obj) {
@@ -887,15 +847,16 @@ export class RecruiterProjectService {
         },
       }));
 
-      const updatedApplicationsWithUserPoints = updatedApplications.map(
-        (application) => {
-          const updatedUser = this.calculatePointsForUser(application);
-          return {
-            ...application,
-            user: { ...application.user, points: updatedUser },
-          };
-        },
-      );
+      // Fix 1: Await all promises from map
+      const updatedApplicationsWithUserPoints = await Promise.all(
+          updatedApplications.map(async (application) => {
+            const updatedUser = await this.calculatePointsForUser(application);
+            return {
+              ...application,
+              user: { ...application.user, points: updatedUser },
+            };
+          })
+        );
 
       let above75Count = 0;
       updatedApplicationsWithUserPoints?.map((item) => {
