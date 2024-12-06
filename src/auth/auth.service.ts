@@ -332,7 +332,7 @@ export class AuthService {
             (updatedUser as any).total_leadership_experience =
             this.sharedService.calculateExperience(updatedUser.positions, "leadership");
             (updatedUser as any).total_individual_contributor_experience =
-            this.sharedService.calculateExperience(updatedUser.positions, "individual_experience");
+            this.sharedService.calculateExperience(updatedUser.positions, "individual_contributor");
           const {
             existing_business_average,
             new_business_average,
@@ -397,7 +397,7 @@ export class AuthService {
         (user as any).total_leadership_experience =
           this.sharedService.calculateExperience(user.positions, "leadership");
         (user as any).total_individual_contributor_experience =
-          this.sharedService.calculateExperience(user.positions, "individual_experience");
+          this.sharedService.calculateExperience(user.positions, "individual_contributor");
         const {
           existing_business_average,
           new_business_average,
