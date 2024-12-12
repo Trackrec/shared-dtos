@@ -538,38 +538,37 @@ export class SharedService {
       }
 
       groupAndSortPositions(positions) {
-        // Step 1: Group by company name
-        const groupedByCompany = positions.reduce((acc, position) => {
-            const companyName = position.company.name;
-            if (!acc[companyName]) {
-                acc[companyName] = [];
+        // Step 1: Group by company object
+        const groupedByCompany = new Map();
+    
+        positions.forEach(position => {
+            const company = position.company;
+            const companyKey = JSON.stringify(company); // Create a unique key for the company object
+    
+            if (!groupedByCompany.has(companyKey)) {
+                groupedByCompany.set(companyKey, { company, positions: [] });
             }
-            acc[companyName].push(position);
-            return acc;
-        }, {});
+    
+            groupedByCompany.get(companyKey).positions.push(position);
+        });
     
         // Step 2: Sort positions within each company by start date (descending)
-        for (const company in groupedByCompany) {
-            groupedByCompany[company].sort((a, b) => {
+        for (const group of groupedByCompany.values()) {
+            group.positions.sort((a, b) => {
                 const aDate = new Date(a.start_year, a.start_month || 0).getTime();
                 const bDate = new Date(b.start_year, b.start_month || 0).getTime();
                 return bDate - aDate;
             });
         }
     
-        // Step 3: Transform into the desired structure
-        const sortedAndGrouped = Object.entries(groupedByCompany).map(([company_name, company_positions]) => ({
-            company_name,
-            company_positions
-        }));
-    
-        // Step 4: Sort companies by the latest position's start date
-        sortedAndGrouped.sort((a, b) => {
-            const aLatestDate = new Date(a.company_positions[0].start_year, a.company_positions[0].start_month || 0).getTime();
-            const bLatestDate = new Date(b.company_positions[0].start_year, b.company_positions[0].start_month || 0).getTime();
+        // Step 3: Convert Map to array and sort companies by the latest position's start date
+        const sortedAndGrouped = Array.from(groupedByCompany.values()).sort((a, b) => {
+            const aLatestDate = new Date(a.positions[0].start_year, a.positions[0].start_month || 0).getTime();
+            const bLatestDate = new Date(b.positions[0].start_year, b.positions[0].start_month || 0).getTime();
             return bLatestDate - aLatestDate;
         });
     
         return sortedAndGrouped;
     }
+    
 }
