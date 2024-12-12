@@ -838,9 +838,30 @@ export class RecruiterProjectService {
     }
     return sum;
   }
-  async getRanking(project_id: number, user_id: number) {
+
+  parseExperience(experienceStr: string): number {
+    if (experienceStr === "N/A") {
+        return 0; // No experience
+    }
+
+    const yearsMatch = experienceStr.match(/(\d+)\s*yrs?/);
+    const monthsMatch = experienceStr.match(/(\d+)\s*mo/);
+
+    const years = yearsMatch ? parseInt(yearsMatch[1], 10) : 0;
+    const months = monthsMatch ? parseInt(monthsMatch[1], 10) : 0;
+
+    // Convert total experience to months
+    return years * 12 + months;
+}
+
+hasRequiredExperience(experienceStr: string, minExperienceMonths: number): boolean {
+    const totalMonths = this.parseExperience(experienceStr);
+    return totalMonths >= minExperienceMonths;
+}
+  
+  
+  async getRanking(project_id: number, user_id: number, min_experience?: string) {
     try {
-        // Check if the user is associated with a company
        const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
           where: { user: { id: user_id } },
           relations: ['company'],
@@ -855,7 +876,6 @@ export class RecruiterProjectService {
         relations: ['company']
       });
 
-      console.log(project)
       if(!project || project.company.id!=recruiterCompanyUser.company.id){
         return {error: true, message: "Project not found."}
       }
@@ -870,6 +890,23 @@ export class RecruiterProjectService {
         .where('project.id = :projectId', { projectId: project_id })
 
         .getMany();
+
+        let minExperienceMonths: number | null = null;
+
+        if (min_experience) {
+          const allowedValues = ['5+', '1', '2', '3', '4', '5'];
+      
+          if (allowedValues.includes(min_experience)) {
+            if (min_experience === '5+') {
+              minExperienceMonths = (5*12)+1;  //months
+            } else {
+              minExperienceMonths = parseInt(min_experience, 10) * 12;
+            }
+          } else {
+            minExperienceMonths = null; 
+          }
+        }
+
 
       let updatedApplications = applications.map((application) => ({
         ...application,
@@ -888,15 +925,21 @@ export class RecruiterProjectService {
         },
       }));
 
-      const updatedApplicationsWithUserPoints = updatedApplications.map(
-        (application) => {
-          const updatedUser = this.calculatePointsForUser(application);
-          return {
-            ...application,
-            user: { ...application.user, points: updatedUser },
-          };
-        },
-      );
+      const filteredApplications = minExperienceMonths ? updatedApplications.filter((application) => {
+        const experienceCount = this.sharedService.calculateExperience(application.user.positions);
+      
+        return this.hasRequiredExperience(experienceCount, minExperienceMonths);
+      }): updatedApplications;
+      
+      const updatedApplicationsWithUserPoints = filteredApplications.map((application) => {
+        const updatedUser = this.calculatePointsForUser(application);
+
+        return {
+          ...application,
+          user: { ...application.user, points: updatedUser },
+        };
+      });
+      
 
       let above75Count = 0;
       updatedApplicationsWithUserPoints?.map((item) => {
