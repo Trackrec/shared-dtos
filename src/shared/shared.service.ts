@@ -536,4 +536,40 @@ export class SharedService {
          enterprise_average
         };
       }
+
+      groupAndSortPositions(positions) {
+        // Step 1: Group by company name
+        const groupedByCompany = positions.reduce((acc, position) => {
+            const companyName = position.company.name;
+            if (!acc[companyName]) {
+                acc[companyName] = [];
+            }
+            acc[companyName].push(position);
+            return acc;
+        }, {});
+    
+        // Step 2: Sort positions within each company by start date (descending)
+        for (const company in groupedByCompany) {
+            groupedByCompany[company].sort((a, b) => {
+                const aDate = new Date(a.start_year, a.start_month || 0).getTime();
+                const bDate = new Date(b.start_year, b.start_month || 0).getTime();
+                return bDate - aDate;
+            });
+        }
+    
+        // Step 3: Transform into the desired structure
+        const sortedAndGrouped = Object.entries(groupedByCompany).map(([company_name, company_positions]) => ({
+            company_name,
+            company_positions
+        }));
+    
+        // Step 4: Sort companies by the latest position's start date
+        sortedAndGrouped.sort((a, b) => {
+            const aLatestDate = new Date(a.company_positions[0].start_year, a.company_positions[0].start_month || 0).getTime();
+            const bLatestDate = new Date(b.company_positions[0].start_year, b.company_positions[0].start_month || 0).getTime();
+            return bLatestDate - aLatestDate;
+        });
+    
+        return sortedAndGrouped;
+    }
 }

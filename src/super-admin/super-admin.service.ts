@@ -70,7 +70,7 @@ export class SuperAdminService {
             totalRevenue += +user.positions[i].details.revenue_generated;
           }
         }
-     (user as any).completed_positions= is_completed;
+     (user as any).npm= is_completed;
      (user as any).total_revenue = totalRevenue;
      (user as any).total_years_experience=this.sharedService.calculateExperience(user.positions);
      (user as any).total_bdr_experience =
@@ -79,7 +79,6 @@ export class SuperAdminService {
      this.sharedService.calculateExperience(user.positions, "leadership");
      (user as any).total_individual_contributor_experience =
      this.sharedService.calculateExperience(user.positions, "individual_experience");
-     updated_positions
 
      delete user.positions;
      return {error: false, user}
