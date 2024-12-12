@@ -302,8 +302,8 @@ export class PublishProfileService {
       (user as any).smb_average = smb_average;
       (user as any).midmarket_average = midmarket_average;
       (user as any).enterprise_average = enterprise_average;
-
-      (user as any).positions = this.sharedService.groupAndSortPositions(updated_positions);
+       user.positions = updated_positions;
+      (user as any).groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
     }
 
     (user as any).total_years_experience =
@@ -314,8 +314,10 @@ export class PublishProfileService {
       this.sharedService.calculateExperience(user.positions, "leadership");
     (user as any).total_individual_contributor_experience =
       this.sharedService.calculateExperience(user.positions, "individual_experience");
-
-    (user as any).positions = this.sharedService.groupAndSortPositions(user.positions.filter(
+    user.positions = user.positions.filter(
+        (position) => (position as any).is_completed,
+      );
+    (user as any).groupPositions = this.sharedService.groupAndSortPositions(user.positions.filter(
       (position) => (position as any).is_completed,
     ));
     return user;
