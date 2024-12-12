@@ -894,19 +894,29 @@ hasRequiredExperience(experienceStr: string, minExperienceMonths: number): boole
         let minExperienceMonths: number | null = null;
 
         if (min_experience) {
-          const allowedValues = ['5+', '1', '2', '3', '4', '5'];
-      
-          if (allowedValues.includes(min_experience)) {
-            if (min_experience === '5+') {
-              minExperienceMonths = (5*12)+1;  //months
+          const experienceMapping: Record<string, number> = {
+            one: 1,
+            two: 2,
+            three: 3,
+            four: 4,
+            five: 5,
+            five_plus: 5, 
+          };
+        
+        
+          if (min_experience in experienceMapping) {
+            const minExperienceYears = experienceMapping[min_experience];
+        
+            if (min_experience === 'five_plus') {
+              minExperienceMonths = (minExperienceYears * 12) + 1; // More than 5 years
             } else {
-              minExperienceMonths = parseInt(min_experience, 10) * 12;
+              minExperienceMonths = minExperienceYears * 12; 
             }
           } else {
             minExperienceMonths = null; 
           }
         }
-
+        
 
       let updatedApplications = applications.map((application) => ({
         ...application,
