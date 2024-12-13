@@ -359,8 +359,8 @@ export class AuthService {
           (updatedUser as any).smb_average = smb_average;
           (updatedUser as any).midmarket_average = midmarket_average;
           (updatedUser as any).enterprise_average = enterprise_average;
-
-          updatedUser.positions = updated_positions;
+          updatedUser.positions =updated_positions;
+          (updatedUser as any).groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
         }
         return { error: false, user: updatedUser };
       }
@@ -421,7 +421,8 @@ export class AuthService {
         (user as any).smb_average = smb_average;
         (user as any).midmarket_average = midmarket_average;
         (user as any).enterprise_average = enterprise_average;
-        user.positions = updated_positions;
+        user.positions=updated_positions;
+        (user as any).groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
       }
       return { error: false, user };
     } catch (error) {
