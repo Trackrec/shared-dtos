@@ -800,25 +800,42 @@ export class RecruiterProjectService {
     return sum;
   }
 
-  parseExperience(experienceStr: string): number {
-    if (experienceStr === "N/A") {
-        return 0; // No experience
+  private filterPositionsByRecentYears(
+    positions: any[],
+    filter: string
+  ): any[] {
+    if(!filter){
+      return positions
     }
-
-    const yearsMatch = experienceStr.match(/(\d+)\s*yrs?/);
-    const monthsMatch = experienceStr.match(/(\d+)\s*mo/);
-
-    const years = yearsMatch ? parseInt(yearsMatch[1], 10) : 0;
-    const months = monthsMatch ? parseInt(monthsMatch[1], 10) : 0;
-
-    // Convert total experience to months
-    return years * 12 + months;
-}
-
-hasRequiredExperience(experienceStr: string, minExperienceMonths: number): boolean {
-    const totalMonths = this.parseExperience(experienceStr);
-    return totalMonths >= minExperienceMonths;
-}
+    const filterMapping: any = {
+      one: 1,
+      two: 2,
+      three: 3,
+      four: 4,
+      five: 5,
+      five_plus: null, 
+    };
+  
+    const selectedYears = filterMapping[filter];
+    if (selectedYears == undefined) {
+      return positions; 
+    }
+  
+    const currentDate = new Date();
+    const thresholdDate = new Date();
+    thresholdDate.setFullYear(currentDate.getFullYear() - selectedYears);
+  
+    return positions.filter((position) => {
+      const positionStartDate = new Date(position.start_year, (position.start_month || 1) - 1);
+      const positionEndDate = position.end_year
+        ? new Date(position.end_year, (position.end_month || 12) - 1)
+        : currentDate; // Use current date if end date is null (ongoing position)
+  
+      return positionEndDate >= thresholdDate && positionStartDate <= currentDate;
+    });
+  }
+  
+  
   
   
   async getRanking(project_id: number, user_id: number, min_experience?: string) {
@@ -852,58 +869,27 @@ hasRequiredExperience(experienceStr: string, minExperienceMonths: number): boole
 
         .getMany();
 
-        let minExperienceMonths: number | null = null;
-
-        if (min_experience) {
-          const experienceMapping: Record<string, number> = {
-            one: 1,
-            two: 2,
-            three: 3,
-            four: 4,
-            five: 5,
-            five_plus: 5, 
-          };
-        
-        
-          if (min_experience in experienceMapping) {
-            const minExperienceYears = experienceMapping[min_experience];
-        
-            if (min_experience === 'five_plus') {
-              minExperienceMonths = (minExperienceYears * 12) + 1; // More than 5 years
-            } else {
-              minExperienceMonths = minExperienceYears * 12; 
-            }
-          } else {
-            minExperienceMonths = null; 
-          }
-        }
-        
-
+  
       let updatedApplications = applications.map((application) => ({
         ...application,
         user: {
           ...application.user,
-          positions: application.user.positions.filter((position) => {
+          positions: this.filterPositionsByRecentYears(application.user.positions, min_experience).filter((position) => {
             if (!position.details) {
               return false;
             }
             let completionPercentage = position.details
               ? this.sharedService.calculateCompletionPercentage(position)
               : 0.0;
-            console.log('completionPercentage', completionPercentage);
             return completionPercentage == 100.0;
           }),
         },
       }));
 
-      const filteredApplications = minExperienceMonths ? updatedApplications.filter((application) => {
-        const experienceCount = this.sharedService.calculateExperience(application.user.positions);
-      
-        return this.hasRequiredExperience(experienceCount, minExperienceMonths);
-      }): updatedApplications;
+     
       
        const updatedApplicationsWithUserPoints = await Promise.all(
-          filteredApplications.map(async (application) => {
+        updatedApplications.map(async (application) => {
             const updatedUser = await this.calculatePointsForUser(application);
             return {
               ...application,
