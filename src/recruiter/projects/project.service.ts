@@ -601,7 +601,6 @@ export class RecruiterProjectService {
     imageType: any
   ): Promise<any> {
     try {
-      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
       const project = await this.recruiterProjectRepository.findOne({
         where: { id},
       });
@@ -611,6 +610,8 @@ export class RecruiterProjectService {
           message: 'Project not found.',
         };
       }
+
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
 
       if(accountProjectData.project_custom_url){
         const urlExist = await this.recruiterProjectRepository.findOne({
@@ -1022,6 +1023,9 @@ parsedData.languages = data.languages
     parsedData.logo = data.logo || null;
     parsedData.location_type = data.location_type || null;
     parsedData.description = data.description || null;
+    parsedData.experience_type = data.experience_type || null;
+    parsedData.company_elevator_pitch = data.company_elevator_pitch || null;
+    parsedData.main_problem = data.main_problem || null;
     parsedData.location = data.location 
     ? data.location.replace(/[\[\]']+/g, '').split(',').join(',') 
     : null;
