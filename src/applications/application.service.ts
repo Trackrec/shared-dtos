@@ -43,8 +43,8 @@ export class ApplicationService {
           if(!applicationExists){
             if(city && custom_current_role){
               user.city=city;
-              user.custom_current_role =user.custom_current_role;
-              await this.userRepository.save(user)
+              user.custom_current_role =custom_current_role;
+              await this.userRepository.update(user.id, user)
             }
             const application = new ProjectApplication();
             application.ote = ote;
