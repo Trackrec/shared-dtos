@@ -78,7 +78,9 @@ export class SuperAdminService {
      (user as any).total_leadership_experience =
      this.sharedService.calculateExperience(user.positions, "leadership");
      (user as any).total_individual_contributor_experience =
-     this.sharedService.calculateExperience(user.positions, "individual_experience");
+
+     this.sharedService.calculateExperience(user.positions, "individual_contributor");
+ 
 
      delete user.positions;
      return {error: false, user}

@@ -282,7 +282,7 @@ export class PublishProfileService {
       (user as any).total_leadership_experience =
         this.sharedService.calculateExperience(user.positions, "leadership");
       (user as any).total_individual_contributor_experience =
-        this.sharedService.calculateExperience(user.positions, "individual_experience");
+        this.sharedService.calculateExperience(user.positions, "individual_contributor");
       const {
         existing_business_average,
         new_business_average,
@@ -313,7 +313,9 @@ export class PublishProfileService {
     (user as any).total_leadership_experience =
       this.sharedService.calculateExperience(user.positions, "leadership");
     (user as any).total_individual_contributor_experience =
-      this.sharedService.calculateExperience(user.positions, "individual_experience");
+
+      this.sharedService.calculateExperience(user.positions, "individual_contributor");
+
     user.positions = user.positions.filter(
         (position) => (position as any).is_completed,
       );
