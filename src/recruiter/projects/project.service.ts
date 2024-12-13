@@ -877,7 +877,7 @@ export class RecruiterProjectService {
               position.details &&
               this.sharedService.calculateCompletionPercentage(position) == 100.0
           );
-
+          console.log("Valid Positions")
           console.log(validPositions)
         
           return {
