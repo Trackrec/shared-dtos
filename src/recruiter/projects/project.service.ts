@@ -875,8 +875,10 @@ export class RecruiterProjectService {
           const validPositions = filteredPositions.filter(
             (position) =>
               position.details &&
-              this.sharedService.calculateCompletionPercentage(position) === 100.0
+              this.sharedService.calculateCompletionPercentage(position) == 100.0
           );
+
+          console.log(validPositions)
         
           return {
             ...application,
