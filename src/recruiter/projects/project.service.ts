@@ -870,22 +870,23 @@ export class RecruiterProjectService {
         .getMany();
 
   
-      let updatedApplications = applications.map((application) => ({
-        ...application,
-        user: {
-          ...application.user,
-          positions: this.filterPositionsByRecentYears(application.user.positions, min_experience).filter((position) => {
-            if (!position.details) {
-              return false;
-            }
-            let completionPercentage = position.details
-              ? this.sharedService.calculateCompletionPercentage(position)
-              : 0.0;
-            return completionPercentage == 100.0;
-          }),
-        },
-      }));
-
+        let updatedApplications = applications.map((application) => {
+          const filteredPositions = this.filterPositionsByRecentYears(application.user.positions, min_experience);
+          const validPositions = filteredPositions.filter(
+            (position) =>
+              position.details &&
+              this.sharedService.calculateCompletionPercentage(position) === 100.0
+          );
+        
+          return {
+            ...application,
+            user: {
+              ...application.user,
+              positions: validPositions,
+            },
+          };
+        });
+        
      
       
        const updatedApplicationsWithUserPoints = await Promise.all(
