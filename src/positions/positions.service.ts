@@ -140,10 +140,6 @@ export class PositionService {
                     <p>Victor @ TrackRec<br>Founder</p>
                     <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
                  </div>
-                    <p>Best,<br>
-                       Team TrackRec<br> 
-                       <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
-                    </p>
               </div>
            </body>
         </html>        
