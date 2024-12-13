@@ -45,7 +45,6 @@ export class RecruiterProject {
     @Column({ type: 'text', nullable: true })
     @ValidateIf(o => o.published)
     @IsNotEmpty()
-    @MaxLength(400)
     description: string;
 
     @Column({ type: 'text', nullable: true,  })
@@ -194,13 +193,11 @@ export class RecruiterProject {
     @Column({ type: 'boolean', default: false })
     published: boolean;
 
-    @Column({ type: 'text', nullable: true,  })
-    @MaxLength(400)
+    @Column({ type: 'text',  nullable: true,  })
     company_elevator_pitch: string;
 
     @Column({ type: 'text', nullable: true,  })
-    @MaxLength(400)
-    main_problem: string;
+    main_problem: string ;
 
     @ManyToOne(() => UserAccounts, user => user.projects)
     user: UserAccounts;
