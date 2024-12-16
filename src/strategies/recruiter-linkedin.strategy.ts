@@ -56,7 +56,7 @@ export class RecruiterLinkedinStrategy extends PassportStrategy(Strategy, 'recru
         const jwtToken = this.generateToken(createdUser.user);
         this.logger.debug(`User created: ${JSON.stringify(createdUser)}`);
 
-        return done(null, { token: jwtToken });
+        return done(null, { token: jwtToken, userId: createdUser?.user?.id });
       } else {
         return done(null, { error: createdUser?.message });
       }

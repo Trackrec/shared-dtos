@@ -50,14 +50,31 @@ export class AuthController {
 
   @Get('linkedin/callback')
   @UseGuards(AuthGuard('linkedin'))
-  linkedinLoginCallback(@Req() req, @Res() res) {
+  async linkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
 
       // Retrieve saved query parameters from session
       const savedQueryParams = req.session.savedQueryParams || '';
 
-      if (user && user.token) {
+      const topBarJobId=this.authService.getTopBarJobId(savedQueryParams)
+      if (topBarJobId) {
+        if (user && user?.userId) {
+          const result = await this.authService.getMe(user?.userId);
+      
+          if (result && result?.user) {
+            const isCompleted = this.authService.checkPositionsCompleted(result?.user?.positions);
+      
+            if (isCompleted) {
+              return res.redirect(
+                `${process.env.REACT_APP_URL}/job-apply/${topBarJobId}`
+              );
+            }
+          }
+        }
+      }
+      
+            if (user && user.token) {
         return res.redirect(
           `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
         );
@@ -74,11 +91,27 @@ export class AuthController {
 
   @Get('secondary_linkedin/callback')
   @UseGuards(AuthGuard('linkedinSecondary'))
-  secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
+  async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
       const savedQueryParams = req.session.savedQueryParams || '';
-
+      const topBarJobId=this.authService.getTopBarJobId(savedQueryParams)
+      if (topBarJobId) {
+        if (user && user?.userId) {
+          const result = await this.authService.getMe(user?.userId);
+      
+          if (result && result?.user) {
+            const isCompleted = this.authService.checkPositionsCompleted(result?.user?.positions);
+      
+            if (isCompleted) {
+              return res.redirect(
+                `${process.env.REACT_APP_URL}/job-apply/${topBarJobId}`
+              );
+            }
+          }
+        }
+      }
+      
       if (user && user.token) {
         return res.redirect(
           `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,

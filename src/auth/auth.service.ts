@@ -257,6 +257,24 @@ export class AuthService {
     }
   }
 
+   checkPositionsCompleted(positions) {
+      if (!positions || positions.length === 0) {
+         return false;
+       }
+
+      for (const position of positions) {
+         if (position.is_completed) {
+            return true;
+         }
+      }
+
+     return false;
+   }
+
+  getTopBarJobId(queryString) {
+     const params = new URLSearchParams(queryString);
+     return params.has('top_bar_job_id') ? params.get('top_bar_job_id') : null;
+   }
   async getMe(
     user_id: number,
   ): Promise<{ error: boolean; user?: any; message?: string }> {
