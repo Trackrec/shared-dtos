@@ -56,25 +56,14 @@ export class AuthController {
 
       // Retrieve saved query parameters from session
       const savedQueryParams = req.session.savedQueryParams || '';
-
-      const topBarJobId=this.authService.getTopBarJobId(savedQueryParams)
+      const topBarJobId = this.authService.getTopBarJobId(savedQueryParams);
       if (topBarJobId) {
-        if (user && user?.userId) {
-          const result = await this.authService.getMe(user?.userId);
-      
-          if (result && result?.user) {
-            const isCompleted = this.authService.checkPositionsCompleted(result?.user?.positions);
-      
-            if (isCompleted) {
-              return res.redirect(
-                `${process.env.REACT_APP_URL}/job-apply/${topBarJobId}`
-              );
-            }
-          }
-        }
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+        );
       }
-      
-            if (user && user.token) {
+
+      if (user && user.token) {
         return res.redirect(
           `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
         );
@@ -95,23 +84,13 @@ export class AuthController {
     try {
       const user = req.user;
       const savedQueryParams = req.session.savedQueryParams || '';
-      const topBarJobId=this.authService.getTopBarJobId(savedQueryParams)
+      const topBarJobId = this.authService.getTopBarJobId(savedQueryParams);
       if (topBarJobId) {
-        if (user && user?.userId) {
-          const result = await this.authService.getMe(user?.userId);
-      
-          if (result && result?.user) {
-            const isCompleted = this.authService.checkPositionsCompleted(result?.user?.positions);
-      
-            if (isCompleted) {
-              return res.redirect(
-                `${process.env.REACT_APP_URL}/job-apply/${topBarJobId}`
-              );
-            }
-          }
-        }
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+        );
       }
-      
+
       if (user && user.token) {
         return res.redirect(
           `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
