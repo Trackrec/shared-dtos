@@ -590,7 +590,8 @@ export class RecruiterProjectService {
       project.selectedPersona &&
       project.territory &&
       project.languages &&
-      project.minimum_salecycle_type
+      project.minimum_salecycle_type &&
+      (project.experience_type && project.experience_type.length>0)
     );
   }
   async update(
@@ -601,7 +602,6 @@ export class RecruiterProjectService {
     imageType: any
   ): Promise<any> {
     try {
-      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
       const project = await this.recruiterProjectRepository.findOne({
         where: { id},
       });
@@ -611,6 +611,8 @@ export class RecruiterProjectService {
           message: 'Project not found.',
         };
       }
+
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
 
       if(accountProjectData.project_custom_url){
         const urlExist = await this.recruiterProjectRepository.findOne({
@@ -797,9 +799,47 @@ export class RecruiterProjectService {
     }
     return sum;
   }
-  async getRanking(project_id: number, user_id: number) {
+
+  private filterPositionsByRecentYears(
+    positions: any[],
+    filter: string
+  ): any[] {
+    if(!filter){
+      return positions
+    }
+    const filterMapping: any = {
+      one: 1,
+      two: 2,
+      three: 3,
+      four: 4,
+      five: 5,
+      five_plus: null, 
+    };
+  
+    const selectedYears = filterMapping[filter];
+    if (selectedYears == undefined) {
+      return positions; 
+    }
+  
+    const currentDate = new Date();
+    const thresholdDate = new Date();
+    thresholdDate.setFullYear(currentDate.getFullYear() - selectedYears);
+  
+    return positions.filter((position) => {
+      const positionStartDate = new Date(position.start_year, (position.start_month || 1) - 1);
+      const positionEndDate = position.end_year
+        ? new Date(position.end_year, (position.end_month || 12) - 1)
+        : currentDate; // Use current date if end date is null (ongoing position)
+  
+      return positionEndDate >= thresholdDate && positionStartDate <= currentDate;
+    });
+  }
+  
+  
+  
+  
+  async getRanking(project_id: number, user_id: number, min_experience?: string) {
     try {
-        // Check if the user is associated with a company
        const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
           where: { user: { id: user_id } },
           relations: ['company'],
@@ -814,7 +854,6 @@ export class RecruiterProjectService {
         relations: ['company']
       });
 
-      console.log(project)
       if(!project || project.company.id!=recruiterCompanyUser.company.id){
         return {error: true, message: "Project not found."}
       }
@@ -830,26 +869,29 @@ export class RecruiterProjectService {
 
         .getMany();
 
-      let updatedApplications = applications.map((application) => ({
-        ...application,
-        user: {
-          ...application.user,
-          positions: application.user.positions.filter((position) => {
-            if (!position.details) {
-              return false;
-            }
-            let completionPercentage = position.details
-              ? this.sharedService.calculateCompletionPercentage(position)
-              : 0.0;
-            console.log('completionPercentage', completionPercentage);
-            return completionPercentage == 100.0;
-          }),
-        },
-      }));
-
-      // Fix 1: Await all promises from map
-      const updatedApplicationsWithUserPoints = await Promise.all(
-          updatedApplications.map(async (application) => {
+  
+        let updatedApplications = applications.map((application) => {
+          const filteredPositions = this.filterPositionsByRecentYears(application.user.positions, min_experience);
+          const validPositions = filteredPositions.filter(
+            (position) =>
+              position.details &&
+              this.sharedService.calculateCompletionPercentage(position) == 100.0
+          );
+         
+        
+          return {
+            ...application,
+            user: {
+              ...application.user,
+              positions: validPositions,
+            },
+          };
+        });
+        
+     
+      
+       const updatedApplicationsWithUserPoints = await Promise.all(
+        updatedApplications.map(async (application) => {
             const updatedUser = await this.calculatePointsForUser(application);
             return {
               ...application,
@@ -857,6 +899,8 @@ export class RecruiterProjectService {
             };
           })
         );
+      
+
 
       let above75Count = 0;
       updatedApplicationsWithUserPoints?.map((item) => {
@@ -929,6 +973,9 @@ parsedData.languages = data.languages
     parsedData.logo = data.logo || null;
     parsedData.location_type = data.location_type || null;
     parsedData.description = data.description || null;
+    parsedData.experience_type = data.experience_type || null;
+    parsedData.company_elevator_pitch = data.company_elevator_pitch || null;
+    parsedData.main_problem = data.main_problem || null;
     parsedData.location = data.location 
     ? data.location.replace(/[\[\]']+/g, '').split(',').join(',') 
     : null;

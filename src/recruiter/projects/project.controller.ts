@@ -197,9 +197,9 @@ async unpublishProject(
  
 
   @Get('project_ranking/:id')
-  async getRanking(@Param('id') project_id: number, @Req() req: Request) {
+  async getRanking(@Param('id') project_id: number, @Req() req: Request,   @Query('min_experience') min_experience?: string) {
     const user_id = req['user_id'];
-    return await this.recruiterProjectService.getRanking(project_id, user_id);
+    return await this.recruiterProjectService.getRanking(project_id, user_id, min_experience);
   }
 
   getImageTypeFromMimetype(mimetype: string): string | null {

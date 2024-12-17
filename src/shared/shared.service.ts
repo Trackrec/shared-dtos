@@ -536,4 +536,39 @@ export class SharedService {
          enterprise_average
         };
       }
+
+      groupAndSortPositions(positions) {
+        // Step 1: Group by company object
+        const groupedByCompany = new Map();
+    
+        positions.forEach(position => {
+            const company = position.company;
+            const companyKey = JSON.stringify(company); // Create a unique key for the company object
+    
+            if (!groupedByCompany.has(companyKey)) {
+                groupedByCompany.set(companyKey, { company, positions: [] });
+            }
+    
+            groupedByCompany.get(companyKey).positions.push(position);
+        });
+    
+        // Step 2: Sort positions within each company by start date (descending)
+        for (const group of groupedByCompany.values()) {
+            group.positions.sort((a, b) => {
+                const aDate = new Date(a.start_year, a.start_month || 0).getTime();
+                const bDate = new Date(b.start_year, b.start_month || 0).getTime();
+                return bDate - aDate;
+            });
+        }
+    
+        // Step 3: Convert Map to array and sort companies by the latest position's start date
+        const sortedAndGrouped = Array.from(groupedByCompany.values()).sort((a, b) => {
+            const aLatestDate = new Date(a.positions[0].start_year, a.positions[0].start_month || 0).getTime();
+            const bLatestDate = new Date(b.positions[0].start_year, b.positions[0].start_month || 0).getTime();
+            return bLatestDate - aLatestDate;
+        });
+    
+        return sortedAndGrouped;
+    }
+    
 }

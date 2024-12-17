@@ -50,12 +50,18 @@ export class AuthController {
 
   @Get('linkedin/callback')
   @UseGuards(AuthGuard('linkedin'))
-  linkedinLoginCallback(@Req() req, @Res() res) {
+  async linkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
 
       // Retrieve saved query parameters from session
       const savedQueryParams = req.session.savedQueryParams || '';
+      const topBarJobId = this.authService.getTopBarJobId(savedQueryParams);
+      if (topBarJobId) {
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+        );
+      }
 
       if (user && user.token) {
         return res.redirect(
@@ -74,10 +80,16 @@ export class AuthController {
 
   @Get('secondary_linkedin/callback')
   @UseGuards(AuthGuard('linkedinSecondary'))
-  secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
+  async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
       const savedQueryParams = req.session.savedQueryParams || '';
+      const topBarJobId = this.authService.getTopBarJobId(savedQueryParams);
+      if (topBarJobId) {
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+        );
+      }
 
       if (user && user.token) {
         return res.redirect(
