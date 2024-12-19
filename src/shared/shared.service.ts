@@ -554,11 +554,19 @@ export class SharedService {
     
         // Step 2: Sort positions within each company by start date (descending)
         for (const group of groupedByCompany.values()) {
-            group.positions.sort((a, b) => {
-                const aDate = new Date(a.start_year, a.start_month || 0).getTime();
-                const bDate = new Date(b.start_year, b.start_month || 0).getTime();
-                return bDate - aDate;
-            });
+          group.positions.sort((a, b) => {
+            const isACurrent = a.end_year === null || a.end_month === null;
+            const isBCurrent = b.end_year === null || b.end_month === null;
+        
+            if (isACurrent && !isBCurrent) return -1; // Current positions come first
+            if (!isACurrent && isBCurrent) return 1;  // Completed positions come later
+        
+            // If both are current or both are completed, sort by start date descending
+            const aStartDate = new Date(a.start_year, (a.start_month || 0) - 1).getTime();
+            const bStartDate = new Date(b.start_year, (b.start_month || 0) - 1).getTime();
+            return bStartDate - aStartDate;
+        });
+        
         }
     
         // Step 3: Convert Map to array and sort companies by the latest position's start date
