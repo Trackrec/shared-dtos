@@ -157,7 +157,7 @@ export class RecruiterProject {
     elevator_pitch: string;
 
     @Column({ nullable: true })
-    exact_location: string;
+    office_address: string;
 
     @Column({ type: 'longtext', nullable: true })
     travel_requirement_percentage: string;
