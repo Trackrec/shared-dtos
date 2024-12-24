@@ -37,6 +37,9 @@ export class RecruiterProject {
     @IsNotEmpty()
     ote_end: number;
 
+    @Column({ type: 'boolean', default: true })
+    is_ote_visible: boolean;
+
     @Column({ type: 'varchar', length: 255, nullable: true })
     @ValidateIf(o => o.published)
     @IsNotEmpty()
