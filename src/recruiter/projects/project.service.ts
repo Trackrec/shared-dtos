@@ -236,7 +236,7 @@ export class RecruiterProjectService {
     }
   }
 
-  async getCompanyInfo(companyData: { company_id: string; company_name: string; company_logo_url?: string; company_domain?: string; company_website_url?: string }) {
+  async getCompanyInfo(companyData: { company_id: string; company_name: string; logo_url?: string; domain?: string; website_url?: string }) {
     if (companyData && companyData.company_id) {
       try {
         let company = await this.companyRepository.findOne({
@@ -249,9 +249,9 @@ export class RecruiterProjectService {
           const newCompany = await this.companyService.createCompany({
             company_id: companyData.company_id,
             name: companyData.company_name,
-            logo_url: companyData.company_logo_url || null,
-            domain: companyData.company_domain || null,
-            website_url: companyData.company_website_url || null,
+            logo_url: companyData.logo_url || null,
+            domain: companyData.domain || null,
+            website_url: companyData.website_url || null,
           });
   
           if (newCompany && !newCompany.error) {
@@ -319,7 +319,7 @@ export class RecruiterProjectService {
 
       }
 
-      if(companyData && companyData.company_id && companyData.company_name && companyData.company_logo_url){
+      if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
         accountProjectData.logo = await this.getCompanyInfo(companyData)
         accountProjectData.logo_type = "url";
         accountProjectData.company_id = companyData.company_id
@@ -420,7 +420,7 @@ export class RecruiterProjectService {
 
    }
 
-   if(companyData && companyData.company_id && companyData.company_name && companyData.company_logo_url){
+   if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
     accountProjectData.logo = await this.getCompanyInfo(companyData)
     accountProjectData.logo_type = "url"
     accountProjectData.company_id = companyData.company_id
@@ -522,7 +522,7 @@ export class RecruiterProjectService {
   }
 } 
 
-  if(companyData && companyData.company_id && companyData.company_name && companyData.company_logo_url){
+  if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
     accountProjectData.logo = await this.getCompanyInfo(companyData)
     accountProjectData.logo_type = "url"
     accountProjectData.company_id = companyData.company_id
@@ -704,7 +704,7 @@ export class RecruiterProjectService {
        }
      }
 
-     if(companyData && companyData.company_id && companyData.company_name && companyData.company_logo_url){
+     if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
       accountProjectData.logo = await this.getCompanyInfo(companyData)
       accountProjectData.logo_type = "url";
       accountProjectData.company_id = companyData.company_id

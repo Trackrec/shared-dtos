@@ -100,14 +100,14 @@ export class RecruiterProjectController {
       }
     }
     
-    const {company_id, company_name, company_logo_url, company_website_url, company_domain} = accountProjectData;
+    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
     const companyData = {
       company_id,
       company_name,
-      company_logo_url,
-      company_website_url,
-      company_domain
+      logo_url,
+      website_url,
+      domain
     };
     return this.recruiterProjectService.create(accountProjectData, user_id, image?.buffer, imageType, companyData);
   }
@@ -131,14 +131,14 @@ export class RecruiterProjectController {
         imageType=imgType;
       }
     }
-    const {company_id, company_name, company_logo_url, company_website_url, company_domain} = accountProjectData;
+    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
     const companyData = {
       company_id,
       company_name,
-      company_logo_url,
-      company_website_url,
-      company_domain
+      logo_url,
+      website_url,
+      domain
     };
     return this.recruiterProjectService.createAndPublish(accountProjectData, user_id,  image?.buffer, imageType, companyData);
   }
@@ -215,14 +215,14 @@ async unpublishProject(
       }
     }
 
-    const {company_id, company_name, company_logo_url, company_website_url, company_domain} = accountProjectData;
+    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
     const companyData = {
       company_id,
       company_name,
-      company_logo_url,
-      company_website_url,
-      company_domain
+      logo_url,
+      website_url,
+      domain
     };
     return this.recruiterProjectService.update(user_id, +id, accountProjectData, image?.buffer, imageType, companyData);
   }
