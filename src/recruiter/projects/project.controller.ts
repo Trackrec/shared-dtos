@@ -87,7 +87,7 @@ export class RecruiterProjectController {
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<any> {
-    const user_id = 308//req['user_id'];
+    const user_id = req['user_id'];
     let imageType=null;
     if(image){
       const imgType = this.getImageTypeFromMimetype(image?.mimetype);
