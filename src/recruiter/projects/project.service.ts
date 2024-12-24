@@ -1004,7 +1004,7 @@ export class RecruiterProjectService {
   
     // Parse boolean fields
     parsedData.is_travel_requirements = data.is_travel_requirements == 'Yes';
-    parsedData.is_ote_visible = data.is_ote_visible;
+    parsedData.is_ote_visible = data.is_ote_visible == 'true';
   
     // Parse date fields
     parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
