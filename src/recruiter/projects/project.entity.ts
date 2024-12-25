@@ -37,6 +37,9 @@ export class RecruiterProject {
     @IsNotEmpty()
     ote_end: number;
 
+    @Column({ type: 'boolean', default: true })
+    is_ote_visible: boolean;
+
     @Column({ type: 'varchar', length: 255, nullable: true })
     @ValidateIf(o => o.published)
     @IsNotEmpty()
@@ -188,6 +191,9 @@ export class RecruiterProject {
 
     @Column({ default: null })
     project_custom_url: string;
+
+    @Column({ default: null })
+    company_id: string;
 
     // New fields for draft and publish status
     @Column({ type: 'boolean', default: true })

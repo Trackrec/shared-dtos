@@ -83,7 +83,7 @@ export class RecruiterProjectController {
   @Post()
   @UseInterceptors(FileInterceptor('logo'))
   create(
-    @Body() accountProjectData: Partial<RecruiterProject>,
+    @Body() accountProjectData,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<any> {
@@ -99,13 +99,23 @@ export class RecruiterProjectController {
         imageType=imgType;
       }
     }
-    return this.recruiterProjectService.create(accountProjectData, user_id, image?.buffer, imageType);
+    
+    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
+
+    const companyData = {
+      company_id,
+      company_name,
+      logo_url,
+      website_url,
+      domain
+    };
+    return this.recruiterProjectService.create(accountProjectData, user_id, image?.buffer, imageType, companyData);
   }
 
   @Post('save_and_publish')
   @UseInterceptors(FileInterceptor('logo'))
   saveAndPublish(
-    @Body() accountProjectData: RecruiterProject,
+    @Body() accountProjectData,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<any> {
@@ -121,13 +131,22 @@ export class RecruiterProjectController {
         imageType=imgType;
       }
     }
-    return this.recruiterProjectService.createAndPublish(accountProjectData, user_id,  image?.buffer, imageType);
+    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
+
+    const companyData = {
+      company_id,
+      company_name,
+      logo_url,
+      website_url,
+      domain
+    };
+    return this.recruiterProjectService.createAndPublish(accountProjectData, user_id,  image?.buffer, imageType, companyData);
   }
 
   @Post('update_and_publish/:id')
   @UseInterceptors(FileInterceptor('logo'))
   updateAndPublish(
-    @Body() accountProjectData: RecruiterProject,
+    @Body() accountProjectData,
     @Req() req: Request,
     @UploadedFile() image: Multer.File,
     @Param('id') id: string,
@@ -144,7 +163,17 @@ export class RecruiterProjectController {
         imageType=imgType;
       }
     }
-    return this.recruiterProjectService.updateAndPublish(accountProjectData, user_id, id, image?.buffer, imageType);
+
+    const {company_id, company_name, company_logo_url, company_website_url, company_domain} = accountProjectData;
+
+    const companyData = {
+      company_id,
+      company_name,
+      company_logo_url,
+      company_website_url,
+      company_domain
+    };
+    return this.recruiterProjectService.updateAndPublish(accountProjectData, user_id, id, image?.buffer, imageType, companyData);
   }
 
   @Post('/:id/publish')
@@ -169,7 +198,7 @@ async unpublishProject(
   @UseInterceptors(FileInterceptor('logo'))
   update(
     @Param('id') id: string,
-    @Body() accountProjectData: Partial<RecruiterProject>,
+    @Body() accountProjectData,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<any> {
@@ -185,7 +214,17 @@ async unpublishProject(
         imageType=imgType;
       }
     }
-    return this.recruiterProjectService.update(user_id, +id, accountProjectData, image?.buffer, imageType);
+
+    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
+
+    const companyData = {
+      company_id,
+      company_name,
+      logo_url,
+      website_url,
+      domain
+    };
+    return this.recruiterProjectService.update(user_id, +id, accountProjectData, image?.buffer, imageType, companyData);
   }
 
   @Delete('/:id')
