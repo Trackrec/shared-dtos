@@ -11,6 +11,8 @@ import { SharedService } from 'src/shared/shared.service';
 import { RecruiterPointsService } from './points.service';
 import { ProjectVisitors } from 'src/project_visits/project_visits.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
+import { Company } from 'src/company/company.entity';
+import { CompanyService } from 'src/company/company.service';
 
 @Injectable()
 export class RecruiterProjectService {
@@ -29,7 +31,10 @@ export class RecruiterProjectService {
     @InjectRepository(RecruiterCompanyUser)
     private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>,
     @InjectRepository(ProjectVisitors)
-    private projectVisitorsRepository: Repository<ProjectVisitors>
+    private projectVisitorsRepository: Repository<ProjectVisitors>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
+      private readonly companyService: CompanyService,
   ) {}
 
   async findAll(
@@ -231,7 +236,40 @@ export class RecruiterProjectService {
     }
   }
 
-  async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any): Promise<any> {
+  async getCompanyInfo(companyData: { company_id: string; company_name: string; logo_url?: string; domain?: string; website_url?: string }) {
+    if (companyData && companyData.company_id) {
+      try {
+        let company = await this.companyRepository.findOne({
+          where: { company_id: companyData.company_id },
+        });
+  
+        if (company) {
+          return company.logo_url;
+        } else {
+          const newCompany = await this.companyService.createCompany({
+            company_id: companyData.company_id,
+            name: companyData.company_name,
+            logo_url: companyData.logo_url || null,
+            domain: companyData.domain || null,
+            website_url: companyData.website_url || null,
+          });
+  
+          if (newCompany && !newCompany.error) {
+            return newCompany.createdCompany.logo_url;
+          } else {
+            return null; 
+          }
+        }
+      } catch (error) {
+        console.error("Error in getCompanyInfo:", error);
+        return null; 
+      }
+    }
+    return null; 
+  }
+  
+
+  async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any, companyData): Promise<any> {
     try {
       // Find the user by userId
       accountProjectData = this.parseRecruiterProjectData(accountProjectData);
@@ -280,6 +318,12 @@ export class RecruiterProjectService {
         }
 
       }
+
+      if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+        accountProjectData.logo = await this.getCompanyInfo(companyData)
+        accountProjectData.logo_type = "url";
+        accountProjectData.company_id = companyData.company_id
+      }
       // Set the associated company in the project data
       accountProjectData.company = recruiterCompanyUser.company;
   
@@ -317,7 +361,7 @@ export class RecruiterProjectService {
     }
   }
   
-  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType): Promise<any> {
+  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType, companyData): Promise<any> {
     try {
       // Find the user by userId
 
@@ -368,7 +412,6 @@ export class RecruiterProjectService {
           imageType
         );
 
-        console.log(storedImage)
       if(storedImage){
         accountProjectData.logo=storedImage;
         accountProjectData.logo_type=imageType;
@@ -376,6 +419,12 @@ export class RecruiterProjectService {
      }
 
    }
+
+   if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+    accountProjectData.logo = await this.getCompanyInfo(companyData)
+    accountProjectData.logo_type = "url"
+    accountProjectData.company_id = companyData.company_id
+  }
 
    project={...accountProjectData}
    // Set the associated company in the project data
@@ -420,7 +469,8 @@ export class RecruiterProjectService {
     accountProjectData: Partial<RecruiterProject>,
     userId: number,
     buffer: any,
-    imageType: any
+    imageType: any,
+    companyData
   ): Promise<any> {
     try {
 
@@ -470,7 +520,13 @@ export class RecruiterProjectService {
     accountProjectData.logo=storedImage;
     accountProjectData.logo_type=imageType;
   }
-}
+} 
+
+  if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+    accountProjectData.logo = await this.getCompanyInfo(companyData)
+    accountProjectData.logo_type = "url"
+    accountProjectData.company_id = companyData.company_id
+  }
 
   // Set the user in the project data
   accountProjectData.company = recruiterCompanyUser.company;
@@ -599,7 +655,8 @@ export class RecruiterProjectService {
     id: number,
     accountProjectData: Partial<RecruiterProject>,
     buffer:any,
-    imageType: any
+    imageType: any,
+    companyData
   ): Promise<any> {
     try {
       const project = await this.recruiterProjectRepository.findOne({
@@ -646,6 +703,12 @@ export class RecruiterProjectService {
 
        }
      }
+
+     if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+      accountProjectData.logo = await this.getCompanyInfo(companyData)
+      accountProjectData.logo_type = "url";
+      accountProjectData.company_id = companyData.company_id
+    }
 
       if(project.published && !this.hasRequiredFields(accountProjectData as RecruiterProject)){
         accountProjectData.published=false;
@@ -941,7 +1004,7 @@ export class RecruiterProjectService {
   
     // Parse boolean fields
     parsedData.is_travel_requirements = data.is_travel_requirements == 'Yes';
-    parsedData.is_ote_visible = data.is_ote_visible;
+    parsedData.is_ote_visible = data.is_ote_visible == 'true';
   
     // Parse date fields
     parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
@@ -971,6 +1034,7 @@ parsedData.languages = data.languages
     // Parse string fields
     parsedData.title = data.title || null;
     parsedData.company_name = data.company_name || null;
+    parsedData.company_id = data.company_id || null;
     parsedData.logo = data.logo || null;
     parsedData.location_type = data.location_type || null;
     parsedData.description = data.description || null;

@@ -192,6 +192,9 @@ export class RecruiterProject {
     @Column({ default: null })
     project_custom_url: string;
 
+    @Column({ default: null })
+    company_id: string;
+
     // New fields for draft and publish status
     @Column({ type: 'boolean', default: true })
     draft: boolean;
