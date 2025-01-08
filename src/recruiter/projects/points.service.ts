@@ -1,6 +1,9 @@
 import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
+import { PositionDto } from 'src/shared-dtos/src/Position.dto';
+import { RecruiterProjectDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { Position } from 'src/positions/positions.entity';
 
 
 
@@ -17,7 +20,7 @@ export class RecruiterPointsService {
         });
     }
 
-    points_for_ote(user_ote, project_ote) {
+    points_for_ote(user_ote: number, project_ote: number): number {
         if (!user_ote) {
             user_ote = 0;
         }
@@ -32,13 +35,13 @@ export class RecruiterPointsService {
             // Case when user_ote is greater than project_ote
             let diff = user_ote - project_ote;
             // Calculate points linearly between 0 to 10 based on the difference
-            let points = 10 - (10 * diff) / user_ote;
+            let points: number = 10 - (10 * diff) / user_ote;
             // Ensure points are within the range of 0 to 10
             return parseFloat(Math.max(0, Math.min(10, points)).toFixed(2));
         }
     }
 
-    async points_for_worked_in(positions, Industry_Works_IN) {
+    async points_for_worked_in(positions: PositionDto[], Industry_Works_IN: string[]): Promise<number> {
       const client = this.openAIClient;
 
       const workedIn = positions.flatMap(position => position?.details?.worked_in || []);
@@ -71,7 +74,7 @@ export class RecruiterPointsService {
         return result;
     }
 
-    async points_for_sold_to(positions, Sold_In) {
+    async points_for_sold_to(positions: PositionDto[], Sold_In: string[]): Promise<number> {
       const client = this.openAIClient
 
       const soldIn = positions.flatMap(position => position?.details?.sold_to || []);
@@ -108,12 +111,12 @@ export class RecruiterPointsService {
         return result;
     }
 
-async points_for_sales_cycle(positions, project) {
+async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProjectDto): Promise<number> {
     const client = this.openAIClient
 
     const salesCycles = positions.map(position => ({
         value: position.details.average_sales_cycle,
-        type: position.details.type || 'Unknown'
+       // type: position.details.type || 'Unknown'
     }));
 
     const prompt = `
@@ -161,7 +164,7 @@ async points_for_sales_cycle(positions, project) {
     //         return points;
     //     }
     // }
-    segment_percent(positions) {
+    segment_percent(positions: PositionDto[]) {
         // Filter positions for each segment and calculate total
         const total_smb = positions
             .filter(p => p.details && p.details.segment_smb)
@@ -198,7 +201,7 @@ async points_for_sales_cycle(positions, project) {
             };
         }
     }
-    points_for_segment(positions, project) {
+    points_for_segment(positions:PositionDto[] , project: RecruiterProjectDto) : number{
         const segment_percentage = this.segment_percent(positions);
     
         // Calculate points for each segment
@@ -307,7 +310,7 @@ async points_for_sales_cycle(positions, project) {
     //         }
     //     }, 0);
     // }
-    async points_for_dealsize(positions, project) {
+    async points_for_dealsize(positions: PositionDto[], project: RecruiterProjectDto): Promise<number> {
         const client = this.openAIClient
     
         const dealsizes = positions.map(position => position?.details?.average_deal_size || 0);
@@ -340,7 +343,7 @@ async points_for_sales_cycle(positions, project) {
         }
     }
 
-    points_for_new_business(positions, project) {
+    points_for_new_business(positions: PositionDto[], project: RecruiterProjectDto): number {
         // Calculate the total new_business value
         const total_new_business = positions.reduce((acc, position) => {
             if (position.details && position.details.new_business) {
@@ -363,7 +366,7 @@ async points_for_sales_cycle(positions, project) {
     }
     
 
-    points_for_outbound(positions, project) {
+    points_for_outbound(positions: PositionDto[], project: RecruiterProjectDto): number {
         // Calculate the total new_business value
         const total_new_business = positions.reduce((acc, position) => {
             if (position.details && position.details.outbound) {
@@ -385,7 +388,7 @@ async points_for_sales_cycle(positions, project) {
         }
     }
 
-    points_for_persona(positions, selectedPersona) {
+    points_for_persona(positions: PositionDto[], selectedPersona: string[]): number {
         let combinedPersonas = [];
     
         positions.forEach(position => {
@@ -406,7 +409,7 @@ async points_for_sales_cycle(positions, project) {
     }
     
 
-    calculateTotalYears(positions) {
+    calculateTotalYears(positions: PositionDto[]) : number{
         let totalYears = 0;
         let uniquePeriods = {};
     
@@ -446,7 +449,7 @@ async points_for_sales_cycle(positions, project) {
         return totalYears;
     }
 
-    points_for_years(positions, project) {
+    points_for_years(positions: PositionDto[], project: RecruiterProjectDto): number {
         const totalYears = this.calculateTotalYears(positions);
     
         if (totalYears >= project.experience) {
