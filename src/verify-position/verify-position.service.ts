@@ -8,6 +8,8 @@ import { MailgunService } from 'src/mailgun/mailgun.service';
 import { Position } from 'src/positions/positions.entity';
 import { SharedService } from 'src/shared/shared.service';
 import * as jwt from 'jsonwebtoken';
+import { UserDto } from 'src/shared-dtos/src/user.dto';
+import { ChangeVerificationRequestDto, ExtendedVerifyPositionDto, PositionDto, VerifyPositionDto, VerifyPositionRequestDto, VerifyRequestsResponseDto } from 'src/shared-dtos/src/Position.dto';
 
 @Injectable()
 export class VerifyPositionService {
@@ -22,10 +24,10 @@ export class VerifyPositionService {
     private readonly sharedService: SharedService,
   ) {}
 
-  async resendVerificationEmail(requestBody: any): Promise<any> {
+  async resendVerificationEmail(requestId: number): Promise<{error: boolean, message: string}> {
     try {
-      const existingRequest = await this.verifyPositionRepository.findOne({
-        where: { id: requestBody.requestId },
+      const existingRequest: VerifyPosition = await this.verifyPositionRepository.findOne({
+        where: { id: requestId },
         relations: ['position', 'requestBy', 'position.company'],
       });
       if (!existingRequest) {
@@ -63,13 +65,13 @@ export class VerifyPositionService {
     }
   }
 
-  generateUniqueToken(payload: any): string {
+  generateUniqueToken(payload: {id: number}): string {
     return jwt.sign(payload, process.env.JWT_SECRET);
   }
 
-  async requestVerification(requestBody: any, userId: any): Promise<any> {
+  async requestVerification(requestBody: VerifyPositionRequestDto, userId: number): Promise<{error: boolean, message: string}> {
     try {
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const user: UserDto = await this.userRepository.findOne({ where: { id: userId } });
 
       if (user.email === requestBody?.email) {
         return {
@@ -78,7 +80,7 @@ export class VerifyPositionService {
         };
       }
 
-      const existingRequest = await this.verifyPositionRepository.findOne({
+      const existingRequest: VerifyPosition = await this.verifyPositionRepository.findOne({
         where: {
           position: { id: requestBody.positionId },
           email: requestBody.email,
@@ -90,29 +92,32 @@ export class VerifyPositionService {
           message: 'Verification request for this position already sent!',
         };
       }
+      let requestBy: UserAccounts = await this.userRepository.findOne({
+        where: { id: requestBody.requestBy },
+      });
+
+      const position: Position = await this.positionRepository.findOne({
+        where: { id: requestBody.positionId },
+        relations: { company: true },
+      });
       const verifyPosition = new VerifyPosition();
       verifyPosition.email = requestBody.email;
-      verifyPosition.requestBy = requestBody.requestBy;
-      verifyPosition.position = requestBody.positionId;
+      verifyPosition.requestBy = requestBy; //requestBody.requestBy;
+      verifyPosition.position = position; //requestBody.positionId;
       verifyPosition.role = requestBody.role;
       verifyPosition.first_name = requestBody?.first_name;
       verifyPosition.last_name = requestBody?.last_name;
       verifyPosition.unique_token = this.generateUniqueToken({
         id: verifyPosition.id,
       });
-      const createdRequest =
+
         await this.verifyPositionRepository.save(verifyPosition);
 
-      const position = await this.positionRepository.findOne({
-        where: { id: requestBody.positionId },
-        relations: { company: true },
-      });
+    
       //position.verify_request = createdRequest;
       this.positionRepository.save(position);
 
-      let requestBy = await this.userRepository.findOne({
-        where: { id: requestBody.requestBy },
-      });
+      
 
       const messageData = {
         from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
@@ -142,9 +147,9 @@ export class VerifyPositionService {
     }
   }
 
-  async changeVerificationStatus(body) {
+  async changeVerificationStatus(body: ChangeVerificationRequestDto): Promise<{error?: boolean, message: string, success?: boolean}> {
     try {
-      const { status, request_id } = body;
+      const { status, request_id }: ChangeVerificationRequestDto = body;
       if (!status || !request_id) {
         return {
           error: true,
@@ -153,7 +158,7 @@ export class VerifyPositionService {
       }
 
       // Check if the requested verification exists
-      const verifyPosition = await this.verifyPositionRepository.findOne({
+      const verifyPosition : VerifyPosition= await this.verifyPositionRepository.findOne({
         where: { id: request_id },
         relations: ['position', 'position.company', 'requestBy'],
       });
@@ -165,7 +170,7 @@ export class VerifyPositionService {
       verifyPosition.status = status;
       await this.verifyPositionRepository.save(verifyPosition);
       let messageData;
-      const firstName = verifyPosition?.requestBy?.full_name?.split(' ')[0];
+      const firstName: string = verifyPosition?.requestBy?.full_name?.split(' ')[0];
 
       if (status === 'Approved') {
         messageData = {
@@ -217,12 +222,12 @@ export class VerifyPositionService {
     }
   }
 
-  async getAllRequests(userId) {
+  async getAllRequests(userId: number): Promise<VerifyRequestsResponseDto> {
     try {
       // Awais Chnages
 
       // Retrieve all requests associated with the user's email
-      const requests = await this.verifyPositionRepository.find({
+      const requests: VerifyPositionDto[] = await this.verifyPositionRepository.find({
         where: { user: { id: userId } },
         relations: [
           'requestBy',
@@ -231,27 +236,26 @@ export class VerifyPositionService {
           'position.details',
         ],
       });
-      let updatedRequests = requests;
-
-      for (let i = 0; i < updatedRequests.length; i++) {
-        let updated_requests_positon = null;
-        let completion_percentage =
-          updatedRequests[i].position && updatedRequests[i].position?.details
-            ? this.sharedService.calculateCompletionPercentage(
-                updatedRequests[i].position,
-              )
+      const updatedRequests: ExtendedVerifyPositionDto[] = requests.map((request) => {
+        const completion_percentage =
+          request.position && request.position.details
+            ? this.sharedService.calculateCompletionPercentage(request.position)
             : 0.0;
-
-        let is_completed: boolean =
-          completion_percentage == 100.0 ? true : false;
-
-        updated_requests_positon = {
-          ...updatedRequests[i].position,
-          is_completed: is_completed,
+      
+        const is_completed = completion_percentage === 100.0;
+      
+        const updatedPosition = {
+          ...request.position,
+          is_completed,
           completion_percentage,
         };
-        updatedRequests[i].position = updated_requests_positon;
-      }
+      
+        return {
+          ...request,
+          position: updatedPosition,
+        };
+      });
+      
 
       // Awais Chnages
 
@@ -265,14 +269,16 @@ export class VerifyPositionService {
     }
   }
 
-  async updateUserIdInRequest(userId, body) {
+  async updateUserIdInRequest(userId: number, request_token: string): Promise<{error: boolean; message: string}> {
     try {
-      const { request_token } = body;
-      const verifyPosition = await this.verifyPositionRepository.findOne({
+      const verifyPosition: VerifyPosition = await this.verifyPositionRepository.findOne({
         where: { unique_token: request_token },
       });
+
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId } });
+
       if (verifyPosition && verifyPosition.user == null) {
-        verifyPosition.user = userId as any;
+        verifyPosition.user = user;
         await this.verifyPositionRepository.save(verifyPosition);
       }
       return {
@@ -287,9 +293,9 @@ export class VerifyPositionService {
     }
   }
 
-  async deleteVerificationRequest(requestId) {
+  async deleteVerificationRequest(requestId: number): Promise<{error: boolean, message : string} | void> {
     try {
-      const request = await this.verifyPositionRepository.findOne({
+      const request: VerifyPosition = await this.verifyPositionRepository.findOne({
         where: { id: requestId },
       });
       if (!request) {

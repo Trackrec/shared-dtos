@@ -7,6 +7,7 @@ import { Company } from 'src/company/company.entity';
 import { VerifyPosition } from 'src/verify-position/verify-position.entity';
 import { MailgunService } from 'src/mailgun/mailgun.service';
 import { UserAccounts } from 'src/auth/User.entity';
+import { PositionDto, PositionRequestDto, PositionWithCompany } from 'src/shared-dtos/src/Position.dto';
 @Injectable()
 export class PositionService {
   constructor(
@@ -23,15 +24,15 @@ export class PositionService {
   ) {}
 
   async createPosition(
-    companyId: string,
+    companyId: string | null,
     userId: number,
-    positionData: any,
-  ): Promise<any> {
+    positionData: PositionRequestDto,
+  ): Promise<PositionWithCompany> {
     try {
-      let company = await this.companyRepository.findOne({
+      let company: Company = await this.companyRepository.findOne({
         where: { company_id: positionData.company_id },
       });
-      let newCompany;
+      let newCompany // { error: boolean; message?: string; createdCompany?: Company };
       if (!company)
         newCompany = await this.companyService.createCompany({
           company_id: positionData?.company_id,
@@ -52,16 +53,16 @@ export class PositionService {
         }
       }
 
-      const existingPositions = await this.positionRepository.find({
+      const existingPositions: Position[] = await this.positionRepository.find({
         where: { user: { id: userId } },
       });
 
-      let isNewUserPosition = false;
+      let isNewUserPosition: boolean = false;
       if (existingPositions.length === 0) {
         isNewUserPosition = true;
       }
 
-      const position = this.positionRepository.create({
+      const position: Position = this.positionRepository.create({
         ...positionData,
         user: { id: userId },
         company: { id: !company ? newCompany?.createdCompany.id : company.id },
@@ -70,7 +71,7 @@ export class PositionService {
       if (isNewUserPosition) {
         await this.sendWelcomeEmail(userId);
       }
-      const savedPosition = await this.positionRepository.save(position);
+      const savedPosition: Position = await this.positionRepository.save(position);
 
       return {
         ...savedPosition,
@@ -90,8 +91,8 @@ export class PositionService {
     }
   }
 
-  async sendWelcomeEmail(userId) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+  async sendWelcomeEmail(userId: number) {
+    const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId } });
     try {
       //Sending Experience Completion Mail
       const messageData = {
@@ -150,9 +151,9 @@ export class PositionService {
     } catch (error) {}
   }
 
-  async getPositionById(positionId: number): Promise<Position> {
+  async getPositionById(positionId: number): Promise<PositionDto> {
     try {
-      const position = await this.positionRepository.findOne({
+      const position : PositionDto= await this.positionRepository.findOne({
         where: { id: positionId },
       });
 
@@ -169,8 +170,8 @@ export class PositionService {
 
   async updatePosition(
     positionId: number,
-    positionData: Partial<Position>,
-  ): Promise<Position> {
+    positionData: Partial<PositionDto>,
+  ): Promise<PositionDto> {
     try {
       //todo: remove
       await this.getPositionById(positionId);
@@ -203,7 +204,7 @@ export class PositionService {
     }
   }
 
-  async getAllPositionsByUserId(userId: number): Promise<Position[]> {
+  async getAllPositionsByUserId(userId: number): Promise<PositionDto[]> {
     try {
       return await this.positionRepository.find({
         where: { user: { id: userId } },

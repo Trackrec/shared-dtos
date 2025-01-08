@@ -17,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import { GetMeResponseDto, UpdatePreferencesRequestDto } from 'src/shared-dtos/src/user.dto';
 @Controller()
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -107,10 +108,10 @@ export class AuthController {
   }
 
   @Get('me')
-  async getMe(@Req() req) {
-    const user_id = req['user_id'];
+  async getMe(@Req() req: Request) : Promise<GetMeResponseDto>{
+    const user_id: number = req['user_id'];
     try {
-      const result = await this.authService.getMe(user_id);
+      const result: GetMeResponseDto = await this.authService.getMe(user_id);
 
       if (result.error) {
         return { error: true, message: result.message };
@@ -126,7 +127,7 @@ export class AuthController {
     }
   }
   @Put('profile/:id')
-  async updateUser(@Param('id') id: number, @Body() updateUserPayload: any) {
+  async updateUser(@Param('id') id: number, @Body() updateUserPayload: UpdatePreferencesRequestDto): Promise<{ error: boolean; message: string }> {
     // Pass image along with other payload data to service for update
     return this.authService.updateUser(id, updateUserPayload);
   }
@@ -136,13 +137,13 @@ export class AuthController {
   async updateProfilePicture(
     @Param('id') id: number,
     @UploadedFile() image: Multer.File,
-  ) {
+  ): Promise<{ error: boolean; message: string }> {
     // Pass image along with other payload data to service for update
     return this.authService.updateProfilePciture(id, image.buffer);
   }
 
   @Put('preference/update')
-  async updatePreference(@Body() updateUserPreferencePayload: any, @Req() req) {
+  async updatePreference(@Body() updateUserPreferencePayload: UpdatePreferencesRequestDto, @Req() req: Request): Promise<{ error: boolean; message: string }> {
     const user_id = req['user_id'];
     console.log(updateUserPreferencePayload);
     return this.authService.updatepreference(

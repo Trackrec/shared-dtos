@@ -6,6 +6,9 @@ import { RecruiterCompany } from './recruiter-company.entity';
 import { RecruiterCompanyUser } from './recruiter-company-user.entity'; // Import RecruiterCompanyUser entity
 import { UserAccounts } from 'src/auth/User.entity';
 import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
+import { RecruiterCompanyDto, RecruiterCompanyUserDto } from 'src/shared-dtos/src/recruiter_company';
+import { FormattedUserDto, UserDto, UsersInCompanyResponseDto } from 'src/shared-dtos/src/user.dto';
+import { CreateRecruiterCompanyDto, CreateRecruiterCompanyResponseDto, UpdateRecruiterCompanyDto } from 'src/shared-dtos/src/company.dto';
 @Injectable()
 export class RecruiterCompanyService {
   constructor(
@@ -19,10 +22,10 @@ export class RecruiterCompanyService {
 
   ) {}
 
-  async createCompany(company_name: string, userId: number, buffer, imageType): Promise<any> {
+  async createCompany(company_name: string, userId: number, buffer: Buffer, imageType: string): Promise<CreateRecruiterCompanyDto> {
 
     // Check if the user already has a company associated with them
-    const existingAssociation = await this.recruiterCompanyUserRepository.findOne({
+    const existingAssociation:RecruiterCompanyUserDto = await this.recruiterCompanyUserRepository.findOne({
       where: { user: { id: userId } },
       relations: ['company'],
     });
@@ -35,23 +38,23 @@ export class RecruiterCompanyService {
     }
   
     // Upload the new image for the company
-    let storedImage = await this.uploadService.uploadNewImage(
+    let storedImage: string = await this.uploadService.uploadNewImage(
       buffer,
       'recruiter_company_images',
       imageType
     );
   
-    const company = this.recruiterCompanyRepository.create({ company_name, logo: storedImage, logo_type: imageType,created_by: {id: userId} });
-    const savedCompany = await this.recruiterCompanyRepository.save(company);
+    const company: RecruiterCompanyDto = this.recruiterCompanyRepository.create({ company_name, logo: storedImage, logo_type: imageType,created_by: {id: userId} });
+    const savedCompany: RecruiterCompanyDto = await this.recruiterCompanyRepository.save(company);
   
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user: UserDto = await this.userRepository.findOne({ where: { id: userId } });
   
     if (!user || user.role != 'Admin') {
       throw new BadRequestException('Invalid recruiter.');
     }
   
     // Create the association between the user and the new company
-    const recruiterCompanyUser = this.recruiterCompanyUserRepository.create({
+    const recruiterCompanyUser: RecruiterCompanyUserDto = this.recruiterCompanyUserRepository.create({
       user,
       company: savedCompany,
     });
@@ -66,22 +69,22 @@ export class RecruiterCompanyService {
   }
 
   async updateCompany(
-    companyId: any,
-    userId: any,
+    companyId: number,
+    userId: number,
     company_name?: string,
     buffer?: Buffer,
     imageType?: string
-  ): Promise<any> {
+  ): Promise<UpdateRecruiterCompanyDto> {
     // Find the company by ID
     console.log(imageType)
-    const company = await this.recruiterCompanyRepository.findOne({ where: { id: companyId } });
+    const company: RecruiterCompanyDto = await this.recruiterCompanyRepository.findOne({ where: { id: companyId } });
   
     if (!company) {
       return {error: true, message: "Company not found."}
     }
   
     // Check if the user has the right to update the company
-    const existingAssociation = await this.recruiterCompanyUserRepository.findOne({
+    const existingAssociation: RecruiterCompanyUserDto = await this.recruiterCompanyUserRepository.findOne({
       where: { user: { id: userId }, company: { id: companyId } },
     });
   
@@ -98,7 +101,7 @@ export class RecruiterCompanyService {
       await this.uploadService.deleteImage(company.logo,'recruiter_company_images' )   
   
       // Upload the new image
-      let storedImage = await this.uploadService.uploadNewImage(
+      let storedImage: string = await this.uploadService.uploadNewImage(
         buffer,
         'recruiter_company_images',
         imageType
@@ -109,7 +112,7 @@ export class RecruiterCompanyService {
     }
   
     // Save the updated company
-    const updatedCompany = await this.recruiterCompanyRepository.save(company);
+    const updatedCompany: RecruiterCompanyDto = await this.recruiterCompanyRepository.save(company);
   
     return {
       error: false,
@@ -118,10 +121,10 @@ export class RecruiterCompanyService {
     };
   }
 
-  async findAllUsersInCompany(userId: number): Promise<any> {
+  async findAllUsersInCompany(userId: number): Promise<UsersInCompanyResponseDto> {
     try{
     // Fetch the company associated with the given userId
-    const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+    const recruiterCompanyUser: RecruiterCompanyUserDto = await this.recruiterCompanyUserRepository.findOne({
       where: { user: { id: userId } },
       relations: ['company'], 
     });
@@ -130,8 +133,8 @@ export class RecruiterCompanyService {
       return {error: true, message: "Company not found for the given user"}
     }
   
-    const companyId = recruiterCompanyUser.company.id;
-    const users = await this.recruiterCompanyUserRepository.createQueryBuilder('recruiterCompanyUser')
+    const companyId: number = recruiterCompanyUser.company.id;
+    const users: RecruiterCompanyUserDto[] = await this.recruiterCompanyUserRepository.createQueryBuilder('recruiterCompanyUser')
     .innerJoinAndSelect('recruiterCompanyUser.user', 'user')
     .where('recruiterCompanyUser.company.id = :companyId', { companyId })
     .andWhere('user.is_deleted = :isDeleted', { isDeleted: false })
@@ -146,7 +149,7 @@ export class RecruiterCompanyService {
     .getMany();
 
 
-    const formattedUsers = users.map(({ id, user }) => ({
+    const formattedUsers: FormattedUserDto[] = users.map(({ id, user }) => ({
       id,
       ...user, 
     }));

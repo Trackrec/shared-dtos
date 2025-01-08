@@ -3,6 +3,7 @@
 import { Controller, Post, Param, Get, Req, Body } from '@nestjs/common';
 import { PublishProfileService } from './publish-profile.service';
 import { UserAccounts } from 'src/auth/User.entity';
+import { ExtendedUserDetailsDto, GetInTouchMailRequestDto, ProfileViewsResponseDto, UserDto } from 'src/shared-dtos/src/user.dto';
 
 @Controller()
 export class PublishProfileController {
@@ -12,13 +13,13 @@ export class PublishProfileController {
   async publishProfile(
     @Param('userId') userId: number,
   ): Promise<{ error: boolean; message: string }> {
-    const result = await this.publishProfileService.publishProfile(userId);
+    const result: { error: boolean; message: string } = await this.publishProfileService.publishProfile(userId);
     return result;
   }
 
   @Post('public_profile/get_in_touch')
   async GetInTouchMail(
-    @Body() mailData: any,
+    @Body() mailData: GetInTouchMailRequestDto,
   ): Promise<{ error: boolean; message: string }> {
     const result =
       await this.publishProfileService.sendGetInTouchMail(mailData);
@@ -37,9 +38,9 @@ export class PublishProfileController {
   async getUserProfile(
     @Param('userName') userName: string,
     @Req() req: Request,
-  ): Promise<{ error: boolean; user?: UserAccounts; message?: string }> {
+  ): Promise<{ error: boolean; user?: ExtendedUserDetailsDto; message?: string }> {
     try {
-      const visitor_id = req['user_id'];
+      const visitor_id: number = req['user_id'];
       const user = await this.publishProfileService.findUserByIdAndName(
         userName,
         visitor_id,
@@ -52,9 +53,9 @@ export class PublishProfileController {
   }
 
   @Get('my/profile_views')
-  async profileViews(@Req() req: Request) {
+  async profileViews(@Req() req: Request): Promise<ProfileViewsResponseDto> {
     try {
-      const visitor_id = req['user_id'];
+      const visitor_id: number = req['user_id'];
       return await this.publishProfileService.getProfileViews(visitor_id);
     } catch (e) {
       return { error: true, message: 'Views not found' };

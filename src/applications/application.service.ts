@@ -5,10 +5,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProjectApplication } from './application.entity';
 import { UserAccounts } from 'src/auth/User.entity';
-import { AccountProject } from 'src/admin/projects/project.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 import { MailgunService } from 'src/mailgun/mailgun.service';
+import { MyApplicationsListDto, ProjectApplicationDto, ProjectApplicationRequestDto } from 'src/shared-dtos/src/project_application.dto';
 @Injectable()
 export class ApplicationService {
   constructor(
@@ -23,22 +23,22 @@ export class ApplicationService {
     private readonly mailgunService: MailgunService,
   ) {}
 
-  async createApplication(body: any, userId: number): Promise<any> {
+  async createApplication(body: ProjectApplicationRequestDto, userId: number): Promise<{error: boolean, message: string}> {
     try{
-           const {project_id, ote, available, position_id, city, custom_current_role}=body;
+           const {project_id, ote, available, position_id, city, custom_current_role}: ProjectApplicationRequestDto =body;
            if(!project_id || !ote || !available || !position_id || !city || !custom_current_role){
             return {error: true, message: "Please fill all the required fields."}
            }
-           const user=await this.userRepository.findOne({where:{id: userId}})
+           const user: UserAccounts=await this.userRepository.findOne({where:{id: userId}})
            if(!user){
             return {error: true, message: "User not found."}
            }
-           const project=await this.projectRepository.findOne({where: {id: project_id}})
+           const project: RecruiterProject=await this.projectRepository.findOne({where: {id: project_id}})
            if(!project){
             return {error:true, message: "Project not found."}
            }
           // check  if this user has already created application for this project
-          const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
+          const applicationExists: ProjectApplication=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
           console.log('applicationExists :>> ', applicationExists);
           if(!applicationExists){
             if(city && custom_current_role){
@@ -46,7 +46,7 @@ export class ApplicationService {
               user.custom_current_role =custom_current_role;
               await this.userRepository.update(user.id, user)
             }
-            const application = new ProjectApplication();
+            const application: ProjectApplication = new ProjectApplication();
             application.ote = ote;
             application.available = available;
             application.user=user;
@@ -82,9 +82,9 @@ export class ApplicationService {
     
   }
 
-  async getMyApplications(user_id: number){
+  async getMyApplications(user_id: number): Promise<MyApplicationsListDto>{
     try{
-      let applications=await this.applicationRepository.find({where:{user:{id:user_id}},relations: ['project']}, )
+      let applications: ProjectApplicationDto[]=await this.applicationRepository.find({where:{user:{id:user_id}},relations: ['project']}, )
      
       applications.map(application => ({
         projectTitle: application.project.title
@@ -97,10 +97,10 @@ export class ApplicationService {
     }
   }
 
-  async deleteApplicationsForUserAndCompany(userId: number, loggedInUser: number): Promise<any> {
+  async deleteApplicationsForUserAndCompany(userId: number, loggedInUser: number): Promise<{error: boolean, message: string}> {
     try {
       // Check if the logged-in user is an Admin
-      const checkAdmin = await this.userRepository.findOne({
+      const checkAdmin: UserAccounts = await this.userRepository.findOne({
         where: { id: loggedInUser, role: 'Admin' },
       });
   
@@ -108,7 +108,7 @@ export class ApplicationService {
         return { error: true, message: 'You are not an admin User.' };
       }
 
-      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      const recruiterCompanyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: loggedInUser } },
         relations: ['company'],
       });

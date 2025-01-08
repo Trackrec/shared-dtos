@@ -20,7 +20,7 @@ import {
 import { Position } from 'src/positions/positions.entity';
 import { Keywords } from 'src/keywords/keyword.entity';
 import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
-import { AccountProject } from 'src/admin/projects/project.entity';
+import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 export enum LocationPreference {
@@ -176,8 +176,8 @@ export class UserAccounts {
   @OneToMany(() => AnalyticsAccess, (analyticsAccess) => analyticsAccess.user)
   analyticsAccess: AnalyticsAccess[];
 
-  @OneToMany(() => AccountProject, (project) => project.user)
-  projects: AccountProject[];
+  @OneToMany(() => RecruiterProject, (project) => project.user)
+  projects: RecruiterProject[];
 
   @OneToMany(() => ProjectApplication, (application) => application.user)
   applications: ProjectApplication[];

@@ -16,6 +16,11 @@ import { MailgunService } from 'src/mailgun/mailgun.service';
 
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 import { RecruiterProject } from '../projects/project.entity';
+import { RecruiterCompany } from '../recruiter-company/recruiter-company.entity';
+import { ChangePasswordRequestDto, RecruiterUserAuthResponseDto, UpdatePreferencesRequestDto, UserDto, UserInfoResponseDto, VerifyTokenResponse } from 'src/shared-dtos/src/user.dto';
+import { RecruiterCompanyDto, RecruiterCompanyUserDto } from 'src/shared-dtos/src/recruiter_company';
+import { RecruiterProjectDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { String } from 'aws-sdk/clients/appstream';
 
 
   @Injectable()
@@ -38,19 +43,19 @@ import { RecruiterProject } from '../projects/project.entity';
     ) {}
   
   
-    async registerUser(email: string, password: string, firstName: string, lastName: string): Promise<any> {
+    async registerUser(email: string, password: string, firstName: string, lastName: string): Promise<RecruiterUserAuthResponseDto> {
         try {
           // Check if the email already exists
-          const existingUser = await this.userRepository.findOne({ where: { email,  role: In(['Admin', 'User']) } });
+          const existingUser: UserDto = await this.userRepository.findOne({ where: { email,  role: In(['Admin', 'User']) } });
           if (existingUser) {
             return { error: true, message: 'Email is already in use.' };
           }
     
           // Hash the password
-          const hashedPassword = await bcrypt.hash(password, 10);
+          const hashedPassword: string = await bcrypt.hash(password, 10);
     
           // Create new user
-          const user = this.userRepository.create({
+          const user: UserDto = this.userRepository.create({
             email,
             password: hashedPassword,
             full_name: `${firstName} ${lastName}`,
@@ -59,10 +64,10 @@ import { RecruiterProject } from '../projects/project.entity';
           });
     
           // Save the user in the database
-          const savedUser = await this.userRepository.save(user);
+           await this.userRepository.save(user);
     
           // Generate JWT token
-          const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+          const token: string = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
             expiresIn: '30d',
           });
     
@@ -73,19 +78,19 @@ import { RecruiterProject } from '../projects/project.entity';
         }
       }
 
-      async loginUser(email: string, password: string): Promise<any> {
+      async loginUser(email: string, password: string): Promise<RecruiterUserAuthResponseDto> {
         try {
-          const user = await this.userRepository.findOne({ where: { email, role: In(['Admin', 'User']) } });
+          const user: UserDto = await this.userRepository.findOne({ where: { email, role: In(['Admin', 'User']) } });
           if (!user) {
             return { error: true, message: 'Invalid email or password.' };
           }
     
-          const isPasswordValid = await bcrypt.compare(password, user.password);
+          const isPasswordValid: boolean = await bcrypt.compare(password, user.password);
           if (!isPasswordValid) {
             return { error: true, message: 'Invalid email or password.' };
           }
     
-          const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+          const token: string = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
             expiresIn: '30d',
           });
     
@@ -96,7 +101,7 @@ import { RecruiterProject } from '../projects/project.entity';
       }
 
     async findOrCreate(
-      userDto: any,
+      userDto: {email: string, displayName: string, profilePicture?: string, accessToken: string, vanityName?: string, username?: string, loginMethod: string},
     ): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
       const {
         email,
@@ -111,7 +116,7 @@ import { RecruiterProject } from '../projects/project.entity';
       try {
       
 
-        let user;
+        let user: UserAccounts;
 
 if (email) {
   // Check for email and role only if email is provided
@@ -236,7 +241,7 @@ if (email) {
       }
     }
   
-    async updateCompanyUser(id: number, email: string, full_name: string, role: string, user_id: number) {
+    async updateCompanyUser(id: number, email: string, full_name: string, role: string, user_id: number): Promise<{error: boolean, message: string}> {
       try {
         // Ensure all fields are provided
         if (!email.trim() || !full_name.trim() || !role.trim()) {
@@ -244,7 +249,7 @@ if (email) {
         }
     
         // Check if the current user is an admin
-        const checkAdmin = await this.userRepository.findOne({
+        const checkAdmin: UserDto = await this.userRepository.findOne({
           where: { id: user_id, role: 'Admin' },
           relations: ['companyCreated'],
         });
@@ -254,7 +259,7 @@ if (email) {
         }
     
         // Check if the user being updated exists
-        const user = await this.userRepository.findOne({
+        const user: UserAccounts = await this.userRepository.findOne({
           where: { id, role: In(['User', 'Admin']) },
           relations: ['companyCreated'],
 
@@ -264,14 +269,14 @@ if (email) {
         }
     
         // Check existing user-company association
-        const existingAssociation = await this.recruiterCompanyUserRepository.findOne({
+        const existingAssociation: RecruiterCompanyUser= await this.recruiterCompanyUserRepository.findOne({
           where: { user: { id } },
           relations: ["company", "user"],
         });
     
         // If email is being updated, ensure no user exists with the same email
         if (email !== user.email) {
-          const existingUser = await this.userRepository.findOne({ where: { email, role: In(['User', 'Admin']) } });
+          const existingUser: UserDto = await this.userRepository.findOne({ where: { email, role: In(['User', 'Admin']) } });
           if (existingUser) {
             return { error: true, message: 'Another user already exists with this email.' };
           }
@@ -304,15 +309,15 @@ if (email) {
   
     async updateUser(
       id: number,
-      updateUserPayload: any,
+      updateUserPayload: UpdatePreferencesRequestDto,
     ): Promise<{ error: boolean; message: string }> {
-      const user = await this.userRepository.findOne({ where: { id } });
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id } });
       if (!user) {
         return { error: true, message: 'User not found' };
       }
       try {
         updateUserPayload.is_preferences_save = true;
-        const existingUser = await this.userRepository.findOne({
+        const existingUser: UserAccounts = await this.userRepository.findOne({
           where: {
             public_profile_username: updateUserPayload.public_profile_username,
           },
@@ -337,9 +342,9 @@ if (email) {
   
     async updatepreference(
       id: number,
-      updateUserPreferencePayload: any,
+      updateUserPreferencePayload: UpdatePreferencesRequestDto,
     ): Promise<{ error: boolean; message: string }> {
-      const user = await this.userRepository.findOne({ where: { id } });
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id } });
       console.log(id);
       if (!user) {
         return { error: true, message: 'User not found' };
@@ -354,9 +359,9 @@ if (email) {
       }
     }
   
-    async getMe(userId: number): Promise<any> {
+    async getMe(userId: number): Promise<{error: boolean, message?: string, user?: {user: UserDto, company: RecruiterCompanyDto}}> {
       // Find the user by their ID
-      const user = await this.userRepository.findOne({
+      const user: UserAccounts = await this.userRepository.findOne({
         where: { id: userId,  role: In(['User', 'Admin']) },
         select: ['id', 'full_name', 'email', 'role', 'login_method'], 
       });
@@ -366,13 +371,13 @@ if (email) {
       }
     
       // Find the associated recruiter company if it exists
-      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      const recruiterCompanyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: userId } },
         relations: ['company'],
       });
     
       // Prepare the response
-      const result = {
+      const result: {user: UserDto, company: RecruiterCompanyDto} = {
         user,
         company: recruiterCompanyUser ? recruiterCompanyUser.company : null,
       };
@@ -385,7 +390,7 @@ if (email) {
       const headers = {
         Authorization: `Bearer ${process.env.nobellaAccessToken}`,
       };
-      let url = `https://nubela.co/proxycurl/api/v2/linkedin?linkedin_profile_url=https://www.linkedin.com/in/${username}&use_cache=if-recent`;
+      let url: string = `https://nubela.co/proxycurl/api/v2/linkedin?linkedin_profile_url=https://www.linkedin.com/in/${username}&use_cache=if-recent`;
   
       try {
         const response = await axios.get(url, { headers });
@@ -437,17 +442,17 @@ if (email) {
       }
     }
 
-    async createUser(email: string, full_name:string, role: string, user_id:number ){
+    async createUser(email: string, full_name:string, role: string, user_id:number ): Promise<{error: boolean, message: string}>{
       try{
         if(!email || !full_name || !role ){
           return {error:true, message:"All the fields are required."}
         }
-        const checkAdmin=await this.userRepository.findOne({where:{id: user_id, role: "Admin"}})
+        const checkAdmin: UserDto=await this.userRepository.findOne({where:{id: user_id, role: "Admin"}})
         if(!checkAdmin){
           return {error: true, message: "You are not admin User."}
         }
 
-        const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+        const recruiterCompanyUser: RecruiterCompanyUserDto = await this.recruiterCompanyUserRepository.findOne({
           where: { user: { id: user_id } },
           relations: ['company'],
         });
@@ -456,7 +461,7 @@ if (email) {
           return { error: true, message: 'You are not associated with any recruiter company.' };
       
         }
-        const user = await this.userRepository.findOne({
+        const user: UserDto = await this.userRepository.findOne({
           where: {
             email,
             role: In(['User', 'Admin']) 
@@ -466,9 +471,9 @@ if (email) {
         if(user){
           return {error: true, message:"User already exist with this email."}
         }
-        const generatedPassword=this.generatePassword()
+        const generatedPassword: string=this.generatePassword()
   
-        const newUser = this.userRepository.create({
+        const newUser: UserDto = this.userRepository.create({
           full_name,
           role,
           email,
@@ -479,7 +484,7 @@ if (email) {
   
         await this.userRepository.save(newUser);
 
-        const assignCompanyToNewUser = this.recruiterCompanyUserRepository.create({
+        const assignCompanyToNewUser: RecruiterCompanyUserDto = this.recruiterCompanyUserRepository.create({
           user:newUser,
           company: recruiterCompanyUser.company,
         });
@@ -518,8 +523,8 @@ if (email) {
     }
 
     
-  async changePassword(body: any, user_id:any): Promise < any > {
-    const {current_password, new_password} =body
+  async changePassword(body: ChangePasswordRequestDto, user_id:number): Promise < {error: boolean, message: string} > {
+    const {current_password, new_password}: ChangePasswordRequestDto =body
     try {
 
         if (!current_password || !new_password ) {
@@ -528,7 +533,7 @@ if (email) {
                 message: "Please send all the required fields."
             }
         }
-        const user = await this.userRepository.findOne({
+        const user: UserDto = await this.userRepository.findOne({
             where: {
                 id: user_id,
                 role: In(['User', 'Admin'])
@@ -543,7 +548,7 @@ if (email) {
         }
 
 
-        const oldPasswordValid = await bcrypt.compare(current_password, user.password);
+        const oldPasswordValid: boolean = await bcrypt.compare(current_password, user.password);
 
         if (!oldPasswordValid) {
             return {
@@ -552,7 +557,7 @@ if (email) {
             };
         }
 
-        const hashedNewPassword = await bcrypt.hash(new_password, 10);
+        const hashedNewPassword: string = await bcrypt.hash(new_password, 10);
         user.password = hashedNewPassword;
         user.otp=false
         await this.userRepository.update({
@@ -573,7 +578,7 @@ if (email) {
 async deleteUser(userId: number): Promise<{ error: boolean; message: string }> {
   try {
     // Find the user
-    const user = await this.userRepository.findOne({
+    const user: UserAccounts = await this.userRepository.findOne({
       where: { id: userId , role: In(['User', 'Admin']) },
       relations: ['companyCreated'],
     });
@@ -583,7 +588,7 @@ async deleteUser(userId: number): Promise<{ error: boolean; message: string }> {
     }
 
     // Check if the user is linked with any company
-    const companyUser = await this.recruiterCompanyUserRepository.findOne({
+    const companyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
       where: { user: { id: userId } },
       relations: ['company'],
     });
@@ -599,7 +604,7 @@ async deleteUser(userId: number): Promise<{ error: boolean; message: string }> {
     }
 
       // Find all projects associated with this user and set user to null
-      const userProjects = await this.recruiterProjectRepository.find({
+      const userProjects: RecruiterProjectDto[] = await this.recruiterProjectRepository.find({
         where: { user: { id: userId } },
       });
   
@@ -622,9 +627,9 @@ async deleteUser(userId: number): Promise<{ error: boolean; message: string }> {
 }
 
 
-async sendResetEmail(email: string): Promise<any> {
+async sendResetEmail(email: string): Promise<{error: boolean, message: string}> {
   try {
-    const user = await this.userRepository.findOne({
+    const user: UserDto = await this.userRepository.findOne({
       where: {
         email,
         role: In(['User', 'Admin']),
@@ -637,7 +642,7 @@ async sendResetEmail(email: string): Promise<any> {
     }
 
     // Generate reset token
-    const token = randomBytes(20).toString('hex');
+    const token: string = randomBytes(20).toString('hex');
 
     // Set token and expiration date (1 hour from now)
     user.reset_password_token = token;
@@ -668,9 +673,9 @@ async sendResetEmail(email: string): Promise<any> {
   }
 }
 
-async verifyToken(token:string): Promise<any>{
+async verifyToken(token:string): Promise<VerifyTokenResponse>{
   try {
-    const user = await this.userRepository.findOne({
+    const user: UserDto = await this.userRepository.findOne({
       where: {
         reset_password_token: token,
         reset_password_expires: MoreThan(new Date()),
@@ -689,9 +694,9 @@ async verifyToken(token:string): Promise<any>{
   }
 }
 
-async resetPassword(token, new_password){
+async resetPassword(token, new_password): Promise<{error: boolean, message: string}>{
   try {
-    const user = await this.userRepository.findOne({where:{
+    const user: UserDto = await this.userRepository.findOne({where:{
       reset_password_token: token,
       reset_password_expires: MoreThan(new Date()),
       role: In(['User', 'Admin']),
@@ -703,7 +708,7 @@ async resetPassword(token, new_password){
     }
 
    
-    const hashedPassword = await bcrypt.hash(new_password, 10);
+    const hashedPassword: string = await bcrypt.hash(new_password, 10);
 
     user.password =hashedPassword;
     user.reset_password_expires = null;

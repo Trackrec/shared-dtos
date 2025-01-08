@@ -39,19 +39,13 @@ import { AccountsVisitors } from './visitors/accounts_visitor.entity';
 import { AnalyticsAccess } from './visitors/analytics_access.entity';
 import { SuperAdminController } from './super-admin/super-admin.controller';
 import { SuperAdminService } from './super-admin/super-admin.service';
-import { AdminAuthController } from './admin/auth/auth.controller';
-import { AdminAuthService } from './admin/auth/auth.service';
-import { AccountProjectController } from './admin/projects/project.controller';
 import { VerifyPositionController } from './verify-position/verify-position.controller';
 import { VerifyPositionService } from './verify-position/verify-position.service';
-import { AccountProjectService } from './admin/projects/project.service';
-import { AccountProject } from './admin/projects/project.entity';
 import { SharedService } from './shared/shared.service';
 import { MailgunService } from './mailgun/mailgun.service';
 import { ProjectApplication } from './applications/application.entity';
 import { ProjectApplicationController } from './applications/application.controller';
 import { ApplicationService } from './applications/application.service';
-import { PointsService } from './admin/projects/points.service';
 import { ProjectVisitorsController } from './project_visits/project_visits.controller';
 import { ProjectVisitorsService } from './project_visits/project_visits.service';
 import { VerifyPosition } from './verify-position/verify-position.entity';
@@ -91,7 +85,6 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     TypeOrmModule.forFeature([Keywords]),
     TypeOrmModule.forFeature([AccountsVisitors]),
     TypeOrmModule.forFeature([AnalyticsAccess]),
-    TypeOrmModule.forFeature([AccountProject]),
     TypeOrmModule.forFeature([ProjectApplication]),
     TypeOrmModule.forFeature([ProjectVisitors]),
     TypeOrmModule.forFeature([VerifyPosition]),
@@ -111,8 +104,6 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     PublishProfileController,
     KeywordsController,
     SuperAdminController,
-    AdminAuthController,
-    AccountProjectController,
     ProjectApplicationController,
     ProjectVisitorsController,
     VerifyPositionController,
@@ -132,12 +123,9 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     PublishProfileService,
     KeywordsService,
     SuperAdminService,
-    AdminAuthService,
-    AccountProjectService,
     SharedService,
     MailgunService,
     ApplicationService,
-    PointsService,
     ProjectVisitorsService,
     VerifyPositionService,
     CronService,
