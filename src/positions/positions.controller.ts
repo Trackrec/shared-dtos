@@ -1,13 +1,16 @@
-import { Controller, Post, Get, Param, Body, Put, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Put, Delete, UseGuards, Req, UsePipes } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PositionService } from './positions.service';
 import { Position } from './positions.entity';
 import { AllPositionsByUserIdResponseDto, PositionDto, PositionRequestDto, PositionWithCompany, PostionResponseDto } from 'src/shared-dtos/src/Position.dto';
+import { createPositionRequestSchema, getPositionByIdSchema } from 'src/validations/position.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 @Controller('positions')
 export class PositionController {
   constructor(private readonly positionService: PositionService) {}
 
   @Post()
+  @UsePipes(new ZodValidationPipe(createPositionRequestSchema))
   async createPosition(@Req() req: Request, @Body() positionData: PositionRequestDto) {
     try {
       const userId: number = req["user_id"];
@@ -15,12 +18,11 @@ export class PositionController {
       return { error: false, position: createdPosition };
     } catch (error) {
       return { error: true, message: error.message };
-      //todo: add logger here
     }
   }
 
   @Get(':id')
-  async getPositionById(@Param('id') positionId: number): Promise<PostionResponseDto> {
+  async getPositionById(@Param(new ZodValidationPipe(getPositionByIdSchema)) positionId: number): Promise<PostionResponseDto> {
     try {
       const position: PositionDto = await this.positionService.getPositionById(positionId);
       return { error: false, position };
@@ -31,7 +33,8 @@ export class PositionController {
   }
 
   @Put(':id')
-  async updatePosition(@Param('id') positionId: number, @Body() positionData: Partial<PositionDto>) {
+  @UsePipes(new ZodValidationPipe(createPositionRequestSchema))
+  async updatePosition(@Param(new ZodValidationPipe(getPositionByIdSchema)) positionId: number, @Body() positionData: Partial<PositionRequestDto>) {
     try {
       const updatedPosition: PositionDto = await this.positionService.updatePosition(positionId, positionData);
       return { error: false, position: updatedPosition };
@@ -42,7 +45,7 @@ export class PositionController {
   }
 
   @Delete(':id')
-  async deletePosition(@Param('id') positionId: number): Promise<{error: boolean; message: string}> {
+  async deletePosition(@Param(new ZodValidationPipe(getPositionByIdSchema)) positionId: number): Promise<{error: boolean; message: string}> {
     try {
       await this.positionService.deletePosition(positionId);
       return { error: false, message: 'Position deleted successfully' };

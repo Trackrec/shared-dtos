@@ -6,6 +6,7 @@ import { SwaggerModule } from "@nestjs/swagger";
 import * as Sentry from '@sentry/node';
 import { SentryFilter } from './sentry.filter';
 import session from 'express-session';
+import { ResponseInterceptor } from './interceptors/response.intercepter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true, logger: ['error', 'warn'] });
@@ -19,8 +20,10 @@ async function bootstrap() {
 
   // Import the filter globally, capturing all exceptions on all routes
   const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new SentryFilter(httpAdapter));
 
+  
    //swagger
    const document = SwaggerModule.createDocument(app, swaggerConfig);
    SwaggerModule.setup("api", app, document);
