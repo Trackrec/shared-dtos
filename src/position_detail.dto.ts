@@ -1,3 +1,4 @@
+import { CompanyDto } from "./company.dto";
 import { PositionDto } from "./Position.dto";
 
 export interface PositionDetailsDto {
@@ -106,5 +107,30 @@ export interface PositionDetailsDto {
     domain: string;
     logo_url: string;
     website_url: string;
+
+    positionData?:{
+      role: string,
+      start_month: number | null,
+      start_year: number | null,
+      end_month: number | null,
+      end_year: number | null,
+      company: CompanyDto,
+      details: PositionDetailsDto
+    },
+
+    companyData?:{
+      logo_url: string | null,
+      name: string,
+      domain?: string | null,
+      website_url?: string | null,
+      company_id?: string | null
+    }
+
+
   }
   
+  export interface PositionDetailsResponseDto{
+    error: boolean; 
+    message?: string; 
+    data?: PositionDetailsDto; 
+  }

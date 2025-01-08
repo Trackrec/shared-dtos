@@ -91,3 +91,90 @@ export interface RecruiterProjectDto {
     message?: string;
     project?: RecruiterProjectDto
   }
+
+  export interface ProjectVisitorsDto {
+    id: number; 
+    project: RecruiterProjectDto;
+    user: UserDto;
+  }
+
+  export interface CreateProjectVisitorRequestDto{
+    project_id: number
+  }
+
+  export interface CreateProjectVisitorResponseDto{
+    error: boolean;
+    message?: string;
+    position?: ProjectVisitorsDto
+  }
+
+export interface ProjectVisitorsCountResponseDto{
+  error: boolean;
+  message?: string;
+  data?: number
+}
+
+
+export interface RecruiterProjectRequestDto {
+  id: string;
+  title: string;
+  company_name: string | null;
+  logo: string | null;
+  logo_type: string | null;
+  experience: string | null;
+  ote_start: string | null;
+  ote_end: string | null;
+  is_ote_visible: string; // Converted from boolean to string
+  location_type: string | null;
+  description: string | null;
+  experience_type: string | null;
+  location: string | null; // Converted from string[] | null to string | null
+  existing_business_range: string | null;
+  business_range: string | null;
+  partnership_range: string | null;
+  inbound_range: string | null;
+  outbound_range: string | null;
+  smb: string | null;
+  midmarket: string | null;
+  enterprise: string | null;
+  minimum_deal_size: string | null;
+  minimum_sale_cycle: string | null;
+  hybrid_days: string | null;
+  Industry_Works_IN: string | null;
+  Industry_Sold_To: string | null; // Converted from string[] | null to string | null
+  selectedPersona: string | null; // Converted from string[] | null to string | null
+  territory: string | null; // Converted from string[] | null to string | null
+  languages: string | null; // Converted from string[] | null to string | null
+  linkedin_profile: string | null;
+  minimum_salecycle_type: string | null;
+  timeline: string | null;
+  benefits: string | null;
+  elevator_pitch: string | null;
+  office_address: string | null;
+  travel_requirement_percentage: string | null;
+  start_date: string | null; // Converted from Date | null to string | null
+  currency: string | null;
+  currency_country: string | null;
+  is_travel_requirements: string | null; // Converted from boolean | null to string | null
+  report_to: string | null;
+  hiring_process: string | null;
+  growth_opportunities: string | null;
+  visits_count: string; // Converted from number to string
+  project_custom_url: string | null;
+  company_id: string | null;
+  draft: string; // Converted from boolean to string
+  published: string; // Converted from boolean to string
+  company_elevator_pitch: string | null;
+  main_problem: string | null;
+  user: string | null; // Converted from UserDto | null to string | null
+  created_at: string; // Converted from Date to string
+  updated_at: string; // Converted from Date to string
+  applications: string; // Converted from ProjectApplicationDto[] to string
+  company: string | null; // Converted from RecruiterCompanyDto | null to string | null
+  logo_url: string | null;
+  website_url: string | null;
+  domain: string | null;
+  company_logo_url: string | null; 
+  company_website_url: string | null; 
+  company_domain: string | null;
+}

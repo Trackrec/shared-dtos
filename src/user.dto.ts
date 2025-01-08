@@ -166,8 +166,8 @@ export interface AccountsVisitorsDto {
 
 
 export interface ExtendedPositionDto extends PositionDto {
-  is_completed: boolean;
-  completion_percentage: number;
+  is_completed?: boolean;
+  completion_percentage?: number;
   verify_request: VerifyPositionDto[]; // Updated verify requests with enriched user details
 }
 
@@ -193,4 +193,53 @@ export interface ProfileViewsResponseDto{
   error: boolean;
   message?: string;
   views?: AnalyticsAccessDto[]
+}
+
+export interface InviteUserRequestDto {
+  email: string;
+  full_name: string;
+  role: string;
+}
+
+
+
+export interface FormattedUserDto extends Omit<UserDto, 'password' | 'linkedin_access_token'> {
+    id: number; 
+}
+  
+export interface UsersInCompanyResponseDto{
+  error: boolean;
+  message?: string;
+  users?: FormattedUserDto[]
+}
+
+
+export interface UpdatePreferencesRequestDto {
+  about: string | null;
+  city: string;
+  currency: string;
+  currency_country: string;
+  current_ote: number | null;
+  custom_current_role: string | null;
+  email: string;
+  full_name: string;
+  languages: string[];
+  location_preferences: string[];
+  next_desired_titles: string[];
+  open_to_work: boolean;
+  ote_expectation: number | null;
+  ote_max: number | null;
+  ote_min: number | null;
+  phone: string | null;
+  public_profile_username: string | null;
+  published_at: string | null;
+  is_preferences_save? : boolean;
+}
+
+
+export interface GetMeResponseDto{
+  error: boolean; 
+  user?: ExtendedUserDetailsDto; 
+  message?: string ;
+  userDetails?: ExtendedUserDetailsDto;
 }

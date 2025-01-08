@@ -1,4 +1,5 @@
 import { PositionDto } from "./Position.dto";
+import { RecruiterCompanyDto } from "./recruiter_company";
 
 export interface CompanyDto {
     id: string; 
@@ -46,4 +47,28 @@ export interface CompanyByIdDto{
   error: boolean;
   message?: string;
   company?: CompanyDto
+}
+
+export interface CreateRecruiterCompanyDto{
+  error: boolean,
+  message: string,
+  company?: RecruiterCompanyDto,
+}
+
+export interface CreateRecruiterCompanyResponseDto{
+  error: boolean,
+  company?: CreateRecruiterCompanyDto,
+  message?: string
+}
+
+export interface UpdateRecruiterCompanyDto{
+  error: boolean, 
+  message?: string, 
+  company?: RecruiterCompanyDto
+}
+
+export interface UpdateRecruiterCompanyResponseDto{
+  error: boolean, 
+  message?: string, 
+  company?: UpdateRecruiterCompanyDto
 }

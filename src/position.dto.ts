@@ -10,7 +10,6 @@ export interface PositionDto {
   end_year: number | null;
   role: string;
   user: UserDto;
-  achievements: string[] | null; 
   alternative_brand_icon_url: string | null;
   company: CompanyDto; 
   details: PositionDetailsDto | null; 
@@ -49,7 +48,6 @@ export interface PositionWithCompany {
         id: string;
         company_id: string;
       };
-      achievements: string | null;
       alternative_brand_icon_url: string | null;
       id: number;
     };
@@ -104,4 +102,17 @@ export interface VerifyRequestsResponseDto{
   error: boolean;
   message?: string;
   requests?: ExtendedVerifyPositionDto[]
+}
+
+
+export interface PostionResponseDto{
+  error: boolean; 
+  message?:string
+  position?: PositionDto;
+}
+
+export interface AllPositionsByUserIdResponseDto{
+  error: boolean;
+  message?: string;
+  positions?: PositionDto[]
 }
