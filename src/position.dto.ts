@@ -24,11 +24,11 @@ export interface PositionRequestDto{
    end_year: number,
    start_month: number,
    start_year: number, 
-   logo_url: string,
+   logo_url: string | null,
    role: string,
-   website_url: string,
+   website_url: string | null,
    working_here: boolean,
-   domain: string
+   domain: string | null
 }
 
 export interface PositionWithCompany {
