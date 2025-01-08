@@ -345,7 +345,7 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
 
     points_for_new_business(positions: PositionDto[], project: RecruiterProjectDto): number {
         // Calculate the total new_business value
-        const total_new_business = positions.reduce((acc, position) => {
+        const total_new_business: number = positions.reduce((acc, position) => {
             if (position.details && position.details.new_business) {
                 return acc + position.details.new_business;
             }
@@ -353,14 +353,14 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
         }, 0);
     
         // Calculate the average new_business value
-        const average_new_business = total_new_business / positions.length;
+        const average_new_business: number = total_new_business / positions.length;
     
         // Compare average value with project.business_range
         if (average_new_business >= project.business_range) {
             return 10;
         } else {
             // Calculate points from 0 to 10 accordingly
-            const ratio = average_new_business / project.business_range;
+            const ratio: number = average_new_business / project.business_range;
             return Math.round(ratio * 10);
         }
     }
@@ -368,7 +368,7 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
 
     points_for_outbound(positions: PositionDto[], project: RecruiterProjectDto): number {
         // Calculate the total new_business value
-        const total_new_business = positions.reduce((acc, position) => {
+        const total_new_business: number = positions.reduce((acc, position) => {
             if (position.details && position.details.outbound) {
                 return acc + position.details.outbound;
             }
@@ -376,28 +376,28 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
         }, 0);
     
         // Calculate the average new_business value
-        const average_new_business = total_new_business / positions.length;
+        const average_new_business: number = total_new_business / positions.length;
     
         // Compare average value with project.business_range
         if (average_new_business >= project.outbound_range) {
             return 10;
         } else {
             // Calculate points from 0 to 10 accordingly
-            const ratio = average_new_business / project.outbound_range;
+            const ratio: number = average_new_business / project.outbound_range;
             return Math.round(ratio * 10);
         }
     }
 
     points_for_persona(positions: PositionDto[], selectedPersona: string[]): number {
-        let combinedPersonas = [];
+        let combinedPersonas: string[] = [];
     
         positions.forEach(position => {
             combinedPersonas.push(...position.details.persona);
         });
     
-        const uniqueWorkedIn = [...new Set([...combinedPersonas, ...selectedPersona])];
+        const uniqueWorkedIn: string[] = [...new Set([...combinedPersonas, ...selectedPersona])];
     
-        const allElementsPresent = selectedPersona.every(element => uniqueWorkedIn.includes(element));
+        const allElementsPresent: boolean = selectedPersona.every(element => uniqueWorkedIn.includes(element));
     
         if (allElementsPresent) {
             return 10;
@@ -414,15 +414,15 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
         let uniquePeriods = {};
     
         positions.forEach(position => {
-            const startYear = position.start_year;
-            const startMonth = position.start_month;
-            let endYear = position.end_year;
-            let endMonth = position.end_month;
+            const startYear: number = position.start_year;
+            const startMonth: number = position.start_month;
+            let endYear: number = position.end_year;
+            let endMonth: number = position.end_month;
     
             // If end_month and end_year are null, consider them as current month and year
-            const currentDate = new Date();
-            const currentYear = currentDate.getFullYear();
-            const currentMonth = currentDate.getMonth() + 1;
+            const currentDate: Date = new Date();
+            const currentYear: number = currentDate.getFullYear();
+            const currentMonth: number = currentDate.getMonth() + 1;
             if (endYear === null || endMonth === null) {
                 endYear = currentYear;
                 endMonth = currentMonth;
@@ -450,13 +450,13 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
     }
 
     points_for_years(positions: PositionDto[], project: RecruiterProjectDto): number {
-        const totalYears = this.calculateTotalYears(positions);
+        const totalYears: number = this.calculateTotalYears(positions);
     
         if (totalYears >= project.experience) {
             return 10;
         } else {
             // Calculate points from 0 to 10 accordingly
-            const ratio = totalYears / project.experience;
+            const ratio: number = totalYears / project.experience;
             return Math.round(ratio * 10);
         }
     }
