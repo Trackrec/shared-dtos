@@ -2,16 +2,15 @@ import { Controller, Post, Get, Param, Body, Put, Delete, UseGuards, Req, UsePip
 import { AuthGuard } from '@nestjs/passport';
 import { PositionService } from './positions.service';
 import { Position } from './positions.entity';
-import { AllPositionsByUserIdResponseDto, PositionDto, PositionRequestDto, PositionWithCompany, PostionResponseDto } from 'src/shared-dtos/src/Position.dto';
-import { createPositionRequestSchema, getPositionByIdSchema } from 'src/validations/position.validation';
+import { AllPositionsByUserIdResponseDto, PositionDto, PositionParamDto, PositionRequestDto, PositionWithCompany, PostionResponseDto } from 'src/shared-dtos/src/Position.dto';
+import { createPositionRequestSchema, positionByIdSchema, updatePositionSchema } from 'src/validations/position.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 @Controller('positions')
 export class PositionController {
   constructor(private readonly positionService: PositionService) {}
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createPositionRequestSchema))
-  async createPosition(@Req() req: Request, @Body() positionData: PositionRequestDto) {
+  async createPosition(@Req() req: Request, @Body(new ZodValidationPipe(createPositionRequestSchema)) positionData: PositionRequestDto) {
     try {
       const userId: number = req["user_id"];
       const createdPosition: PositionWithCompany = await this.positionService.createPosition(null,userId, positionData);
@@ -22,9 +21,10 @@ export class PositionController {
   }
 
   @Get(':id')
-  async getPositionById(@Param(new ZodValidationPipe(getPositionByIdSchema)) positionId: number): Promise<PostionResponseDto> {
+  async getPositionById(@Param(new ZodValidationPipe(positionByIdSchema)) param: PositionParamDto): Promise<PostionResponseDto> {
     try {
-      const position: PositionDto = await this.positionService.getPositionById(positionId);
+      const {id} =param;
+      const position: PositionDto = await this.positionService.getPositionById(id);
       return { error: false, position };
     } catch (error) {
       //todo: add logger here
@@ -33,10 +33,10 @@ export class PositionController {
   }
 
   @Put(':id')
-  @UsePipes(new ZodValidationPipe(createPositionRequestSchema))
-  async updatePosition(@Param(new ZodValidationPipe(getPositionByIdSchema)) positionId: number, @Body() positionData: Partial<PositionRequestDto>) {
+  async updatePosition(@Param(new ZodValidationPipe(positionByIdSchema)) param: PositionParamDto, @Body(new ZodValidationPipe(updatePositionSchema)) positionData: Partial<PositionRequestDto>) {
     try {
-      const updatedPosition: PositionDto = await this.positionService.updatePosition(positionId, positionData);
+      const {id} =param;
+      const updatedPosition: PositionDto = await this.positionService.updatePosition(id, positionData);
       return { error: false, position: updatedPosition };
     } catch (error) {
       //todo: add logger here
@@ -45,9 +45,10 @@ export class PositionController {
   }
 
   @Delete(':id')
-  async deletePosition(@Param(new ZodValidationPipe(getPositionByIdSchema)) positionId: number): Promise<{error: boolean; message: string}> {
+  async deletePosition(@Param(new ZodValidationPipe(positionByIdSchema)) param: PositionParamDto): Promise<{error: boolean; message: string}> {
     try {
-      await this.positionService.deletePosition(positionId);
+      const {id} =param;
+      await this.positionService.deletePosition(id);
       return { error: false, message: 'Position deleted successfully' };
     } catch (error) {
       //todo: add logger here

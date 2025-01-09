@@ -5,6 +5,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { CreateRecruiterCompanyDto, CreateRecruiterCompanyResponseDto, UpdateRecruiterCompanyDto, UpdateRecruiterCompanyResponseDto } from 'src/shared-dtos/src/company.dto';
 import { UsersInCompanyResponseDto } from 'src/shared-dtos/src/user.dto';
+import { CreateRecruiterCompanyRequestDto, RecruiterCompanyParamDto, UpdateRecruiterCompanyRequestDto } from 'src/shared-dtos/src/recruiter_company';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
+import { recruiterCompanyParamSchema, recruiterCompanyRequestSchema, updateRecruiterCompanyRequestSchema } from 'src/validations/recruiter_company.validation';
 
 @Controller('recruiter/company')
 export class RecruiterCompanyController {
@@ -13,7 +16,7 @@ export class RecruiterCompanyController {
   @Post()
   @UseInterceptors(FileInterceptor('logo'))
   async createCompany(
-    @Body() body: { company_name: string; },
+    @Body(new ZodValidationPipe(recruiterCompanyRequestSchema)) body: CreateRecruiterCompanyRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request
   ): Promise<CreateRecruiterCompanyResponseDto> {
@@ -49,14 +52,14 @@ export class RecruiterCompanyController {
   @Put(':id')
   @UseInterceptors(FileInterceptor('logo'))
   async updateCompany(
-    @Param('id') id: number,
-    @Body() body: { company_name?: string },
+    @Param(new ZodValidationPipe(recruiterCompanyParamSchema)) param: RecruiterCompanyParamDto,
+    @Body(new ZodValidationPipe(updateRecruiterCompanyRequestSchema)) body: UpdateRecruiterCompanyRequestDto,
     @UploadedFile() image: Multer.File,
-    @Req() req
+    @Req() req: Request
   ): Promise<UpdateRecruiterCompanyResponseDto> {
     const user_id: number = req["user_id"];
     const { company_name } = body;
-  
+    const { id } = param;
     // Check if an image is uploaded
     if (image) {
       const imageType : string = this.getImageTypeFromMimetype(image.mimetype);

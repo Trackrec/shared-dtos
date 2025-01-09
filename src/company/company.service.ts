@@ -13,7 +13,7 @@ export class CompanyService {
     private readonly companyRepository: Repository<Company>,
   ) {}
 
-  async createCompany(companyData: Partial<Company>): Promise<CompanyCreateResponseDto> {
+  async createCompany(companyData: Partial<CompanyDto>): Promise<CompanyCreateResponseDto> {
     try {
       const company: CompanyDto = this.companyRepository.create(companyData);
       const createdCompany = await this.companyRepository.save(company);

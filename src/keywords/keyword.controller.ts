@@ -2,17 +2,22 @@
 
 import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import { KeywordsService } from './keyword.service';
+import { CreateUpdateKeywordRequestDto, UserParamDto } from 'src/shared-dtos/src/user.dto';
+import { createUpdateKeywordRequestSchema, userParamSchema } from 'src/validations/user.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 @Controller('keywords')
 export class KeywordsController {
   constructor(private readonly keywordsService: KeywordsService) {}
-
+  
   @Post(':userId')
   async createOrUpdateKeywords(
-    @Param('userId') userId: number,
-    @Body('keywords') newKeywords: string[],
+    @Param(new ZodValidationPipe(userParamSchema)) param: UserParamDto,
+    @Body(new ZodValidationPipe(createUpdateKeywordRequestSchema)) body: CreateUpdateKeywordRequestDto,
   ): Promise<{ error: boolean, message: string }> {
     try {
-      const result = await this.keywordsService.createOrUpdateKeywords(userId, newKeywords);
+      const {userId}=param;
+      const {keywords}=body;
+      const result = await this.keywordsService.createOrUpdateKeywords(userId, keywords);
       return result;
     } catch (error) {
       console.error('Error creating or updating keywords:', error);
@@ -21,7 +26,8 @@ export class KeywordsController {
   }
 
   @Get(':userId')
-  async getKeywords(@Param('userId') userId: number){
+  async getKeywords(@Param(new ZodValidationPipe(userParamSchema)) param: UserParamDto){
+    const {userId} =param;
     return await this.keywordsService.getKeywords(userId)
   }
 }

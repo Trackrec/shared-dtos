@@ -16,7 +16,9 @@ import {
   } from '@nestjs/common';
   import { AuthGuard } from '@nestjs/passport';
   import { RecruiterAuthService } from './recruiter-auth.service';
-import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthRequestDto, RecruiterUserAuthResponseDto, UserInfoResponseDto, VerifyTokenResponse } from 'src/shared-dtos/src/user.dto';
+import { ChangePasswordRequestDto, ForgotPasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthRequestDto, RecruiterUserAuthResponseDto, RecruiterUserParamDto, ResetPasswordRequestDto, UserInfoResponseDto, VerifyTokenRequestDto, VerifyTokenResponse } from 'src/shared-dtos/src/user.dto';
+import { changePasswordRequestSchema, forgotPasswordRequestSchema, inviteUserRequestSchema, loginRecruiterUserRequestSchema, recruiterUserAuthRequestSchema, recruiterUserParamSchema, resetPasswordRequestSchema, updateRecruiterUserSchema, verifyTokenRequestSchema } from 'src/validations/user.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
   @Controller('recruiter')
   export class RecruiterAuthController {
     private readonly logger = new Logger(RecruiterAuthController.name);
@@ -24,7 +26,7 @@ import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthReques
     constructor(private readonly authService: RecruiterAuthService) {}
     
     @Post('invite-user')
-    async createUser(@Body() inviteUserRequest: InviteUserRequestDto, @Req() req: Request): Promise<Promise<{error: boolean, message: string}>>{
+    async createUser(@Body(new ZodValidationPipe(inviteUserRequestSchema)) inviteUserRequest: InviteUserRequestDto, @Req() req: Request): Promise<Promise<{error: boolean, message: string}>>{
     const user_id: number= req['user_id']
     const { email, full_name, role } = inviteUserRequest;
     return await this.authService.createUser(email, full_name, role, user_id)
@@ -32,20 +34,21 @@ import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthReques
 
     @Put('update-user/:id')
      async updateUser(
-         @Param('id') id: number,
-         @Body() inviteUserRequest: InviteUserRequestDto,
+         @Param(new ZodValidationPipe(recruiterUserParamSchema)) param: RecruiterUserParamDto,
+         @Body(new ZodValidationPipe(updateRecruiterUserSchema)) inviteUserRequest: InviteUserRequestDto,
          @Req() req: Request
          ): Promise<{error: boolean, message: string}> {
           const user_id: number = req['user_id'];
+          const {id}= param;
           const { email, full_name, role } = inviteUserRequest;
 
           return await this.authService.updateCompanyUser(id, email, full_name, role, user_id);
       }
 
 
-
+      
     @Post('register')
-    async registerUser(@Body() body: RecruiterUserAuthRequestDto): Promise<RecruiterUserAuthResponseDto> {
+    async registerUser(@Body(new ZodValidationPipe(recruiterUserAuthRequestSchema)) body: RecruiterUserAuthRequestDto): Promise<RecruiterUserAuthResponseDto> {
       const { email, password, first_name, last_name }: RecruiterUserAuthRequestDto = body;
   
       // Validate required fields
@@ -59,9 +62,9 @@ import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthReques
         return { error: true, message: 'An unexpected error occurred.' };
       }
     }
-
+    
     @Post('login')
-    async loginUser(@Body() body: Partial<RecruiterUserAuthRequestDto>): Promise<RecruiterUserAuthResponseDto> {
+    async loginUser(@Body(new ZodValidationPipe(loginRecruiterUserRequestSchema)) body: Partial<RecruiterUserAuthRequestDto>): Promise<RecruiterUserAuthResponseDto> {
       const { email, password } : Partial<RecruiterUserAuthRequestDto>= body;
   
       if (!email || !password) {
@@ -160,34 +163,40 @@ import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthReques
         };
       }
     }
-
+    
     @Post('change-password')
     async changePassword(
     @Req() req: Request,
-    @Body() body: ChangePasswordRequestDto
+    @Body(new ZodValidationPipe(changePasswordRequestSchema)) body: ChangePasswordRequestDto
   ): Promise<{error: boolean, message: string} > {
     const user_id: number=req['user_id'];
     return await this.authService.changePassword(body, user_id);
   }
-
+  
   @Delete('delete-user/:id')
-  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<{ error: boolean; message: string }> {
+  async deleteUser(@Param(new ZodValidationPipe(recruiterUserParamSchema)) param: RecruiterUserParamDto): Promise<{ error: boolean; message: string }> {
+    const {id} = param;
     return await this.authService.deleteUser(id);
   }
   
 
   @Post('forgot-password')
-  async forgotPassword(@Body('email') email: string) : Promise<{error: boolean, message: string}>{
-      return await this.authService.sendResetEmail(email);
+  async forgotPassword(@Body(new ZodValidationPipe(forgotPasswordRequestSchema)) body: ForgotPasswordRequestDto) : Promise<{error: boolean, message: string}>{
+    const {email} =body;  
+    return await this.authService.sendResetEmail(email);
   }
   
+  
   @Post('verify-token')
-  async verifyPassword(@Body('token') token: string) : Promise<VerifyTokenResponse>{
-      return await this.authService.verifyToken(token);
+  async verifyPassword(@Body(new ZodValidationPipe(verifyTokenRequestSchema)) body: VerifyTokenRequestDto) : Promise<VerifyTokenResponse>{
+    const {token} =body;  
+    return await this.authService.verifyToken(token);
   }
-
+  
   @Post('reset-password/:token')
-  async resetPassword(@Param('token') token: string, @Body('new_password') new_password: string): Promise<{error: boolean, message: string}> {
+  async resetPassword(@Param(new ZodValidationPipe(verifyTokenRequestSchema)) param: VerifyTokenRequestDto, @Body(new ZodValidationPipe(resetPasswordRequestSchema)) body: ResetPasswordRequestDto): Promise<{error: boolean, message: string}> {
+    const {new_password} =body;
+    const {token} =param;
     return await this.authService.resetPassword(token, new_password);
   }
    

@@ -9,7 +9,9 @@ import {
 } from '@nestjs/common';
 import { ProjectVisitorsService } from './project_visits.service';
 import { ProjectVisitors } from './project_visits.entity';
-import { CreateProjectVisitorRequestDto, CreateProjectVisitorResponseDto, ProjectVisitorsCountResponseDto, ProjectVisitorsDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { CreateProjectVisitorRequestDto, CreateProjectVisitorResponseDto, ProjectVisitorParamDto, ProjectVisitorsCountResponseDto, ProjectVisitorsDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { createProjectVisitorRequestSchema, projectVisitorParamSchema } from 'src/validations/recruiter_project.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 
 @Controller('project_visitor')
 export class ProjectVisitorsController {
@@ -17,9 +19,10 @@ export class ProjectVisitorsController {
     private readonly projectVisitorssService: ProjectVisitorsService,
   ) {}
 
+  
   @Post()
   async createProjectVisitor(
-    @Body() projectVisitorsData: CreateProjectVisitorRequestDto,
+    @Body(new ZodValidationPipe(createProjectVisitorRequestSchema)) projectVisitorsData: CreateProjectVisitorRequestDto,
     @Req() req: Request
   ) : Promise<CreateProjectVisitorResponseDto> {
     try {
@@ -33,10 +36,12 @@ export class ProjectVisitorsController {
   }
 
   @Get(':projectId')
+  
   async getProjectVisitors(
-    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param(new ZodValidationPipe(projectVisitorParamSchema)) param: ProjectVisitorParamDto,
   ): Promise<ProjectVisitorsCountResponseDto> {
     try {
+      const { projectId } =param;
       const visitorsCount: number =
         await this.projectVisitorssService.getProjectVisitors(projectId);
       return { error: false, data: visitorsCount };

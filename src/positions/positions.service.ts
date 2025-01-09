@@ -153,6 +153,7 @@ export class PositionService {
 
   async getPositionById(positionId: number): Promise<PositionDto> {
     try {
+      console.log(positionId)
       const position : PositionDto= await this.positionRepository.findOne({
         where: { id: positionId },
       });
