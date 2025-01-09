@@ -86,6 +86,10 @@ export interface VerifyPositionRequestDto{
     role: string
 }
 
+export interface ResendPositionVerificationEmailRequestDto{
+  requestId: number
+}
+
 export interface ChangeVerificationRequestDto{
   request_id: number,
   status: string
@@ -105,6 +109,13 @@ export interface VerifyRequestsResponseDto{
 }
 
 
+export interface UpdateUserIdRequestDto{
+  request_token: string
+}
+
+export interface DeleteVerificationDto{
+  request_id: number
+}
 export interface PostionResponseDto{
   error: boolean; 
   message?:string
@@ -115,4 +126,8 @@ export interface AllPositionsByUserIdResponseDto{
   error: boolean;
   message?: string;
   positions?: PositionDto[]
+}
+
+export interface PositionParamDto{
+  id: number
 }

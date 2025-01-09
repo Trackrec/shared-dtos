@@ -134,3 +134,8 @@ export interface PositionDetailsDto {
     message?: string; 
     data?: PositionDetailsDto; 
   }
+
+
+  export interface PositionDetailParamDto{
+    position_id: string
+  }

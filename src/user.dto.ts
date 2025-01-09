@@ -136,6 +136,8 @@ export interface ImpersonateUserRequestDto{
   username: string
 }
 
+
+
 export interface GetInTouchMailRequestDto{
   email: string;
   email_to: string;
@@ -242,4 +244,48 @@ export interface GetMeResponseDto{
   user?: ExtendedUserDetailsDto; 
   message?: string ;
   userDetails?: ExtendedUserDetailsDto;
+}
+
+export interface PublishProfileParamDto{
+  userId: number
+}
+
+export interface PrivateProfileParamDto{
+  userId: number
+}
+
+export interface GetPublicProfileParamDto{
+  userName: string
+}
+
+export interface RecruiterUserParamDto{
+  id: number
+}
+
+export interface ApplicantUserParamDto{
+  id: number
+}
+
+export interface ForgotPasswordRequestDto{
+  email: string
+}
+
+export interface VerifyTokenRequestDto{
+  token: string
+}
+
+export interface ResetPasswordRequestDto{
+  new_password: string
+}
+
+export interface GetUserDetailsParamDto{
+  userId: number
+}
+
+export interface CreateUpdateKeywordRequestDto{
+  keywords: string[]
+}
+
+export interface UserParamDto{
+  userId: number
 }

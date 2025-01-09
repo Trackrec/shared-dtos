@@ -124,11 +124,11 @@ export interface RecruiterProjectRequestDto {
   experience: string | null;
   ote_start: string | null;
   ote_end: string | null;
-  is_ote_visible: string; // Converted from boolean to string
+  is_ote_visible: string; 
   location_type: string | null;
   description: string | null;
   experience_type: string | null;
-  location: string | null; // Converted from string[] | null to string | null
+  location: string | null; 
   existing_business_range: string | null;
   business_range: string | null;
   partnership_range: string | null;
@@ -141,10 +141,10 @@ export interface RecruiterProjectRequestDto {
   minimum_sale_cycle: string | null;
   hybrid_days: string | null;
   Industry_Works_IN: string | null;
-  Industry_Sold_To: string | null; // Converted from string[] | null to string | null
-  selectedPersona: string | null; // Converted from string[] | null to string | null
-  territory: string | null; // Converted from string[] | null to string | null
-  languages: string | null; // Converted from string[] | null to string | null
+  Industry_Sold_To: string | null; 
+  selectedPersona: string | null; 
+  territory: string | null; 
+  languages: string | null; 
   linkedin_profile: string | null;
   minimum_salecycle_type: string | null;
   timeline: string | null;
@@ -152,29 +152,64 @@ export interface RecruiterProjectRequestDto {
   elevator_pitch: string | null;
   office_address: string | null;
   travel_requirement_percentage: string | null;
-  start_date: string | null; // Converted from Date | null to string | null
+  start_date: string | null; 
   currency: string | null;
   currency_country: string | null;
-  is_travel_requirements: string | null; // Converted from boolean | null to string | null
+  is_travel_requirements: string | null; 
   report_to: string | null;
   hiring_process: string | null;
   growth_opportunities: string | null;
-  visits_count: string; // Converted from number to string
+  visits_count: string;
   project_custom_url: string | null;
   company_id: string | null;
-  draft: string; // Converted from boolean to string
-  published: string; // Converted from boolean to string
+  draft: string;
+  published: string; 
   company_elevator_pitch: string | null;
   main_problem: string | null;
-  user: string | null; // Converted from UserDto | null to string | null
-  created_at: string; // Converted from Date to string
-  updated_at: string; // Converted from Date to string
-  applications: string; // Converted from ProjectApplicationDto[] to string
-  company: string | null; // Converted from RecruiterCompanyDto | null to string | null
+  user: string | null; 
+  created_at: string; 
+  updated_at: string;
+  applications: string; 
+  company: string | null; 
   logo_url: string | null;
   website_url: string | null;
   domain: string | null;
   company_logo_url: string | null; 
   company_website_url: string | null; 
   company_domain: string | null;
+}
+
+
+export interface ProjectVisitorParamDto{
+  projectId: number
+}
+
+export interface ProjectIdQueryDto{
+  project_id: number
+}
+
+export interface CandidatesListQueryDto{
+  page?: number;
+  limit?: number
+}
+
+export interface ProjectListQueryDto {
+  page?: number;
+  limit?: number;
+  title?: string; 
+  startDate?: string;
+  status?: 'published' | 'draft';
+  ref?: number;
+}
+
+export interface ProjectViewByUrlParamDto{
+  project_url: string
+}
+
+export interface ProjectByIdParamDto{
+  id: number
+}
+
+export interface ProjectRankingQueryDto{
+  min_experience?: string
 }

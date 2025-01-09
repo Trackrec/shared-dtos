@@ -17,4 +17,17 @@ export interface RecruiterCompanyDto {
     user: UserDto; 
     company: RecruiterCompanyDto; 
   }
+
+
+export interface CreateRecruiterCompanyRequestDto{
+  company_name: string;
+}
+
+export interface UpdateRecruiterCompanyRequestDto{
+  company_name?: string;
+}
+
+export interface RecruiterCompanyParamDto{
+  id: number
+}
   

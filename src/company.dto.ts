@@ -1,3 +1,4 @@
+import { Integrations } from "@sentry/node";
 import { PositionDto } from "./Position.dto";
 import { RecruiterCompanyDto } from "./recruiter_company";
 
@@ -71,4 +72,12 @@ export interface UpdateRecruiterCompanyResponseDto{
   error: boolean, 
   message?: string, 
   company?: UpdateRecruiterCompanyDto
+}
+
+export interface CompanyByIdParamDto{
+  id: string
+}
+
+export interface SearchCompanyParamDto{
+  company_name: string
 }
