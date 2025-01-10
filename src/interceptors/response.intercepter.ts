@@ -20,9 +20,7 @@ import {
       return next.handle().pipe(
         map((data) => ({
           statusCode: context.switchToHttp().getResponse().statusCode,
-          success: true,
-          message: 'Request processed successfully',
-          data: data,
+          ...data,
         })),
       );
     }
