@@ -19,6 +19,7 @@ import {
 import { ChangePasswordRequestDto, ForgotPasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthRequestDto, RecruiterUserAuthResponseDto, RecruiterUserParamDto, ResetPasswordRequestDto, UserInfoResponseDto, VerifyTokenRequestDto, VerifyTokenResponse } from 'src/shared-dtos/src/user.dto';
 import { changePasswordRequestSchema, forgotPasswordRequestSchema, inviteUserRequestSchema, loginRecruiterUserRequestSchema, recruiterUserAuthRequestSchema, recruiterUserParamSchema, resetPasswordRequestSchema, updateRecruiterUserSchema, verifyTokenRequestSchema } from 'src/validations/user.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
+import { ThrottlerGuard } from '@nestjs/throttler';
   @Controller('recruiter')
   export class RecruiterAuthController {
     private readonly logger = new Logger(RecruiterAuthController.name);
@@ -63,7 +64,8 @@ import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
         return { error: true, message: 'Failed to update user.' };
       }
     }
-    
+      
+    @UseGuards(ThrottlerGuard)
     @Post('register')
     async registerUser(
       @Body(new ZodValidationPipe(recruiterUserAuthRequestSchema)) body: RecruiterUserAuthRequestDto
@@ -86,6 +88,7 @@ import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Post('login')
     async loginUser(
       @Body(new ZodValidationPipe(loginRecruiterUserRequestSchema)) body: Partial<RecruiterUserAuthRequestDto>
@@ -108,6 +111,7 @@ import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Get('google-auth')
     @UseGuards(AuthGuard('google'))
     async googleAuth() {
@@ -138,6 +142,7 @@ import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Get('linkedin-auth')
     @UseGuards(AuthGuard('recruiter-linkedin'))
     linkedinLogin() {
@@ -231,6 +236,7 @@ import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Post('forgot-password')
     async forgotPassword(
       @Body(new ZodValidationPipe(forgotPasswordRequestSchema)) body: ForgotPasswordRequestDto
