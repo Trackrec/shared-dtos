@@ -1,129 +1,171 @@
-import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ExtendedPositionDto } from 'src/shared-dtos/src/user.dto';
 
 
 @Injectable()
 export class SharedService {
+    private readonly logger = new Logger(SharedService.name);
 
-  calculateExperience(positions: ExtendedPositionDto[], type: string='all') {
-    if (positions.length === 0) {
-      return "N/A";
-    }
-
-    // Sort positions by start_date before processing
-    positions.sort((a, b) => {
-      const dateA = new Date(a.start_year, a.start_month - 1).getTime();
-      const dateB = new Date(b.start_year, b.start_month - 1).getTime();
-      return dateA - dateB;
-    });
-
-    let completedPositions: ExtendedPositionDto[] = positions.filter(position => {
-      let completionPercentage = position.details
-        ? this.calculateCompletionPercentage(position)
-        : 0.0;
-      return completionPercentage == 100.0;
-    });
-
-    if (type !== 'all') {
-      completedPositions = completedPositions.filter(position => {
-        switch (type) {
-          case 'bdr':
-            return position.details?.is_booking_meeting === true;
-          case 'individual_contributor':
-            return position.details?.is_individual_contributor === true;
-          case 'leadership':
-            return position.details?.is_leadership === true;
-          default:
-            return false;
-        }
+    calculateExperience(positions: ExtendedPositionDto[], type: string = 'all') {
+      this.logger.log(`Calculating experience for ${positions.length} positions with type: ${type}`);
+    
+      if (positions.length === 0) {
+        this.logger.log('No positions found, returning "N/A"');
+        return "N/A";
+      }
+    
+      // Sort positions by start_date before processing
+      this.logger.log('Sorting positions by start date');
+      positions.sort((a, b) => {
+        const dateA = new Date(a.start_year, a.start_month - 1).getTime();
+        const dateB = new Date(b.start_year, b.start_month - 1).getTime();
+        return dateA - dateB;
       });
+    
+      let completedPositions: ExtendedPositionDto[] = positions.filter(position => {
+        let completionPercentage = position.details
+          ? this.calculateCompletionPercentage(position)
+          : 0.0;
+        return completionPercentage == 100.0;
+      });
+    
+      this.logger.log(`Found ${completedPositions.length} completed positions`);
+    
+      if (type !== 'all') {
+        this.logger.log(`Filtering completed positions by type: ${type}`);
+        completedPositions = completedPositions.filter(position => {
+          switch (type) {
+            case 'bdr':
+              return position.details?.is_booking_meeting === true;
+            case 'individual_contributor':
+              return position.details?.is_individual_contributor === true;
+            case 'leadership':
+              return position.details?.is_leadership === true;
+            default:
+              return false;
+          }
+        });
+        this.logger.log(`After filtering, ${completedPositions.length} positions match type: ${type}`);
+      }
+    
+      const result: { totalDays: number; maxEndDate: Date } = completedPositions.reduce(
+        (acc, position) => this.calculatePositionDays(position, acc),
+        { totalDays: 0, maxEndDate: null }
+      );
+    
+      this.logger.log(`Total experience calculated: ${result.totalDays} days`);
+      
+      return this.calculateYearsAndMonths(result.totalDays);
     }
     
-    const result: {totalDays: number; maxEndDate: Date} = completedPositions.reduce(
-      (acc, position) => this.calculatePositionDays(position, acc),
-      { totalDays: 0, maxEndDate: null }
-    );
 
-    return this.calculateYearsAndMonths(result.totalDays);
-  }
-
-  calculatePositionDays(
-    position: ExtendedPositionDto,
-    { totalDays, maxEndDate }: { totalDays: number; maxEndDate: Date | null }
-  ): { totalDays: number; maxEndDate: Date } {
-    const startDate: Date = new Date(
-      position.start_year,
-      position.start_month - 1,
-      1
-    );
-  
-    const endDate: Date =
-      position.end_year && position.end_month
-        ? new Date(position.end_year, position.end_month - 1, 1)
-        : new Date();
-  
-    let daysToAdd: number;
-  
-    if (maxEndDate === null || startDate >= maxEndDate) {
-      // Include all days for the position
-      daysToAdd = Math.max(
-        Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1,
-        0
+    calculatePositionDays(
+      position: ExtendedPositionDto,
+      { totalDays, maxEndDate }: { totalDays: number; maxEndDate: Date | null }
+    ): { totalDays: number; maxEndDate: Date } {
+      const startDate: Date = new Date(
+        position.start_year,
+        position.start_month - 1,
+        1
       );
-    } else {
-      // Include only days after the previous max end date
-      const maxEndDateDiff = Math.max(
-        Math.ceil((startDate.getTime() - maxEndDate.getTime()) / (1000 * 60 * 60 * 24)),
-        0
-      );
-      daysToAdd = Math.max(
-        Math.ceil((endDate.getTime() - maxEndDate.getTime()) / (1000 * 60 * 60 * 24)) -
-          maxEndDateDiff +
-          1,
-        0
-      );
+    
+      const endDate: Date =
+        position.end_year && position.end_month
+          ? new Date(position.end_year, position.end_month - 1, 1)
+          : new Date();
+    
+      this.logger.log(`Calculating days for position with start date: ${startDate.toISOString()} and end date: ${endDate.toISOString()}`);
+    
+      let daysToAdd: number;
+    
+      if (maxEndDate === null || startDate >= maxEndDate) {
+        // Include all days for the position
+        daysToAdd = Math.max(
+          Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1,
+          0
+        );
+        this.logger.log(`No max end date, adding ${daysToAdd} days for position.`);
+      } else {
+        // Include only days after the previous max end date
+        const maxEndDateDiff = Math.max(
+          Math.ceil((startDate.getTime() - maxEndDate.getTime()) / (1000 * 60 * 60 * 24)),
+          0
+        );
+        daysToAdd = Math.max(
+          Math.ceil((endDate.getTime() - maxEndDate.getTime()) / (1000 * 60 * 60 * 24)) -
+            maxEndDateDiff +
+            1,
+          0
+        );
+        this.logger.log(`Adding ${daysToAdd} days for position based on max end date.`);
+      }
+    
+      const newTotalDays = totalDays + daysToAdd;
+      this.logger.log(`Updated total days: ${newTotalDays}, with new max end date: ${endDate.toISOString()}`);
+    
+      return { totalDays: newTotalDays, maxEndDate: endDate };
     }
+    
   
-    return { totalDays: totalDays + daysToAdd, maxEndDate: endDate };
-  }
-  
 
-  calculateYearsAndMonths(diff: number): string {
-    const years = Math.floor(diff / 365);
-    const remainingDays = diff % 365;
-
-    const months = Math.floor(remainingDays / 30.44); // Average number of days in a month
-
-    if (years > 0 && months === 0) {
-      return `${years} yrs`;
-    } else if (years > 0 && months > 0) {
-      return `${years} yrs, ${months} mo`;
-    } else if (months > 0) {
-      return `${months} mo`;
-    } else {
-      return "N/A";
+    calculateYearsAndMonths(diff: number): string {
+      this.logger.log(`Calculating years and months from diff: ${diff} days`);
+    
+      const years = Math.floor(diff / 365);
+      const remainingDays = diff % 365;
+    
+      const months = Math.floor(remainingDays / 30.44); // Average number of days in a month
+    
+      this.logger.log(`Calculated years: ${years}, months: ${months}`);
+    
+      if (years > 0 && months === 0) {
+        this.logger.log(`Returning: ${years} yrs`);
+        return `${years} yrs`;
+      } else if (years > 0 && months > 0) {
+        this.logger.log(`Returning: ${years} yrs, ${months} mo`);
+        return `${years} yrs, ${months} mo`;
+      } else if (months > 0) {
+        this.logger.log(`Returning: ${months} mo`);
+        return `${months} mo`;
+      } else {
+        this.logger.log(`Returning: N/A`);
+        return "N/A";
+      }
     }
-  }
+    
 
 
-       calculateCompletionPercentage(position: ExtendedPositionDto): number {
-        let totalFields = 0;
-        let filledFields=0;
-        if(position.details.is_leadership){
-          totalFields=21;
-          filledFields= this.calculateIsLeadershipFields(position)
-        }
-        else if(position.details.is_individual_contributor){
-          totalFields=20;
-          filledFields = this.calculateIsIndividualContributerFields(position)
-        }
-        else if(position.details.is_booking_meeting){
-          totalFields=15;
-          filledFields = this.calculateIsBookingMeetingFields(position)
-        }
-        const completionPercentage: number = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
-        return completionPercentage;
+    calculateCompletionPercentage(position: ExtendedPositionDto): number {
+      this.logger.log(`Calculating completion percentage for position with ID: ${position.id}`);
+    
+      let totalFields = 0;
+      let filledFields = 0;
+    
+      if (position.details.is_leadership) {
+        this.logger.log('Position is leadership role, setting totalFields to 21');
+        totalFields = 21;
+        filledFields = this.calculateIsLeadershipFields(position);
+      }
+      else if (position.details.is_individual_contributor) {
+        this.logger.log('Position is individual contributor role, setting totalFields to 20');
+        totalFields = 20;
+        filledFields = this.calculateIsIndividualContributerFields(position);
+      }
+      else if (position.details.is_booking_meeting) {
+        this.logger.log('Position is booking meeting role, setting totalFields to 15');
+        totalFields = 15;
+        filledFields = this.calculateIsBookingMeetingFields(position);
+      }
+    
+      this.logger.log(`Total fields: ${totalFields}, Filled fields: ${filledFields}`);
+    
+      const completionPercentage: number = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
+    
+      this.logger.log(`Calculated completion percentage: ${completionPercentage}%`);
+    
+      return completionPercentage;
     }
+    
     
     calculateIsBookingMeetingFields(position: ExtendedPositionDto): number {
       let totalFilled = 1;
@@ -607,45 +649,56 @@ export class SharedService {
       }
 
       groupAndSortPositions(positions: ExtendedPositionDto[]) {
+        this.logger.log(`Starting to group and sort ${positions.length} positions`);
+      
         // Step 1: Group by company object
         const groupedByCompany = new Map();
-    
+      
         positions.forEach(position => {
-            const company = position.company;
-            const companyKey = JSON.stringify(company); // Create a unique key for the company object
-    
-            if (!groupedByCompany.has(companyKey)) {
-                groupedByCompany.set(companyKey, { company, positions: [] });
-            }
-    
-            groupedByCompany.get(companyKey).positions.push(position);
+          const company = position.company;
+          const companyKey = JSON.stringify(company); // Create a unique key for the company object
+      
+          if (!groupedByCompany.has(companyKey)) {
+            this.logger.log(`Grouping position for company: ${company.name}`);
+            groupedByCompany.set(companyKey, { company, positions: [] });
+          }
+      
+          groupedByCompany.get(companyKey).positions.push(position);
         });
-    
+      
+        this.logger.log(`Grouped positions by company, total groups: ${groupedByCompany.size}`);
+      
         // Step 2: Sort positions within each company by start date (descending)
         for (const group of groupedByCompany.values()) {
+          this.logger.log(`Sorting positions for company: ${group.company.name}`);
           group.positions.sort((a, b) => {
             const isACurrent = a.end_year === null || a.end_month === null;
             const isBCurrent = b.end_year === null || b.end_month === null;
-        
+      
             if (isACurrent && !isBCurrent) return -1; // Current positions come first
             if (!isACurrent && isBCurrent) return 1;  // Completed positions come later
-        
+      
             // If both are current or both are completed, sort by start date descending
             const aStartDate = new Date(a.start_year, (a.start_month || 0) - 1).getTime();
             const bStartDate = new Date(b.start_year, (b.start_month || 0) - 1).getTime();
             return bStartDate - aStartDate;
-        });
-        
+          });
         }
-    
+      
+        this.logger.log('Positions sorted within each company');
+      
         // Step 3: Convert Map to array and sort companies by the latest position's start date
+        this.logger.log('Sorting companies by the latest position start date');
         const sortedAndGrouped = Array.from(groupedByCompany.values()).sort((a, b) => {
-            const aLatestDate = new Date(a.positions[0].start_year, a.positions[0].start_month || 0).getTime();
-            const bLatestDate = new Date(b.positions[0].start_year, b.positions[0].start_month || 0).getTime();
-            return bLatestDate - aLatestDate;
+          const aLatestDate = new Date(a.positions[0].start_year, a.positions[0].start_month || 0).getTime();
+          const bLatestDate = new Date(b.positions[0].start_year, b.positions[0].start_month || 0).getTime();
+          return bLatestDate - aLatestDate;
         });
-    
+      
+        this.logger.log(`Returning sorted and grouped positions for ${sortedAndGrouped.length} companies`);
+      
         return sortedAndGrouped;
-    }
+      }
+      
     
 }

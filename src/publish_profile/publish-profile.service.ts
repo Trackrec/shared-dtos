@@ -1,6 +1,6 @@
 // publish-profile.service.ts
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
@@ -12,6 +12,8 @@ import { AccountsVisitorsDto, AnalyticsAccessDto, ExtendedPositionDto, ExtendedU
 import { PositionDto, VerifyPositionDto } from 'src/shared-dtos/src/Position.dto';
 @Injectable()
 export class PublishProfileService {
+    private readonly logger = new Logger(PublishProfileService.name);
+  
   constructor(
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
@@ -26,35 +28,42 @@ export class PublishProfileService {
   async publishProfile(
     userId: number,
   ): Promise<{ error: boolean; message: string }> {
+    this.logger.log(`Attempting to publish profile for user ID: ${userId}`);
     try {
-      const user: UserAccounts= await this.userRepository.findOne({ where: { id: userId } });
-
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId } });
+  
       if (!user) {
+        this.logger.warn(`User not found for user ID: ${userId}`);
         return { error: true, message: 'User not found' };
       }
-
+  
       user.published_at = new Date();
       await this.userRepository.save(user);
-
+  
+      this.logger.log(`Profile published successfully for user ID: ${userId}`);
       return { error: false, message: 'Profile published successfully' };
     } catch (error) {
-      console.error('Error publishing profile:', error);
+      this.logger.error(`Error publishing profile for user ID: ${userId}`, error.stack);
       return { error: true, message: 'Internal server error' };
     }
   }
+  
 
   async sendGetInTouchMail(
     emailData: GetInTouchMailRequestDto,
   ): Promise<{ error: boolean; message: string }> {
+    this.logger.log(`Attempting to send 'Get in Touch' email to: ${emailData.email_to}`);
+    
     try {
-      console.log(emailData);
       const user: UserAccounts = await this.userRepository.findOne({
         where: { email: emailData?.email_to },
       });
+  
       if (!user) {
+        this.logger.warn(`User with email ${emailData.email_to} not found.`);
         return { error: true, message: 'User not found' };
       }
-
+  
       const messageData = {
         from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: user.email,
@@ -111,38 +120,47 @@ export class PublishProfileService {
           </body>
           </html>`,
       };
-
-      // Send the email using your mail service (e.g., Mailgun)
+  
+      this.logger.log(`Sending email to ${user.email}`);
       await this.mailgunService.sendMail(messageData);
-
-      return { error: false, message: 'Email send successfully' };
+      this.logger.log(`Email successfully sent to ${user.email}`);
+  
+      return { error: false, message: 'Email sent successfully' };
     } catch (error) {
-      console.error('Error sending email:', error);
+      this.logger.error(`Error sending 'Get in Touch' email to ${emailData.email_to}: ${error.message}`, error.stack);
       return { error: true, message: 'Internal server error' };
     }
   }
+  
 
   async privateProfile(
     userId: number,
   ): Promise<{ error: boolean; message: string }> {
+    this.logger.log(`Attempting to make profile private for user ID: ${userId}`);
+  
     try {
       const user: UserDto = await this.userRepository.findOne({ where: { id: userId } });
-
+  
       if (!user) {
+        this.logger.warn(`User with ID ${userId} not found.`);
         return { error: true, message: 'User not found' };
       }
-
+  
       user.published_at = null;
       await this.userRepository.save(user);
-
-      return { error: false, message: 'Profile private successfully' };
+  
+      this.logger.log(`Profile successfully made private for user ID: ${userId}`);
+      return { error: false, message: 'Profile made private successfully' };
     } catch (error) {
-      console.error('Error privating profile:', error);
+      this.logger.error(`Error making profile private for user ID: ${userId} - ${error.message}`, error.stack);
       return { error: true, message: 'Internal server error' };
     }
   }
+  
 
   async getProfileViews(user_id: number): Promise<ProfileViewsResponseDto> {
+    this.logger.log(`Fetching profile views for user ID: ${user_id}`);
+  
     try {
       const analyticsAccessRecords: AnalyticsAccessDto[] = await this.analyticsRepository.find({
         where: {
@@ -155,23 +173,29 @@ export class PublishProfileService {
           created_at: 'DESC',
         },
       });
-
+  
+      this.logger.log(`Successfully fetched ${analyticsAccessRecords.length} profile views for user ID: ${user_id}`);
       return { error: false, views: analyticsAccessRecords };
     } catch (error) {
-      console.error('Error fetching profile views:', error);
-      return { error: true, message: 'views not found.' };
+      this.logger.error(`Error fetching profile views for user ID: ${user_id} - ${error.message}`, error.stack);
+      return { error: true, message: 'Views not found.' };
     }
   }
+  
 
   async track_view(userId: number, visitor_id: number): Promise<void> {
+    this.logger.log(`Tracking profile view for user ID: ${userId} by visitor ID: ${visitor_id}`);
+  
     try {
       // Find the visitor by id
       const visitor: UserDto = await this.userRepository.findOne({
         where: { id: visitor_id },
       });
-
-      // If visitor exists, create a new visitor and save it
+  
       if (visitor) {
+        this.logger.log(`Visitor found: ${visitor.full_name} (ID: ${visitor_id})`);
+  
+        // Create and save new visitor entry
         const newVisitor: AccountsVisitorsDto = this.visitorRepository.create({
           email: visitor.email,
           full_name: visitor.full_name,
@@ -179,137 +203,173 @@ export class PublishProfileService {
           username: visitor.username,
         });
         const createdVisitor = await this.visitorRepository.save(newVisitor);
-
-        // Create new analytics entry
+        this.logger.log(`New visitor record created with ID: ${createdVisitor.id}`);
+  
+        // Create and save new analytics entry
         const newAnalytics: AnalyticsAccessDto = this.analyticsRepository.create({
           type: 'view',
           accountVisitor: { id: createdVisitor.id },
           user: { id: userId },
         });
-
+  
         await this.analyticsRepository.save(newAnalytics);
+        this.logger.log(`Analytics record created for user ID: ${userId} and visitor ID: ${createdVisitor.id}`);
+      } else {
+        this.logger.warn(`Visitor with ID: ${visitor_id} not found. No tracking recorded.`);
       }
     } catch (error) {
-      console.error('Error tracking view:', error);
+      this.logger.error(`Error tracking profile view for user ID: ${userId} by visitor ID: ${visitor_id} - ${error.message}`, error.stack);
     }
   }
+  
 
   async findUserByIdAndName(
     userName: string,
     visitor_id: number,
   ): Promise<ExtendedUserDetailsDto | null> {
+    this.logger.log(`Fetching user profile for username: ${userName}`);
+  
     const formattedName = userName.replace(/-/g, ' ').toLowerCase();
-    let user: UserDto = await this.userRepository.findOne({
-      where: { public_profile_username: userName },
-      relations: [
-        'positions',
-        'positions.details',
-        'positions.company',
-        'positions.verify_request',
-        'positions.verify_request.user',
-      ],
-    });
   
-    if (!user?.published_at) {
-      return null;
-    }
+    try {
+      let user: UserDto = await this.userRepository.findOne({
+        where: { public_profile_username: userName },
+        relations: [
+          'positions',
+          'positions.details',
+          'positions.company',
+          'positions.verify_request',
+          'positions.verify_request.user',
+        ],
+      });
   
-    if (!user) {
-      return null;
-    }
+      if (!user) {
+        this.logger.warn(`No user found with username: ${userName}`);
+        return null;
+      }
   
-    if (visitor_id && visitor_id != user.id) {
-      this.track_view(user.id, visitor_id);
-    }
+      if (!user?.published_at) {
+        this.logger.warn(`User profile for username: ${userName} is not published`);
+        return null;
+      }
   
-    delete user.password;
-    delete user.linkedin_access_token;
+      this.logger.log(`User found: ${user.full_name} (ID: ${user.id})`);
   
-    if (user.positions && user.positions.length > 0) {
-      let updated_positions: ExtendedPositionDto[] = [];
-      let totalRevenue = 0;
+      if (visitor_id && visitor_id !== user.id) {
+        this.logger.log(`Tracking view for user ID: ${user.id} by visitor ID: ${visitor_id}`);
+        this.track_view(user.id, visitor_id);
+      }
   
-      for (const position of user.positions) {
-        let updated_verify_user: VerifyPositionDto[] = [];
+      delete user.password;
+      delete user.linkedin_access_token;
   
-        for (const verifyRequest of position.verify_request) {
-          if (verifyRequest.status !== 'Approved') continue;
+      if (user.positions && user.positions.length > 0) {
+        let updated_positions: ExtendedPositionDto[] = [];
+        let totalRevenue = 0;
   
-          const verifiedUser =
-            verifyRequest.user?.id
+        for (const position of user.positions) {
+          let updated_verify_user: VerifyPositionDto[] = [];
+  
+          for (const verifyRequest of position.verify_request) {
+            if (verifyRequest.status !== 'Approved') continue;
+  
+            const verifiedUser = verifyRequest.user?.id
               ? await this.userRepository.findOne({ where: { id: verifyRequest.user.id } })
               : await this.userRepository.findOne({ where: { email: verifyRequest.email } });
   
-          if (verifiedUser) {
-            delete verifiedUser.password;
-            delete verifiedUser.linkedin_access_token;
+            if (verifiedUser) {
+              delete verifiedUser.password;
+              delete verifiedUser.linkedin_access_token;
+              this.logger.log(`Verified user found for position ID: ${position.id}`);
+            }
+  
+            updated_verify_user.push({ ...verifyRequest, user: verifiedUser });
           }
   
-          updated_verify_user.push({ ...verifyRequest, user: verifiedUser });
+          const completion_percentage = position.details
+            ? this.sharedService.calculateCompletionPercentage(position)
+            : 0.0;
+          const is_completed = completion_percentage === 100.0;
+  
+          updated_positions.push({
+            ...position,
+            is_completed,
+            completion_percentage,
+            verify_request: updated_verify_user,
+          });
+  
+          if (is_completed) {
+            totalRevenue += position.details.revenue_generated || 0;
+          }
         }
   
-        const completion_percentage = position.details
-          ? this.sharedService.calculateCompletionPercentage(position)
-          : 0.0;
-        const is_completed = completion_percentage === 100.0;
+        const extendedUser: ExtendedUserDetailsDto = {
+          ...user,
+          total_revenue: totalRevenue,
+          total_years_experience: this.sharedService.calculateExperience(user.positions),
+          total_bdr_experience: this.sharedService.calculateExperience(user.positions, 'bdr'),
+          total_leadership_experience: this.sharedService.calculateExperience(user.positions, 'leadership'),
+          total_individual_contributor_experience: this.sharedService.calculateExperience(
+            user.positions,
+            'individual_contributor'
+          ),
+          positions: updated_positions,
+          groupPositions: this.sharedService.groupAndSortPositions(updated_positions),
+          ...this.calculateWeightedAverages(user.positions),
+        };
   
-        updated_positions.push({
-          ...position,
-          is_completed,
-          completion_percentage,
-          verify_request: updated_verify_user,
-        });
+        extendedUser.positions = updated_positions.filter((position) => position.is_completed);
+        extendedUser.groupPositions = this.sharedService.groupAndSortPositions(
+          extendedUser.positions.filter((position) => position.is_completed)
+        );
   
-        if (is_completed) {
-          totalRevenue += position.details.revenue_generated || 0;
-        }
+        this.logger.log(`Profile data prepared successfully for username: ${userName}`);
+        return extendedUser;
       }
   
-      const extendedUser: ExtendedUserDetailsDto = {
-        ...user,
-        total_revenue: totalRevenue,
-        total_years_experience: this.sharedService.calculateExperience(user.positions),
-        total_bdr_experience: this.sharedService.calculateExperience(user.positions, 'bdr'),
-        total_leadership_experience: this.sharedService.calculateExperience(user.positions, 'leadership'),
-        total_individual_contributor_experience: this.sharedService.calculateExperience(
-          user.positions,
-          'individual_contributor'
-        ),
-        positions: updated_positions,
-        groupPositions: this.sharedService.groupAndSortPositions(updated_positions),
-        ...this.calculateWeightedAverages(user.positions),
-      };
-  
-      extendedUser.positions = updated_positions.filter((position) => position.is_completed);
-      extendedUser.groupPositions = this.sharedService.groupAndSortPositions(
-        extendedUser.positions.filter((position) => position.is_completed)
-      );
-  
-      return extendedUser;
+      this.logger.warn(`No positions found for user: ${userName}`);
+      return null;
+    } catch (error) {
+      this.logger.error(`Error fetching profile for username: ${userName} - ${error.message}`, error.stack);
+      return null;
     }
-  
-    return null;
   }
+  
 
 
   private calculateWeightedAverages(positions: PositionDto[]): Partial<ExtendedUserDetailsDto> {
-    const { existing_business_average, new_business_average, partnership_average } =
-      this.sharedService.calculateWeightedAverageForBusiness(positions);
-    const { outbound_average, inbound_average } =
-      this.sharedService.calculateWeightedAverageForOutbound(positions);
-    const { smb_average, midmarket_average, enterprise_average } =
-      this.sharedService.calculateWeightedAverageForSegment(positions);
+    this.logger.log(`Calculating weighted averages for ${positions.length} positions`);
   
-    return {
-      weightedAverageExistingBusiness: existing_business_average,
-      weightedAverageNewBusiness: new_business_average,
-      weightedAveragePartnershipBusiness: partnership_average,
-      outbound_average,
-      inbound_average,
-      smb_average,
-      midmarket_average,
-      enterprise_average,
-    };
+    try {
+      const { existing_business_average, new_business_average, partnership_average } =
+        this.sharedService.calculateWeightedAverageForBusiness(positions);
+      this.logger.log(`Business Averages - Existing: ${existing_business_average}, New: ${new_business_average}, Partnership: ${partnership_average}`);
+  
+      const { outbound_average, inbound_average } =
+        this.sharedService.calculateWeightedAverageForOutbound(positions);
+      this.logger.log(`Outbound/Inbound Averages - Outbound: ${outbound_average}, Inbound: ${inbound_average}`);
+  
+      const { smb_average, midmarket_average, enterprise_average } =
+        this.sharedService.calculateWeightedAverageForSegment(positions);
+      this.logger.log(`Segment Averages - SMB: ${smb_average}, Midmarket: ${midmarket_average}, Enterprise: ${enterprise_average}`);
+  
+      this.logger.log(`Weighted averages calculation completed successfully`);
+  
+      return {
+        weightedAverageExistingBusiness: existing_business_average,
+        weightedAverageNewBusiness: new_business_average,
+        weightedAveragePartnershipBusiness: partnership_average,
+        outbound_average,
+        inbound_average,
+        smb_average,
+        midmarket_average,
+        enterprise_average,
+      };
+    } catch (error) {
+      this.logger.error(`Error calculating weighted averages: ${error.message}`, error.stack);
+      throw new Error(`Failed to calculate weighted averages.`);
+    }
   }
+  
   
 }
