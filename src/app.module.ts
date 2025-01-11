@@ -3,7 +3,6 @@ import {
   Module,
   MiddlewareConsumer,
   NestModule,
-  RequestMethod,
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { loggerConfig } from './config/logger.config';
@@ -63,11 +62,14 @@ import { RecruiterCompany } from './recruiter/recruiter-company/recruiter-compan
 import { RecruiterCompanyUser } from './recruiter/recruiter-company/recruiter-company-user.entity';
 import { RecruiterProjectModule } from './recruiter/projects/project.module';
 import { RecruiterProject } from './recruiter/projects/project.entity';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingInterceptor } from './interceptors/logging.intercepter';
+import { AppLoggerService } from './logger.service';
+import winston from 'winston';
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
     ScheduleModule.forRoot(),
-    loggerConfig,
     AuthModule,
     PassportModule,
     RecruiterProjectModule,
@@ -110,6 +112,15 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     RecruiterCompanyController
   ],
   providers: [
+    {
+      provide: 'WINSTON_LOGGER',    
+      useValue: loggerConfig,        
+    },
+    {
+      provide: AppLoggerService,
+      useFactory: (logger: winston.Logger) => new AppLoggerService(logger),
+      inject: ['WINSTON_LOGGER'],
+    },
     AuthService,
     RecruiterAuthService,
     RecruiterLinkedinStrategy,
@@ -129,7 +140,8 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     ProjectVisitorsService,
     VerifyPositionService,
     CronService,
-    RecruiterCompanyService
+    RecruiterCompanyService,
+    
   ],
 })
 export class AppModule implements NestModule {
