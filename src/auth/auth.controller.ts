@@ -48,6 +48,16 @@ export class LinkedInAuthGuard extends AuthGuard('linkedin') {
   }
 }
 
+@Injectable()
+export class LinkedInSecondaryAuthGuard extends AuthGuard('linkedinSecondary') {
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw new UnauthorizedException('LinkedIn authentication failed');
+    }
+    return user;
+  }
+}
+
 @Controller()
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -75,7 +85,8 @@ export class AuthController {
   }
 
   @Get('secondary_linkedin/set-session')
-  @UseGuards(AuthGuard('linkedinSecondary'))
+  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
   secondaryLinkedinLogin(@Req() req) {
     this.logger.log('LinkedIn login initiated');
   }
@@ -112,7 +123,8 @@ export class AuthController {
   }
 
   @Get('secondary_linkedin/callback')
-  @UseGuards(AuthGuard('linkedinSecondary'))
+  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
   async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
