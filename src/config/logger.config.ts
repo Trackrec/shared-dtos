@@ -1,7 +1,9 @@
 import * as winston from 'winston';
 import * as path from 'path';
 import { mkdirSync } from 'fs';
-
+import { ClsServiceManager } from 'nestjs-cls';
+import * as dotenv from 'dotenv';
+dotenv.config();
 const logDir = path.join(__dirname, '../../logs');
 
 const createLogDir = (dirName: string) => mkdirSync(`${logDir}/${dirName}`, { recursive: true });
@@ -29,26 +31,44 @@ const createFileTransport = (filename: string, level: string, filterLevel: strin
     ),
   });
 
+
+const requestIdFormat = winston.format((info) => {
+    const cls = ClsServiceManager.getClsService();
+    const requestId = cls.get('requestId') || 'N/A';
+    info.requestId = requestId;
+    return info;
+  });
+
+  const transports: winston.transport[] = [];
+  const NODE_ENV = process.env.NODE_ENV || 'development';
+
+  if (NODE_ENV === 'development') {
+    // In development, log to the console
+    transports.push(
+      new winston.transports.Console({
+        format: winston.format.combine(
+          winston.format.colorize(),
+          winston.format.simple()
+        ),
+        level: 'debug',
+      })
+    );
+  } else {
+    // In production, log to files only
+    transports.push(
+      createFileTransport('request/requestData', 'http', 'http'),
+      createFileTransport('application/logger', 'debug'),
+      createFileTransport('error/error', 'error', 'error')
+    );
+  }
+
 export const loggerConfig = winston.createLogger({
   levels: customLevels,
   level: 'debug',
   format: winston.format.combine(
+    requestIdFormat(),
     winston.format.timestamp(),
     winston.format.json()
   ),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-      level: 'debug',
-    }),
-
-    createFileTransport('request/requestData', 'http', 'http'),
-
-    createFileTransport('application/logger', 'debug'),
-
-    createFileTransport('error/error', 'error', 'error'),
-  ],
+  transports,
 });
