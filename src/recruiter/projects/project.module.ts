@@ -10,12 +10,14 @@ import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { SharedService } from 'src/shared/shared.service';
 import { RecruiterPointsService } from './points.service';
 import { RecruiterCompanyUser } from '../recruiter-company/recruiter-company-user.entity';
+import { Company } from 'src/company/company.entity';
+import { CompanyService } from 'src/company/company.service';
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RecruiterProject, UserAccounts, ProjectApplication, ProjectVisitors, RecruiterCompanyUser])],
+  imports: [TypeOrmModule.forFeature([RecruiterProject, UserAccounts, ProjectApplication, ProjectVisitors, RecruiterCompanyUser, Company])],
   controllers: [RecruiterProjectController],
-  providers: [RecruiterProjectService, S3UploadService, SharedService, RecruiterPointsService],
+  providers: [RecruiterProjectService, S3UploadService, SharedService, RecruiterPointsService, CompanyService],
   exports: [RecruiterProjectService],
 })
 export class RecruiterProjectModule {}

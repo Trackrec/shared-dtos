@@ -11,6 +11,9 @@ import { SharedService } from 'src/shared/shared.service';
 import { RecruiterPointsService } from './points.service';
 import { ProjectVisitors } from 'src/project_visits/project_visits.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
+import { Company } from 'src/company/company.entity';
+import { CompanyService } from 'src/company/company.service';
+
 @Injectable()
 export class RecruiterProjectService {
   constructor(
@@ -28,7 +31,10 @@ export class RecruiterProjectService {
     @InjectRepository(RecruiterCompanyUser)
     private recruiterCompanyUserRepository: Repository<RecruiterCompanyUser>,
     @InjectRepository(ProjectVisitors)
-    private projectVisitorsRepository: Repository<ProjectVisitors>
+    private projectVisitorsRepository: Repository<ProjectVisitors>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
+      private readonly companyService: CompanyService,
   ) {}
 
   async findAll(
@@ -230,7 +236,40 @@ export class RecruiterProjectService {
     }
   }
 
-  async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any): Promise<any> {
+  async getCompanyInfo(companyData: { company_id: string; company_name: string; logo_url?: string; domain?: string; website_url?: string }) {
+    if (companyData && companyData.company_id) {
+      try {
+        let company = await this.companyRepository.findOne({
+          where: { company_id: companyData.company_id },
+        });
+  
+        if (company) {
+          return company.logo_url;
+        } else {
+          const newCompany = await this.companyService.createCompany({
+            company_id: companyData.company_id,
+            name: companyData.company_name,
+            logo_url: companyData.logo_url || null,
+            domain: companyData.domain || null,
+            website_url: companyData.website_url || null,
+          });
+  
+          if (newCompany && !newCompany.error) {
+            return newCompany.createdCompany.logo_url;
+          } else {
+            return null; 
+          }
+        }
+      } catch (error) {
+        console.error("Error in getCompanyInfo:", error);
+        return null; 
+      }
+    }
+    return null; 
+  }
+  
+
+  async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any, companyData): Promise<any> {
     try {
       // Find the user by userId
       accountProjectData = this.parseRecruiterProjectData(accountProjectData);
@@ -279,6 +318,12 @@ export class RecruiterProjectService {
         }
 
       }
+
+      if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+        accountProjectData.logo = await this.getCompanyInfo(companyData)
+        accountProjectData.logo_type = "url";
+        accountProjectData.company_id = companyData.company_id
+      }
       // Set the associated company in the project data
       accountProjectData.company = recruiterCompanyUser.company;
   
@@ -316,7 +361,7 @@ export class RecruiterProjectService {
     }
   }
   
-  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType): Promise<any> {
+  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType, companyData): Promise<any> {
     try {
       // Find the user by userId
 
@@ -367,7 +412,6 @@ export class RecruiterProjectService {
           imageType
         );
 
-        console.log(storedImage)
       if(storedImage){
         accountProjectData.logo=storedImage;
         accountProjectData.logo_type=imageType;
@@ -375,6 +419,12 @@ export class RecruiterProjectService {
      }
 
    }
+
+   if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+    accountProjectData.logo = await this.getCompanyInfo(companyData)
+    accountProjectData.logo_type = "url"
+    accountProjectData.company_id = companyData.company_id
+  }
 
    project={...accountProjectData}
    // Set the associated company in the project data
@@ -419,7 +469,8 @@ export class RecruiterProjectService {
     accountProjectData: Partial<RecruiterProject>,
     userId: number,
     buffer: any,
-    imageType: any
+    imageType: any,
+    companyData
   ): Promise<any> {
     try {
 
@@ -469,7 +520,13 @@ export class RecruiterProjectService {
     accountProjectData.logo=storedImage;
     accountProjectData.logo_type=imageType;
   }
-}
+} 
+
+  if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+    accountProjectData.logo = await this.getCompanyInfo(companyData)
+    accountProjectData.logo_type = "url"
+    accountProjectData.company_id = companyData.company_id
+  }
 
   // Set the user in the project data
   accountProjectData.company = recruiterCompanyUser.company;
@@ -589,7 +646,8 @@ export class RecruiterProjectService {
       project.selectedPersona &&
       project.territory &&
       project.languages &&
-      project.minimum_salecycle_type
+      project.minimum_salecycle_type &&
+      (project.experience_type && project.experience_type.length>0)
     );
   }
   async update(
@@ -597,10 +655,10 @@ export class RecruiterProjectService {
     id: number,
     accountProjectData: Partial<RecruiterProject>,
     buffer:any,
-    imageType: any
+    imageType: any,
+    companyData
   ): Promise<any> {
     try {
-      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
       const project = await this.recruiterProjectRepository.findOne({
         where: { id},
       });
@@ -610,6 +668,8 @@ export class RecruiterProjectService {
           message: 'Project not found.',
         };
       }
+
+      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
 
       if(accountProjectData.project_custom_url){
         const urlExist = await this.recruiterProjectRepository.findOne({
@@ -643,6 +703,12 @@ export class RecruiterProjectService {
 
        }
      }
+
+     if(companyData && companyData.company_id && companyData.company_name && companyData.logo_url){
+      accountProjectData.logo = await this.getCompanyInfo(companyData)
+      accountProjectData.logo_type = "url";
+      accountProjectData.company_id = companyData.company_id
+    }
 
       if(project.published && !this.hasRequiredFields(accountProjectData as RecruiterProject)){
         accountProjectData.published=false;
@@ -715,103 +781,9 @@ export class RecruiterProjectService {
     }
   }
 
-  calculatePointsForUser = (application) => {
-    try {
-      let otePoints: any = 0.0;
-      let worked_in_points: any = 0.0;
-      let sold_to_points: any = 0.0;
-      let segment_points: any = 0.0;
-      let salescycle_points: any = 0.0;
-      let dealsize_points: any = 0.0;
-      let newbusiness_points: any = 0.0;
-      let outbound_points: any = 0.0;
-      let points_for_persona: any = 0.0;
-      let points_for_experience: any = 0.0;
-      if (application.user.positions.length == 0) {
-        return {
-          points: {
-            ote_points: 0,
-            worked_in_points: 0,
-            sold_to_points: 0,
-            segment_points: 0,
-            salescycle_points: 0,
-            dealsize_points: 0,
-            newbusiness_points: 0,
-            outbound_points: 0,
-            points_for_persona: 0,
-            points_for_experience: 0,
-          },
-          percentage: 0,
-        };
-      }
-      otePoints = this.pointsService.points_for_ote(
-        parseInt(application.user.ote_expectation),
-        parseInt(application.ote),
-      );
-      worked_in_points = this.pointsService.points_for_worked_in(
-        application.user.positions,
-        application.project.Industry_Works_IN,
-      );
-      sold_to_points = this.pointsService.points_for_sold_to(
-        application.user.positions,
-        application.project.Industry_Sold_To,
-      );
-      segment_points = this.pointsService.points_for_segment(
-        application.user.positions,
-        application.project,
-      );
-      salescycle_points = this.pointsService.points_for_sales_cycle(
-        application.user.positions,
-        application.project,
-      );
-      dealsize_points = this.pointsService.points_for_dealsize(
-        application.user.positions,
-        application.project,
-      );
-      newbusiness_points = this.pointsService.points_for_new_business(
-        application.user.positions,
-        application.project,
-      );
-      outbound_points = this.pointsService.points_for_outbound(
-        application.user.positions,
-        application.project,
-      );
-      points_for_persona = this.pointsService.points_for_persona(
-        application.user.positions,
-        application.project.selectedPersona,
-      );
-      points_for_experience = this.pointsService.points_for_years(
-        application.user.positions,
-        application.project,
-      );
-      let points = {
-        ote_points: otePoints,
-        worked_in_points,
-        sold_to_points,
-        segment_points,
-        salescycle_points,
-        dealsize_points,
-        newbusiness_points,
-        outbound_points,
-        points_for_persona,
-        points_for_experience,
-      };
-      let sum = this.sumObjectValues(points);
-      const maxPossibleSum = 10 * Object.keys(points).length;
-      let percentage = (sum / maxPossibleSum) * 100;
-      // Round off the value to a whole number
-      percentage = Math.round(percentage);
-
-      // Ensure the percentage doesn't exceed 100
-      if (percentage > 100) {
-          percentage = 100;
-       }
-      return { points, percentage };
-    } catch (e) {
-      console.log('ERROR');
-      console.log(e);
-      return {
-        points: {
+    calculatePointsForUser = async (application) => {
+      try {
+        const points = {
           ote_points: 0,
           worked_in_points: 0,
           sold_to_points: 0,
@@ -821,13 +793,66 @@ export class RecruiterProjectService {
           newbusiness_points: 0,
           outbound_points: 0,
           points_for_persona: 0,
-          points_for_experience: 0,
-        },
-        percentage: 0,
-      };
-    }
-  };
-
+          points_for_experience: 0
+        };
+    
+        if (application.user.positions.length === 0) {
+          return { points, percentage: 0 };
+        }
+    
+        // Wait for all point calculations to complete
+        const [
+          otepoints,
+          worked_in_points,
+          sold_to_points,
+          segment_points,
+          salescycle_points,
+          dealsize_points,
+          newbusiness_points,
+          outbound_points,
+          points_for_persona,
+          points_for_experience
+        ] = await Promise.all([
+          this.pointsService.points_for_ote(parseInt(application.user.ote_expectation), parseInt(application.ote)),
+          this.pointsService.points_for_worked_in(application.user.positions, application.project.Industry_Works_IN),
+          this.pointsService.points_for_sold_to(application.user.positions, application.project.Industry_Sold_To),
+          this.pointsService.points_for_segment(application.user.positions, application.project),
+          this.pointsService.points_for_sales_cycle(application.user.positions, application.project),
+          this.pointsService.points_for_dealsize(application.user.positions, application.project),
+          this.pointsService.points_for_new_business(application.user.positions, application.project),
+          this.pointsService.points_for_outbound(application.user.positions, application.project),
+          this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona),
+          this.pointsService.points_for_years(application.user.positions, application.project)
+        ]);
+        // console.log(worked_in_points)
+        // console.log(sold_to_points)
+        // console.log(dealsize_points)
+        // console.log(newbusiness_points)
+    
+        Object.assign(points, {
+          ote_points: otepoints,
+          worked_in_points,
+          sold_to_points,
+          segment_points,
+          salescycle_points,
+          dealsize_points,
+          newbusiness_points,
+          outbound_points,
+          points_for_persona,
+          points_for_experience
+        });
+    
+        const sum = this.sumObjectValues(points);
+        const maxpossiblesum = 10 * Object.keys(points).length;
+        let percentage = Math.round((sum / maxpossiblesum) * 100);
+        percentage = Math.min(percentage, 100);
+    
+        return { points, percentage };
+      } catch (e) {
+        console.error('Error calculating points:', e);
+        return { points: {}, percentage: 0 };
+      }
+    };
   sumObjectValues(obj) {
     let sum = 0;
     for (let key in obj) {
@@ -837,9 +862,47 @@ export class RecruiterProjectService {
     }
     return sum;
   }
-  async getRanking(project_id: number, user_id: number) {
+
+  private filterPositionsByRecentYears(
+    positions: any[],
+    filter: string
+  ): any[] {
+    if(!filter){
+      return positions
+    }
+    const filterMapping: any = {
+      one: 1,
+      two: 2,
+      three: 3,
+      four: 4,
+      five: 5,
+      five_plus: null, 
+    };
+  
+    const selectedYears = filterMapping[filter];
+    if (selectedYears == undefined) {
+      return positions; 
+    }
+  
+    const currentDate = new Date();
+    const thresholdDate = new Date();
+    thresholdDate.setFullYear(currentDate.getFullYear() - selectedYears);
+  
+    return positions.filter((position) => {
+      const positionStartDate = new Date(position.start_year, (position.start_month || 1) - 1);
+      const positionEndDate = position.end_year
+        ? new Date(position.end_year, (position.end_month || 12) - 1)
+        : currentDate; // Use current date if end date is null (ongoing position)
+  
+      return positionEndDate >= thresholdDate && positionStartDate <= currentDate;
+    });
+  }
+  
+  
+  
+  
+  async getRanking(project_id: number, user_id: number, min_experience?: string) {
     try {
-        // Check if the user is associated with a company
        const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
           where: { user: { id: user_id } },
           relations: ['company'],
@@ -854,7 +917,6 @@ export class RecruiterProjectService {
         relations: ['company']
       });
 
-      console.log(project)
       if(!project || project.company.id!=recruiterCompanyUser.company.id){
         return {error: true, message: "Project not found."}
       }
@@ -870,32 +932,38 @@ export class RecruiterProjectService {
 
         .getMany();
 
-      let updatedApplications = applications.map((application) => ({
-        ...application,
-        user: {
-          ...application.user,
-          positions: application.user.positions.filter((position) => {
-            if (!position.details) {
-              return false;
-            }
-            let completionPercentage = position.details
-              ? this.sharedService.calculateCompletionPercentage(position)
-              : 0.0;
-            console.log('completionPercentage', completionPercentage);
-            return completionPercentage == 100.0;
-          }),
-        },
-      }));
-
-      const updatedApplicationsWithUserPoints = updatedApplications.map(
-        (application) => {
-          const updatedUser = this.calculatePointsForUser(application);
+  
+        let updatedApplications = applications.map((application) => {
+          const filteredPositions = this.filterPositionsByRecentYears(application.user.positions, min_experience);
+          const validPositions = filteredPositions.filter(
+            (position) =>
+              position.details &&
+              this.sharedService.calculateCompletionPercentage(position) == 100.0
+          );
+         
+        
           return {
             ...application,
-            user: { ...application.user, points: updatedUser },
+            user: {
+              ...application.user,
+              positions: validPositions,
+            },
           };
-        },
-      );
+        });
+        
+     
+      
+       const updatedApplicationsWithUserPoints = await Promise.all(
+        updatedApplications.map(async (application) => {
+            const updatedUser = await this.calculatePointsForUser(application);
+            return {
+              ...application,
+              user: { ...application.user, points: updatedUser },
+            };
+          })
+        );
+      
+
 
       let above75Count = 0;
       updatedApplicationsWithUserPoints?.map((item) => {
@@ -936,6 +1004,7 @@ export class RecruiterProjectService {
   
     // Parse boolean fields
     parsedData.is_travel_requirements = data.is_travel_requirements == 'Yes';
+    parsedData.is_ote_visible = data.is_ote_visible == 'true';
   
     // Parse date fields
     parsedData.start_date = data.start_date ? new Date(data.start_date) : null;
@@ -965,9 +1034,13 @@ parsedData.languages = data.languages
     // Parse string fields
     parsedData.title = data.title || null;
     parsedData.company_name = data.company_name || null;
+    parsedData.company_id = data.company_id || null;
     parsedData.logo = data.logo || null;
     parsedData.location_type = data.location_type || null;
     parsedData.description = data.description || null;
+    parsedData.experience_type = data.experience_type || null;
+    parsedData.company_elevator_pitch = data.company_elevator_pitch || null;
+    parsedData.main_problem = data.main_problem || null;
     parsedData.location = data.location 
     ? data.location.replace(/[\[\]']+/g, '').split(',').join(',') 
     : null;
@@ -975,6 +1048,7 @@ parsedData.languages = data.languages
     parsedData.minimum_salecycle_type = data.minimum_salecycle_type || null;
     parsedData.timeline = data.timeline || null;
     parsedData.benefits = data.benefits || null;
+    parsedData.office_address =  data.office_address || null;
     parsedData.elevator_pitch = data.elevator_pitch || null;
     parsedData.travel_requirement_percentage = data.travel_requirement_percentage || null;
     parsedData.report_to = data.report_to || null;

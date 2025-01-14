@@ -257,6 +257,24 @@ export class AuthService {
     }
   }
 
+   checkPositionsCompleted(positions) {
+      if (!positions || positions.length === 0) {
+         return false;
+       }
+
+      for (const position of positions) {
+         if (position.is_completed) {
+            return true;
+         }
+      }
+
+     return false;
+   }
+
+  getTopBarJobId(queryString) {
+     const params = new URLSearchParams(queryString);
+     return params.has('top_bar_job_id') ? params.get('top_bar_job_id') : null;
+   }
   async getMe(
     user_id: number,
   ): Promise<{ error: boolean; user?: any; message?: string }> {
@@ -327,6 +345,12 @@ export class AuthService {
           (updatedUser as any).total_revenue = totalRevenue;
           (updatedUser as any).total_years_experience =
             this.sharedService.calculateExperience(updatedUser.positions);
+            (updatedUser as any).total_bdr_experience =
+            this.sharedService.calculateExperience(updatedUser.positions, "bdr");
+            (updatedUser as any).total_leadership_experience =
+            this.sharedService.calculateExperience(updatedUser.positions, "leadership");
+            (updatedUser as any).total_individual_contributor_experience =
+            this.sharedService.calculateExperience(updatedUser.positions, "individual_contributor");
           const {
             existing_business_average,
             new_business_average,
@@ -353,8 +377,8 @@ export class AuthService {
           (updatedUser as any).smb_average = smb_average;
           (updatedUser as any).midmarket_average = midmarket_average;
           (updatedUser as any).enterprise_average = enterprise_average;
-
-          updatedUser.positions = updated_positions;
+          updatedUser.positions =updated_positions;
+          (updatedUser as any).groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
         }
         return { error: false, user: updatedUser };
       }
@@ -386,6 +410,12 @@ export class AuthService {
           this.sharedService.calculateExperience(
             updated_positions.filter((pos) => pos.is_completed),
           );
+        (user as any).total_bdr_experience =
+          this.sharedService.calculateExperience(user.positions, "bdr");
+        (user as any).total_leadership_experience =
+          this.sharedService.calculateExperience(user.positions, "leadership");
+        (user as any).total_individual_contributor_experience =
+          this.sharedService.calculateExperience(user.positions, "individual_contributor");
         const {
           existing_business_average,
           new_business_average,
@@ -409,7 +439,8 @@ export class AuthService {
         (user as any).smb_average = smb_average;
         (user as any).midmarket_average = midmarket_average;
         (user as any).enterprise_average = enterprise_average;
-        user.positions = updated_positions;
+        user.positions=updated_positions;
+        (user as any).groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
       }
       return { error: false, user };
     } catch (error) {

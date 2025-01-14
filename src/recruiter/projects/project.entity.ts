@@ -1,6 +1,6 @@
 import { UserAccounts } from 'src/auth/User.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { IsNotEmpty, ValidateIf } from 'class-validator';
+import { IsNotEmpty, MaxLength, ValidateIf } from 'class-validator';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 
@@ -37,6 +37,9 @@ export class RecruiterProject {
     @IsNotEmpty()
     ote_end: number;
 
+    @Column({ type: 'boolean', default: true })
+    is_ote_visible: boolean;
+
     @Column({ type: 'varchar', length: 255, nullable: true })
     @ValidateIf(o => o.published)
     @IsNotEmpty()
@@ -46,6 +49,11 @@ export class RecruiterProject {
     @ValidateIf(o => o.published)
     @IsNotEmpty()
     description: string;
+
+    @Column({ type: 'text', nullable: true,  })
+    @ValidateIf(o => o.published)
+    @IsNotEmpty()
+    experience_type: string;
 
     @Column({ type: 'simple-array', nullable: true })
     @ValidateIf(o => o.published)
@@ -151,6 +159,9 @@ export class RecruiterProject {
     @Column({ type: 'longtext', nullable: true })
     elevator_pitch: string;
 
+    @Column({ nullable: true })
+    office_address: string;
+
     @Column({ type: 'longtext', nullable: true })
     travel_requirement_percentage: string;
 
@@ -181,12 +192,21 @@ export class RecruiterProject {
     @Column({ default: null })
     project_custom_url: string;
 
+    @Column({ default: null })
+    company_id: string;
+
     // New fields for draft and publish status
     @Column({ type: 'boolean', default: true })
     draft: boolean;
 
     @Column({ type: 'boolean', default: false })
     published: boolean;
+
+    @Column({ type: 'text',  nullable: true,  })
+    company_elevator_pitch: string;
+
+    @Column({ type: 'text', nullable: true,  })
+    main_problem: string ;
 
     @ManyToOne(() => UserAccounts, user => user.projects)
     user: UserAccounts;

@@ -25,9 +25,9 @@ export class ApplicationService {
 
   async createApplication(body: any, userId: number): Promise<any> {
     try{
-           const {project_id, ote, available}=body;
-           if(!project_id || !ote || !available){
-            return {error: true, message: "Please send all the required fields."}
+           const {project_id, ote, available, position_id, city, custom_current_role}=body;
+           if(!project_id || !ote || !available || !position_id || !city || !custom_current_role){
+            return {error: true, message: "Please fill all the required fields."}
            }
            const user=await this.userRepository.findOne({where:{id: userId}})
            if(!user){
@@ -41,11 +41,17 @@ export class ApplicationService {
           const applicationExists=await this.applicationRepository.findOne({where:{user:{id:userId}, project: {id: project_id}}})
           console.log('applicationExists :>> ', applicationExists);
           if(!applicationExists){
+            if(city && custom_current_role){
+              user.city=city;
+              user.custom_current_role =custom_current_role;
+              await this.userRepository.update(user.id, user)
+            }
             const application = new ProjectApplication();
             application.ote = ote;
             application.available = available;
             application.user=user;
             application.project= project
+            application.position_id = position_id;
  
             await this.applicationRepository.save(application);
 
@@ -65,7 +71,7 @@ export class ApplicationService {
  
             return {error: false, message: "Application created successfully."}
           }else{
-            return {error: true, message: "Application already exists"}
+            return {error: true, message: "You have already applied to this project."}
           }
           
     }

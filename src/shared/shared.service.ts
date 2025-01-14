@@ -4,7 +4,7 @@ import { Injectable, ConflictException, InternalServerErrorException } from '@ne
 @Injectable()
 export class SharedService {
 
-  calculateExperience(positions) {
+  calculateExperience(positions, type='all') {
     if (positions.length === 0) {
       return "N/A";
     }
@@ -22,6 +22,21 @@ export class SharedService {
         : 0.0;
       return completionPercentage == 100.0;
     });
+
+    if (type !== 'all') {
+      completedPositions = completedPositions.filter(position => {
+        switch (type) {
+          case 'bdr':
+            return position.details?.is_booking_meeting === true;
+          case 'individual_contributor':
+            return position.details?.is_individual_contributor === true;
+          case 'leadership':
+            return position.details?.is_leadership === true;
+          default:
+            return false;
+        }
+      });
+    }
     
     const result = completedPositions.reduce(
       (acc, position) => this.calculatePositionDays(position, acc),
@@ -74,13 +89,11 @@ export class SharedService {
     const months = Math.floor(remainingDays / 30.44); // Average number of days in a month
 
     if (years > 0 && months === 0) {
-      return `${years} year${years !== 1 ? "s" : ""}`;
+      return `${years} yrs`;
     } else if (years > 0 && months > 0) {
-      return `${years} year${years !== 1 ? "s" : ""}, ${months} month${
-        months !== 1 ? "s" : ""
-      }`;
+      return `${years} yrs, ${months} mo`;
     } else if (months > 0) {
-      return `${months} month${months !== 1 ? "s" : ""}`;
+      return `${months} mo`;
     } else {
       return "N/A";
     }
@@ -523,4 +536,47 @@ export class SharedService {
          enterprise_average
         };
       }
+
+      groupAndSortPositions(positions) {
+        // Step 1: Group by company object
+        const groupedByCompany = new Map();
+    
+        positions.forEach(position => {
+            const company = position.company;
+            const companyKey = JSON.stringify(company); // Create a unique key for the company object
+    
+            if (!groupedByCompany.has(companyKey)) {
+                groupedByCompany.set(companyKey, { company, positions: [] });
+            }
+    
+            groupedByCompany.get(companyKey).positions.push(position);
+        });
+    
+        // Step 2: Sort positions within each company by start date (descending)
+        for (const group of groupedByCompany.values()) {
+          group.positions.sort((a, b) => {
+            const isACurrent = a.end_year === null || a.end_month === null;
+            const isBCurrent = b.end_year === null || b.end_month === null;
+        
+            if (isACurrent && !isBCurrent) return -1; // Current positions come first
+            if (!isACurrent && isBCurrent) return 1;  // Completed positions come later
+        
+            // If both are current or both are completed, sort by start date descending
+            const aStartDate = new Date(a.start_year, (a.start_month || 0) - 1).getTime();
+            const bStartDate = new Date(b.start_year, (b.start_month || 0) - 1).getTime();
+            return bStartDate - aStartDate;
+        });
+        
+        }
+    
+        // Step 3: Convert Map to array and sort companies by the latest position's start date
+        const sortedAndGrouped = Array.from(groupedByCompany.values()).sort((a, b) => {
+            const aLatestDate = new Date(a.positions[0].start_year, a.positions[0].start_month || 0).getTime();
+            const bLatestDate = new Date(b.positions[0].start_year, b.positions[0].start_month || 0).getTime();
+            return bLatestDate - aLatestDate;
+        });
+    
+        return sortedAndGrouped;
+    }
+    
 }
