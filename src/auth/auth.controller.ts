@@ -31,7 +31,7 @@ export class AuthController {
     req.session.savedQueryParams = new URLSearchParams(queryParams).toString();
     console.log(queryParams);
     this.logger.log('LinkedIn session value set');
-    const redirectPath = queryParams.request_token
+    const redirectPath = queryParams?.request_token
       ? '/secondary_linkedin/set-session'
       : '/linkedin/set-session';
     return res.redirect(redirectPath);
