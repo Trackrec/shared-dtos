@@ -86,10 +86,7 @@ export class CronService {
         user.isFirstExperienceMailSent = true;
         await this.userRepository.save(user);
       } catch (error) {
-        console.error(
-          `Failed to send nudge email to user ${user.email}:`,
-          error,
-        );
+        console.error(`Failed to send nudge email to user ${user.email}:`, error);
       }
     }
   }

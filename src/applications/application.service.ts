@@ -6,7 +6,11 @@ import { UserAccounts } from 'src/auth/User.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 import { MailgunService } from 'src/mailgun/mailgun.service';
-import { MyApplicationsListDto, ProjectApplicationDto, ProjectApplicationRequestDto } from 'src/shared-dtos/src/project_application.dto';
+import {
+  MyApplicationsListDto,
+  ProjectApplicationDto,
+  ProjectApplicationRequestDto,
+} from 'src/shared-dtos/src/project_application.dto';
 
 @Injectable()
 export class ApplicationService {
@@ -24,37 +28,53 @@ export class ApplicationService {
     private readonly mailgunService: MailgunService,
   ) {}
 
-  async createApplication(body: ProjectApplicationRequestDto, userId: number): Promise<{ error: boolean; message: string }> {
-    this.logger.debug(`createApplication called with user ID: ${userId} and body: ${JSON.stringify(body)}`);
+  async createApplication(
+    body: ProjectApplicationRequestDto,
+    userId: number,
+  ): Promise<{ error: boolean; message: string }> {
+    this.logger.debug(
+      `createApplication called with user ID: ${userId} and body: ${JSON.stringify(body)}`,
+    );
 
     try {
-      const { project_id, ote, available, position_id, city, custom_current_role } = body;
+      const {
+        project_id: projectId,
+        ote,
+        available,
+        position_id: positionId,
+        city,
+        custom_current_role: customCurrentRole,
+      } = body;
 
-      if (!project_id || !ote || !available || !position_id || !city || !custom_current_role) {
-        this.logger.warn(`Missing required fields in the application payload for user ID: ${userId}`);
-        return { error: true, message: "Please fill all the required fields." };
+      if (!projectId || !ote || !available || !positionId || !city || !customCurrentRole) {
+        this.logger.warn(
+          `Missing required fields in the application payload for user ID: ${userId}`,
+        );
+        return { error: true, message: 'Please fill all the required fields.' };
       }
 
       const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
         this.logger.warn(`User not found with ID: ${userId}`);
-        return { error: true, message: "User not found." };
+        return { error: true, message: 'User not found.' };
       }
 
-      const project: RecruiterProject = await this.projectRepository.findOne({ where: { id: project_id } });
+      const project: RecruiterProject = await this.projectRepository.findOne({
+        where: { id: projectId },
+      });
       if (!project) {
-        this.logger.warn(`Project not found with ID: ${project_id}`);
-        return { error: true, message: "Project not found." };
+        this.logger.warn(`Project not found with ID: ${projectId}`);
+        return { error: true, message: 'Project not found.' };
       }
 
       const applicationExists: ProjectApplication = await this.applicationRepository.findOne({
-        where: { user: { id: userId }, project: { id: project_id } }
+        where: { user: { id: userId }, project: { id: projectId } },
       });
 
       if (!applicationExists) {
-        if (city && custom_current_role) {
+        if (city && customCurrentRole) {
           user.city = city;
-          user.custom_current_role = custom_current_role;
+          user.custom_current_role = customCurrentRole;
           await this.userRepository.update(user.id, user);
           this.logger.log(`Updated user profile with city and role for user ID: ${userId}`);
         }
@@ -64,10 +84,12 @@ export class ApplicationService {
         application.available = available;
         application.user = user;
         application.project = project;
-        application.position_id = position_id;
+        application.position_id = positionId;
 
         await this.applicationRepository.save(application);
-        this.logger.log(`Application created successfully for user ID: ${userId} and project ID: ${project_id}`);
+        this.logger.log(
+          `Application created successfully for user ID: ${userId} and project ID: ${projectId}`,
+        );
 
         const messageData = {
           from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
@@ -85,36 +107,47 @@ export class ApplicationService {
         await this.mailgunService.sendMail(messageData);
         this.logger.log(`Confirmation email sent to ${user.email}`);
 
-        return { error: false, message: "Application created successfully." };
+        return { error: false, message: 'Application created successfully.' };
       } else {
-        this.logger.warn(`User ID: ${userId} has already applied to project ID: ${project_id}`);
-        return { error: true, message: "You have already applied to this project." };
+        this.logger.warn(`User ID: ${userId} has already applied to project ID: ${projectId}`);
+        return { error: true, message: 'You have already applied to this project.' };
       }
     } catch (e) {
-      this.logger.error(`Failed to create application for user ID: ${userId} - ${e.message}`, e.stack);
-      return { error: true, message: "Application not created." };
+      this.logger.error(
+        `Failed to create application for user ID: ${userId} - ${e.message}`,
+        e.stack,
+      );
+      return { error: true, message: 'Application not created.' };
     }
   }
 
-  async getMyApplications(user_id: number): Promise<MyApplicationsListDto> {
-    this.logger.debug(`getMyApplications called for user ID: ${user_id}`);
+  async getMyApplications(userId: number): Promise<MyApplicationsListDto> {
+    this.logger.debug(`getMyApplications called for user ID: ${userId}`);
 
     try {
       const applications: ProjectApplicationDto[] = await this.applicationRepository.find({
-        where: { user: { id: user_id } },
+        where: { user: { id: userId } },
         relations: ['project'],
       });
 
-      this.logger.log(`Fetched ${applications.length} applications for user ID: ${user_id}`);
+      this.logger.log(`Fetched ${applications.length} applications for user ID: ${userId}`);
       return { error: false, applications };
     } catch (e) {
-      this.logger.error(`Failed to fetch applications for user ID: ${user_id} - ${e.message}`, e.stack);
-      return { error: true, message: "Not able to get applications." };
+      this.logger.error(
+        `Failed to fetch applications for user ID: ${userId} - ${e.message}`,
+        e.stack,
+      );
+      return { error: true, message: 'Not able to get applications.' };
     }
   }
 
-  async deleteApplicationsForUserAndCompany(userId: number, loggedInUser: number): Promise<{ error: boolean; message: string }> {
-    this.logger.debug(`deleteApplicationsForUserAndCompany called by user ID: ${loggedInUser} for user ID: ${userId}`);
+  async deleteApplicationsForUserAndCompany(
+    userId: number,
+    loggedInUser: number,
+  ): Promise<{ error: boolean; message: string }> {
+    this.logger.debug(
+      `deleteApplicationsForUserAndCompany called by user ID: ${loggedInUser} for user ID: ${userId}`,
+    );
 
     try {
       const checkAdmin: UserAccounts = await this.userRepository.findOne({
@@ -126,17 +159,19 @@ export class ApplicationService {
         return { error: true, message: 'You are not an admin User.' };
       }
 
-      const recruiterCompanyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
-        where: { user: { id: loggedInUser } },
-        relations: ['company'],
-      });
+      const recruiterCompanyUser: RecruiterCompanyUser =
+        await this.recruiterCompanyUserRepository.findOne({
+          where: { user: { id: loggedInUser } },
+          relations: ['company'],
+        });
 
       if (!recruiterCompanyUser) {
         this.logger.warn(`User ID: ${loggedInUser} is not associated with any recruiter company.`);
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
 
-      await this.applicationRepository.createQueryBuilder()
+      await this.applicationRepository
+        .createQueryBuilder()
         .delete()
         .from(ProjectApplication)
         .where('userId = :userId', { userId })
@@ -148,7 +183,10 @@ export class ApplicationService {
       this.logger.log(`Applications deleted for user ID: ${userId} by admin ID: ${loggedInUser}`);
       return { error: false, message: 'Applications deleted successfully.' };
     } catch (e) {
-      this.logger.error(`Failed to delete applications for user ID: ${userId} - ${e.message}`, e.stack);
+      this.logger.error(
+        `Failed to delete applications for user ID: ${userId} - ${e.message}`,
+        e.stack,
+      );
       return { error: true, message: 'Something went wrong, please try again.' };
     }
   }

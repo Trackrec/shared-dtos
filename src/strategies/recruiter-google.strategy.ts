@@ -6,34 +6,35 @@ import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google') {
-    private readonly logger = new Logger(RecruiterGoogleStrategy.name);
+  private readonly logger = new Logger(RecruiterGoogleStrategy.name);
 
-    constructor(
-        private readonly recruiterAuthService: RecruiterAuthService
-    ) {
+  constructor(private readonly recruiterAuthService: RecruiterAuthService) {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID, // Replace with your Google client ID
       clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Replace with your Google client secret
       callbackURL: process.env.PRIMARY_RECRUITER_GOOGLE_CALLBACK_URL, // Adjust callback URL as needed
       scope: ['email', 'profile'],
     });
-    
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: {
-    name: { givenName: string; familyName: string };
-    emails: { value: string }[];
-    photos: { value: string }[];
-  }, done: VerifyCallback): Promise<void> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: {
+      name: { givenName: string; familyName: string };
+      emails: { value: string }[];
+      photos: { value: string }[];
+    },
+    done: VerifyCallback,
+  ): Promise<void> {
     const { name, emails, photos } = profile;
-
 
     const user = {
       email: emails[0].value,
       displayName: `${name.givenName} ${name.familyName}`,
       picture: photos[0].value,
       accessToken,
-      loginMethod: "google"
+      loginMethod: 'google',
     };
 
     const createdUser = await this.recruiterAuthService.findOrCreate(user);
@@ -47,7 +48,7 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
     }
   }
 
-  private generateToken(user: {id: number, email: string, username: string}): string {
+  private generateToken(user: { id: number; email: string; username: string }): string {
     const payload = {
       id: user.id,
       email: user.email,

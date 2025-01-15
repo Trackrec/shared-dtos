@@ -15,40 +15,50 @@ export class KeywordsService {
     private readonly userRepository: Repository<UserAccounts>,
   ) {}
 
-  async getKeywords(user_id: number): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
-    this.logger.debug(`Fetching keywords for user ID: ${user_id}`);
+  async getKeywords(
+    userId: number,
+  ): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
+    this.logger.debug(`Fetching keywords for user ID: ${userId}`);
 
     try {
-      let user: UserAccounts = await this.userRepository.findOne({
-        where: { id: user_id },
+      const user: UserAccounts = await this.userRepository.findOne({
+        where: { id: userId },
         select: ['keywords', 'id', 'full_name'],
       });
 
       if (!user) {
-        this.logger.warn(`No keywords found for user ID: ${user_id}`);
+        this.logger.warn(`No keywords found for user ID: ${userId}`);
         return { error: false, message: 'Keywords not found.' };
       }
 
-      this.logger.log(`Keywords fetched successfully for user ID: ${user_id}`);
+      this.logger.log(`Keywords fetched successfully for user ID: ${userId}`);
       return { error: false, user };
     } catch (error) {
-      this.logger.error(`Error fetching keywords for user ID: ${user_id} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching keywords for user ID: ${userId} - ${error.message}`,
+        error.stack,
+      );
       return { error: true, message: 'Keywords not found.' };
     }
   }
 
-  async createOrUpdateKeywords(userId: number, newKeywords: string[]): Promise<{ error: boolean; message: string }> {
+  async createOrUpdateKeywords(
+    userId: number,
+    newKeywords: string[],
+  ): Promise<{ error: boolean; message: string }> {
     this.logger.debug(`Creating or updating keywords for user ID: ${userId}`);
 
     try {
-      let user: UserAccounts = await this.userRepository.findOne({ where: { id: userId } });
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId } });
 
       if (!user) {
         this.logger.warn(`User not found with ID: ${userId}`);
         return { error: true, message: 'User not found' };
       }
 
-      let keywords: Keywords = await this.keywordsRepository.findOne({ where: { userAccount: { id: userId } } });
+      let keywords: Keywords = await this.keywordsRepository.findOne({
+        where: { userAccount: { id: userId } },
+      });
 
       if (!keywords) {
         this.logger.log(`No existing keywords found for user ID: ${userId}, creating new entry.`);
@@ -69,7 +79,10 @@ export class KeywordsService {
 
       return { error: false, message: 'Keywords updated successfully' };
     } catch (error) {
-      this.logger.error(`Error creating or updating keywords for user ID: ${userId} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating or updating keywords for user ID: ${userId} - ${error.message}`,
+        error.stack,
+      );
       return { error: true, message: 'Something went wrong, please try again!' };
     }
   }

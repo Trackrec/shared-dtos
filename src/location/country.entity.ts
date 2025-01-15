@@ -56,7 +56,13 @@ export class Country {
   nationality: string;
 
   @Column({ type: 'simple-json' })
-  timezones: { zoneName: string, gmtOffset: number, gmtOffsetName: string, abbreviation: string, tzName: string }[];
+  timezones: {
+    zoneName: string;
+    gmtOffset: number;
+    gmtOffsetName: string;
+    abbreviation: string;
+    tzName: string;
+  }[];
 
   @Column()
   latitude: string;
@@ -64,15 +70,15 @@ export class Country {
   @Column()
   longitude: string;
 
-  @Column({default: null})
+  @Column({ default: null })
   emoji: string;
 
   @Column({ name: 'emojiU' })
   emojiU: string;
 
-  @OneToMany(() => State, state => state.country)
+  @OneToMany(() => State, (state) => state.country)
   states: State[];
 
-  @OneToMany(() => City, city => city.country)
+  @OneToMany(() => City, (city) => city.country)
   cities: City[];
 }

@@ -17,8 +17,15 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
-import { ApplicantUserParamDto, GetMeResponseDto, UpdatePreferencesRequestDto } from 'src/shared-dtos/src/user.dto';
-import { applicantUserParamSchema, updatePreferencesRequestSchema } from 'src/validations/user.validation';
+import {
+  ApplicantUserParamDto,
+  GetMeResponseDto,
+  UpdatePreferencesRequestDto,
+} from 'src/shared-dtos/src/user.dto';
+import {
+  applicantUserParamSchema,
+  updatePreferencesRequestSchema,
+} from 'src/validations/user.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
@@ -30,11 +37,7 @@ export class AuthController {
 
   @UseGuards(ThrottlerGuard)
   @Get('linkedin')
-  setLinkedinSession(
-    @Query() queryParams: Record<string, string>,
-    @Req() req,
-    @Res() res,
-  ) {
+  setLinkedinSession(@Query() queryParams: Record<string, string>, @Req() req, @Res() res) {
     req.session.savedQueryParams = new URLSearchParams(queryParams).toString();
     this.logger.log(`LinkedIn session value set with query params: ${JSON.stringify(queryParams)}`);
     const redirectPath = queryParams.request_token
@@ -45,13 +48,13 @@ export class AuthController {
 
   @Get('linkedin/set-session')
   @UseGuards(AuthGuard('linkedin'))
-  linkedinLogin(@Req() req) {
+  linkedinLogin() {
     this.logger.log('LinkedIn login initiated');
   }
 
   @Get('secondary_linkedin/set-session')
   @UseGuards(AuthGuard('linkedinSecondary'))
-  secondaryLinkedinLogin(@Req() req) {
+  secondaryLinkedinLogin() {
     this.logger.log('Secondary LinkedIn login initiated');
   }
 
@@ -65,12 +68,16 @@ export class AuthController {
 
       if (topBarJobId) {
         this.logger.log(`Redirecting LinkedIn user with job ID: ${topBarJobId}`);
-        return res.redirect(`${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`);
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+        );
       }
 
       if (user && user.token) {
         this.logger.log(`Redirecting LinkedIn user with token: ${user.token}`);
-        return res.redirect(`${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`);
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
+        );
       } else {
         this.logger.warn('User token missing during LinkedIn callback');
         return res.redirect(`${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`);
@@ -91,12 +98,16 @@ export class AuthController {
 
       if (topBarJobId) {
         this.logger.log(`Redirecting secondary LinkedIn user with job ID: ${topBarJobId}`);
-        return res.redirect(`${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`);
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+        );
       }
 
       if (user && user.token) {
         this.logger.log(`Redirecting secondary LinkedIn user with token: ${user.token}`);
-        return res.redirect(`${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`);
+        return res.redirect(
+          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
+        );
       } else {
         this.logger.warn('User token missing during secondary LinkedIn callback');
         return res.redirect(`${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`);
@@ -109,21 +120,21 @@ export class AuthController {
 
   @Get('me')
   async getMe(@Req() req: Request): Promise<GetMeResponseDto> {
-    const user_id: number = req['user_id'];
-    this.logger.debug(`getMe called for user ID: ${user_id}`);
+    const userId: number = req['user_id'];
+    this.logger.debug(`getMe called for user ID: ${userId}`);
 
     try {
-      const result: GetMeResponseDto = await this.authService.getMe(user_id);
+      const result: GetMeResponseDto = await this.authService.getMe(userId);
 
       if (result.error) {
-        this.logger.warn(`Failed to fetch user data for user ID: ${user_id}`);
+        this.logger.warn(`Failed to fetch user data for user ID: ${userId}`);
         return { error: true, message: result.message };
       } else {
-        this.logger.log(`Fetched user data successfully for user ID: ${user_id}`);
+        this.logger.log(`Fetched user data successfully for user ID: ${userId}`);
         return { error: false, userDetails: result.user };
       }
     } catch (error) {
-      this.logger.error(`Error in getMe for user ID: ${user_id} - ${error.message}`, error.stack);
+      this.logger.error(`Error in getMe for user ID: ${userId} - ${error.message}`, error.stack);
       return { error: true, message: `Error processing user details: ${error.message}` };
     }
   }
@@ -131,7 +142,8 @@ export class AuthController {
   @Put('profile/:id')
   async updateUser(
     @Param(new ZodValidationPipe(applicantUserParamSchema)) param: ApplicantUserParamDto,
-    @Body(new ZodValidationPipe(updatePreferencesRequestSchema)) updateUserPayload: UpdatePreferencesRequestDto
+    @Body(new ZodValidationPipe(updatePreferencesRequestSchema))
+    updateUserPayload: UpdatePreferencesRequestDto,
   ): Promise<{ error: boolean; message: string }> {
     const { id } = param;
     this.logger.log(`Updating user with ID: ${id}`);
@@ -151,11 +163,12 @@ export class AuthController {
 
   @Put('preference/update')
   async updatePreference(
-    @Body(new ZodValidationPipe(updatePreferencesRequestSchema)) updateUserPreferencePayload: UpdatePreferencesRequestDto,
+    @Body(new ZodValidationPipe(updatePreferencesRequestSchema))
+    updateUserPreferencePayload: UpdatePreferencesRequestDto,
     @Req() req: Request,
   ): Promise<{ error: boolean; message: string }> {
-    const user_id = req['user_id'];
-    this.logger.log(`Updating preferences for user ID: ${user_id}`);
-    return this.authService.updatepreference(user_id, updateUserPreferencePayload);
+    const userId = req['user_id'];
+    this.logger.log(`Updating preferences for user ID: ${userId}`);
+    return this.authService.updatepreference(userId, updateUserPreferencePayload);
   }
 }

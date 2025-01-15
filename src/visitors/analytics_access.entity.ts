@@ -1,5 +1,11 @@
-
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { AccountsVisitors } from './accounts_visitor.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 
@@ -11,10 +17,10 @@ export class AnalyticsAccess {
   @Column()
   type: string;
 
-  @ManyToOne(() => AccountsVisitors, accountVisitor => accountVisitor.analyticsAccess)
+  @ManyToOne(() => AccountsVisitors, (accountVisitor) => accountVisitor.analyticsAccess)
   accountVisitor: AccountsVisitors;
 
-  @ManyToOne(() => UserAccounts, user => user.analyticsAccess)
+  @ManyToOne(() => UserAccounts, (user) => user.analyticsAccess)
   user: UserAccounts;
 
   @CreateDateColumn()
@@ -22,5 +28,4 @@ export class AnalyticsAccess {
 
   @UpdateDateColumn()
   updated_at: Date;
-
 }

@@ -4,7 +4,10 @@ import { Repository } from 'typeorm';
 import { ProjectVisitors } from './project_visits.entity';
 import { UserAccounts } from 'src/auth/User.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
-import { CreateProjectVisitorRequestDto, ProjectVisitorsDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import {
+  CreateProjectVisitorRequestDto,
+  ProjectVisitorsDto,
+} from 'src/shared-dtos/src/recruiter_project.dto';
 
 @Injectable()
 export class ProjectVisitorsService {
@@ -19,15 +22,20 @@ export class ProjectVisitorsService {
     private readonly accountsProjectRepository: Repository<RecruiterProject>,
   ) {}
 
-  async create(projectVisitorsData: CreateProjectVisitorRequestDto, user_id: number): Promise<ProjectVisitorsDto> {
-    this.logger.log(`Attempting to create a project visitor for user ID: ${user_id} and project ID: ${projectVisitorsData.project_id}`);
+  async create(
+    projectVisitorsData: CreateProjectVisitorRequestDto,
+    userId: number,
+  ): Promise<ProjectVisitorsDto> {
+    this.logger.log(
+      `Attempting to create a project visitor for user ID: ${userId} and project ID: ${projectVisitorsData.project_id}`,
+    );
 
     const user: UserAccounts = await this.accountsUserRepository.findOne({
-      where: { id: user_id },
+      where: { id: userId },
     });
 
     if (!user) {
-      this.logger.warn(`User with ID ${user_id} not found.`);
+      this.logger.warn(`User with ID ${userId} not found.`);
       throw new Error('User not found');
     }
 
@@ -40,28 +48,32 @@ export class ProjectVisitorsService {
       throw new Error('Project not found');
     }
 
-    const existing_visitor: ProjectVisitorsDto = await this.projectVisitorsRepository.findOne({
+    const existingVisitor: ProjectVisitorsDto = await this.projectVisitorsRepository.findOne({
       where: {
         project: { id: projectVisitorsData.project_id },
-        user: { id: user_id },
+        user: { id: userId },
       },
     });
 
-    if (existing_visitor) {
-      this.logger.warn(`Visitor already exists for user ID: ${user_id} and project ID: ${projectVisitorsData.project_id}`);
+    if (existingVisitor) {
+      this.logger.warn(
+        `Visitor already exists for user ID: ${userId} and project ID: ${projectVisitorsData.project_id}`,
+      );
       throw new Error('Visitor already exist');
     }
 
-    const project_visitors: ProjectVisitors = new ProjectVisitors();
+    const projectVisitors: ProjectVisitors = new ProjectVisitors();
 
-    project_visitors.project = project;
-    project_visitors.user = user;
+    projectVisitors.project = project;
+    projectVisitors.user = user;
 
-    await this.projectVisitorsRepository.save(project_visitors);
+    await this.projectVisitorsRepository.save(projectVisitors);
 
-    this.logger.log(`Successfully created project visitor for user ID: ${user_id} and project ID: ${projectVisitorsData.project_id}`);
-    
-    return project_visitors;
+    this.logger.log(
+      `Successfully created project visitor for user ID: ${userId} and project ID: ${projectVisitorsData.project_id}`,
+    );
+
+    return projectVisitors;
   }
 
   async getProjectVisitors(projectId: number): Promise<number> {
@@ -81,7 +93,7 @@ export class ProjectVisitorsService {
     });
 
     this.logger.log(`Visitor count for project ID ${projectId}: ${visitorCount}`);
-    
+
     return visitorCount;
   }
 }

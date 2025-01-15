@@ -1,9 +1,5 @@
 import { ProjectVisitors } from './project_visits/project_visits.entity';
-import {
-  Module,
-  MiddlewareConsumer,
-  NestModule,
-} from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { loggerConfig } from './config/logger.config';
 import { AppController } from './app.controller';
@@ -11,7 +7,6 @@ import { AppService } from './app.service';
 import { databaseConfig } from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
-import { SessionModule } from 'nestjs-session';
 import { TokenMiddleware } from './middlewares/token.middleware';
 import { PositionController } from './positions/positions.controller';
 import { PositionDetailsController } from './position_details/position-details.controller';
@@ -62,8 +57,6 @@ import { RecruiterCompany } from './recruiter/recruiter-company/recruiter-compan
 import { RecruiterCompanyUser } from './recruiter/recruiter-company/recruiter-company-user.entity';
 import { RecruiterProjectModule } from './recruiter/projects/project.module';
 import { RecruiterProject } from './recruiter/projects/project.entity';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { LoggingInterceptor } from './interceptors/logging.intercepter';
 import { AppLoggerService } from './logger.service';
 import winston from 'winston';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -74,10 +67,12 @@ import { ClsModule } from 'nestjs-cls';
       global: true,
       middleware: { mount: true },
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     TypeOrmModule.forRoot(databaseConfig),
     ScheduleModule.forRoot(),
     AuthModule,
@@ -103,7 +98,6 @@ import { ClsModule } from 'nestjs-cls';
     TypeOrmModule.forFeature([RecruiterProject]),
 
     TypeOrmModule.forFeature([RecruiterCompany, RecruiterCompanyUser]),
-
   ],
   controllers: [
     AuthController,
@@ -119,12 +113,12 @@ import { ClsModule } from 'nestjs-cls';
     ProjectApplicationController,
     ProjectVisitorsController,
     VerifyPositionController,
-    RecruiterCompanyController
+    RecruiterCompanyController,
   ],
   providers: [
     {
-      provide: 'WINSTON_LOGGER',    
-      useValue: loggerConfig,        
+      provide: 'WINSTON_LOGGER',
+      useValue: loggerConfig,
     },
     {
       provide: AppLoggerService,
@@ -151,16 +145,13 @@ import { ClsModule } from 'nestjs-cls';
     VerifyPositionService,
     CronService,
     RecruiterCompanyService,
-    
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
-      .exclude(
-        'recruiter/projects/project-view/(.*)' 
-      )
+      .exclude('recruiter/projects/project-view/(.*)')
       .forRoutes(
         'me',
         'positions',
@@ -194,8 +185,7 @@ export class AppModule implements NestModule {
         'recruiter/update-user',
         'project_visitor',
         'recruiter/change-password',
-        'recruiter/delete-user'
-
+        'recruiter/delete-user',
       );
   }
 }

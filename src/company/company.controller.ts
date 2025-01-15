@@ -1,8 +1,21 @@
 import { Controller, Post, Get, Body, Param, Put, Delete, Logger } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { CompaniesListDto, CompanyDto, CompanyCreateResponseDto, CompanyUpdateResponseDto, CompanyByIdDto, CompanyByIdParamDto, SearchCompanyParamDto } from 'src/shared-dtos/src/company.dto';
+import {
+  CompaniesListDto,
+  CompanyDto,
+  CompanyCreateResponseDto,
+  CompanyUpdateResponseDto,
+  CompanyByIdDto,
+  CompanyByIdParamDto,
+  SearchCompanyParamDto,
+} from 'src/shared-dtos/src/company.dto';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
-import { companyByIdSchema, companyUpdateSchema, createCompanySchema, searchCompanyParamSchema } from 'src/validations/company.validation';
+import {
+  companyByIdSchema,
+  companyUpdateSchema,
+  createCompanySchema,
+  searchCompanyParamSchema,
+} from 'src/validations/company.validation';
 
 @Controller('companies')
 export class CompanyController {
@@ -12,10 +25,10 @@ export class CompanyController {
 
   @Post()
   async createCompany(
-    @Body(new ZodValidationPipe(createCompanySchema)) companyData: Partial<CompanyDto>
+    @Body(new ZodValidationPipe(createCompanySchema)) companyData: Partial<CompanyDto>,
   ): Promise<CompanyCreateResponseDto> {
     this.logger.log(`Creating company with data: ${JSON.stringify(companyData)}`);
-    
+
     try {
       const result = await this.companyService.createCompany(companyData);
       return result;
@@ -40,7 +53,7 @@ export class CompanyController {
 
   @Get(':id')
   async getCompanyById(
-    @Param(new ZodValidationPipe(companyByIdSchema)) param: CompanyByIdParamDto
+    @Param(new ZodValidationPipe(companyByIdSchema)) param: CompanyByIdParamDto,
   ): Promise<CompanyByIdDto> {
     const { id } = param;
     this.logger.log(`Fetching company with ID: ${id}`);
@@ -57,7 +70,7 @@ export class CompanyController {
   @Put(':id')
   async updateCompany(
     @Param(new ZodValidationPipe(companyByIdSchema)) param: CompanyByIdParamDto,
-    @Body(new ZodValidationPipe(companyUpdateSchema)) companyData: Partial<CompanyDto>
+    @Body(new ZodValidationPipe(companyUpdateSchema)) companyData: Partial<CompanyDto>,
   ): Promise<CompanyUpdateResponseDto> {
     const { id } = param;
     this.logger.log(`Updating company with ID: ${id}`);
@@ -73,7 +86,7 @@ export class CompanyController {
 
   @Delete(':id')
   async deleteCompany(
-    @Param(new ZodValidationPipe(companyByIdSchema)) param: CompanyByIdParamDto
+    @Param(new ZodValidationPipe(companyByIdSchema)) param: CompanyByIdParamDto,
   ): Promise<{ error: boolean; message?: string }> {
     const { id } = param;
     this.logger.log(`Deleting company with ID: ${id}`);
@@ -89,16 +102,19 @@ export class CompanyController {
 
   @Post('search')
   async searchCompany(
-    @Body(new ZodValidationPipe(searchCompanyParamSchema)) body: SearchCompanyParamDto
+    @Body(new ZodValidationPipe(searchCompanyParamSchema)) body: SearchCompanyParamDto,
   ) {
-    const { company_name } = body;
-    this.logger.log(`Searching for company: ${company_name}`);
+    const { company_name: companyName } = body;
+    this.logger.log(`Searching for company: ${companyName}`);
 
     try {
-      const result = await this.companyService.searchCompany(company_name);
+      const result = await this.companyService.searchCompany(companyName);
       return result;
     } catch (error) {
-      this.logger.error(`Error searching for company: ${company_name} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error searching for company: ${companyName} - ${error.message}`,
+        error.stack,
+      );
       return { error: true, message: 'Failed to search for company' };
     }
   }

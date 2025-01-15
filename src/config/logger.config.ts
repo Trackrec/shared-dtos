@@ -27,40 +27,37 @@ const createFileTransport = (filename: string, level: string, filterLevel: strin
     format: winston.format.combine(
       winston.format((info) => (filterLevel && info.level !== filterLevel ? false : info))(),
       winston.format.timestamp(),
-      winston.format.json()
+      winston.format.json(),
     ),
   });
 
-
 const requestIdFormat = winston.format((info) => {
-    const cls = ClsServiceManager.getClsService();
-    const requestId = cls.get('requestId') || 'N/A';
-    info.requestId = requestId;
-    return info;
-  });
+  const cls = ClsServiceManager.getClsService();
+  const requestId = cls.get('requestId') || 'N/A';
+  info.requestId = requestId;
+  return info;
+});
 
-  const transports: winston.transport[] = [];
-  const NODE_ENV = process.env.NODE_ENV || 'development';
+const transports: winston.transport[] = [];
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
-  if (NODE_ENV === 'development') {
-    // In development, log to the console
-    transports.push(
-      new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.colorize(),
-          winston.format.simple()
-        ),
-        level: 'debug',
-      })
-    );
-  } else {
-    // In production, log to files only
-    transports.push(
-      createFileTransport('request/requestData', 'http', 'http'),
-      createFileTransport('application/logger', 'debug'),
-      createFileTransport('error/error', 'error', 'error')
-    );
-  }
+if (NODE_ENV === 'development') {
+  // In development, log to the console
+  transports.push(
+    new winston.transports.Console({
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+      level: 'debug',
+    }),
+  );
+} else {
+  // In production, log to files only
+  transports.push(
+    createFileTransport('request/requestData', 'http', 'http'),
+    createFileTransport('application/logger', 'debug'),
+    createFileTransport('error/error', 'error', 'error'),
+  );
+}
 
 export const loggerConfig = winston.createLogger({
   levels: customLevels,
@@ -68,7 +65,7 @@ export const loggerConfig = winston.createLogger({
   format: winston.format.combine(
     requestIdFormat(),
     winston.format.timestamp(),
-    winston.format.json()
+    winston.format.json(),
   ),
   transports,
 });

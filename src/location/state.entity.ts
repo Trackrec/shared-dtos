@@ -31,9 +31,9 @@ export class State {
   @Column()
   longitude: string;
 
-  @ManyToOne(() => Country, country => country.states)
+  @ManyToOne(() => Country, (country) => country.states)
   country: Country;
 
-  @OneToMany(() => City, city => city.state)
+  @OneToMany(() => City, (city) => city.state)
   cities: City[];
 }

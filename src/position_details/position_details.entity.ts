@@ -1,11 +1,5 @@
 import { Position } from 'src/positions/positions.entity';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
 interface Client {
   id: string;
   name: string;
@@ -155,7 +149,7 @@ export class PositionDetails {
   })
   updated_at: Date;
 
-  @OneToOne((type) => Position, (position) => position.details)
+  @OneToOne(() => Position, (position) => position.details)
   @JoinColumn()
   position: Position;
 }

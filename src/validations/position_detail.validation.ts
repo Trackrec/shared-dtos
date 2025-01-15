@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-const PositionDtoSchema = z.object({
+const positionDtoSchema = z.object({
   role: z.string(),
   start_month: z.number().nullable(),
   start_year: z.number().nullable(),
@@ -15,7 +15,7 @@ const PositionDtoSchema = z.object({
   }),
 });
 
-const CompanyDtoSchema = z.object({
+const companyDtoSchema = z.object({
   logo_url: z.string().nullable(),
   name: z.string(),
   domain: z.string().nullable(),
@@ -44,7 +44,7 @@ export const createPositionDetailsSchema = z.object({
   average_sales_cycle_duration: z.string().nullable(),
   long_sales_cycle_duration: z.string().nullable(),
   disable_prospecting: z.boolean().nullable(),
-  notable_clients: z.array(z.object({})).nullable(), 
+  notable_clients: z.array(z.object({})).nullable(),
   management: z.array(z.string()).nullable(),
   persona: z.array(z.string()).nullable(),
   achievements: z.array(z.string()).nullable(),
@@ -70,7 +70,7 @@ export const createPositionDetailsSchema = z.object({
   territories: z.array(z.string()).nullable(),
   created_at: z.date(),
   updated_at: z.date(),
-  position: PositionDtoSchema,
+  position: positionDtoSchema,
   company_id: z.string(),
   company: z.string(),
   domain: z.string(),
@@ -83,7 +83,7 @@ export const createPositionDetailsSchema = z.object({
       start_year: z.number().nullable(),
       end_month: z.number().nullable(),
       end_year: z.number().nullable(),
-      company: CompanyDtoSchema,
+      company: companyDtoSchema,
     })
     .optional(),
   companyData: z
@@ -97,13 +97,11 @@ export const createPositionDetailsSchema = z.object({
     .optional(),
 });
 
-
 export const positionDetailsByIdSchema = z.object({
-    position_id: z
-      .string()
-      .regex(/^\d+$/, "Position ID must be a positive integer in string format.")
-      .refine((val) => parseInt(val, 10) > 0, {
-        message: "Position ID must be a positive number.",
-      }),
-  });
-  
+  position_id: z
+    .string()
+    .regex(/^\d+$/, 'Position ID must be a positive integer in string format.')
+    .refine((val) => parseInt(val, 10) > 0, {
+      message: 'Position ID must be a positive number.',
+    }),
+});

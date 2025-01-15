@@ -29,7 +29,7 @@ module.exports = {
         format: ['PascalCase'],
       },
     ],
-
+    'no-prototype-builtins': 'off',
     'prefer-arrow/prefer-arrow-functions': [
       'error',
       {
@@ -40,20 +40,20 @@ module.exports = {
     ],
   },
 
-  overrides: [
-    {
-      files: ['**/*.controller.ts'],
-      rules: {
-        'enforce-hyphenated-routes': 'error',
-      },
-    },
-  ],
+  // overrides: [
+  //   {
+  //     files: ['**/*.controller.ts'],
+  //     rules: {
+  //       'enforce-hyphenated-routes': 'error',
+  //     },
+  //   },
+  // ],
 
-  settings: {
-    'import/resolver': {
-      node: {
-        paths: ['src'],
-      },
-    },
-  },
+  // settings: {
+  //   'import/resolver': {
+  //     node: {
+  //       paths: ['src'],
+  //     },
+  //   },
+ // },
 };

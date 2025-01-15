@@ -7,11 +7,15 @@ import { Company } from 'src/company/company.entity';
 import { VerifyPosition } from 'src/verify-position/verify-position.entity';
 import { MailgunService } from 'src/mailgun/mailgun.service';
 import { UserAccounts } from 'src/auth/User.entity';
-import { PositionDto, PositionRequestDto, PositionWithCompany } from 'src/shared-dtos/src/Position.dto';
+import {
+  PositionDto,
+  PositionRequestDto,
+  PositionWithCompany,
+} from 'src/shared-dtos/src/Position.dto';
 @Injectable()
 export class PositionService {
-    private readonly logger = new Logger(PositionService.name);
-  
+  private readonly logger = new Logger(PositionService.name);
+
   constructor(
     @InjectRepository(Position)
     private readonly positionRepository: Repository<Position>,
@@ -31,17 +35,21 @@ export class PositionService {
     positionData: PositionRequestDto,
   ): Promise<PositionWithCompany> {
     try {
-      this.logger.log(`Starting position creation for user ID: ${userId} with data: ${JSON.stringify(positionData)}`);
-  
+      this.logger.log(
+        `Starting position creation for user ID: ${userId} with data: ${JSON.stringify(positionData)}`,
+      );
+
       let company: Company = await this.companyRepository.findOne({
         where: { company_id: positionData.company_id },
       });
-  
+
       let newCompany;
-  
+
       if (!company) {
-        this.logger.log(`Company not found for company_id: ${positionData.company_id}. Creating new company.`);
-  
+        this.logger.log(
+          `Company not found for company_id: ${positionData.company_id}. Creating new company.`,
+        );
+
         newCompany = await this.companyService.createCompany({
           company_id: positionData?.company_id,
           name: positionData?.company_name,
@@ -49,12 +57,14 @@ export class PositionService {
           domain: positionData.domain ? positionData.domain : null,
           website_url: positionData.website_url ? positionData.website_url : null,
         });
-  
+
         if (newCompany.error) {
-          this.logger.error(`Error creating new company for company_id: ${positionData.company_id}`);
+          this.logger.error(
+            `Error creating new company for company_id: ${positionData.company_id}`,
+          );
           throw new Error('Error creating company');
         }
-  
+
         this.logger.log(`New company created with ID: ${newCompany.createdCompany.id}`);
       } else {
         if (positionData?.website_url && company.website_url !== positionData.website_url) {
@@ -63,28 +73,32 @@ export class PositionService {
           company = await this.companyRepository.save(company);
         }
       }
-  
+
       const existingPositions: Position[] = await this.positionRepository.find({
         where: { user: { id: userId } },
       });
-  
-      let isNewUserPosition: boolean = existingPositions.length === 0;
-  
+
+      const isNewUserPosition: boolean = existingPositions.length === 0;
+
       if (isNewUserPosition) {
-        this.logger.log(`This is the first position for user ID: ${userId}. Sending welcome email.`);
+        this.logger.log(
+          `This is the first position for user ID: ${userId}. Sending welcome email.`,
+        );
         await this.sendWelcomeEmail(userId);
       }
-  
+
       const position: Position = this.positionRepository.create({
         ...positionData,
         user: { id: userId },
         company: { id: !company ? newCompany?.createdCompany.id : company.id },
       });
-  
+
       const savedPosition: Position = await this.positionRepository.save(position);
-  
-      this.logger.log(`Position created successfully for user ID: ${userId} with position ID: ${savedPosition.id}`);
-  
+
+      this.logger.log(
+        `Position created successfully for user ID: ${userId} with position ID: ${savedPosition.id}`,
+      );
+
       return {
         ...savedPosition,
         company: {
@@ -96,25 +110,27 @@ export class PositionService {
         },
       };
     } catch (error) {
-      this.logger.error(`Error creating position for user ID: ${userId} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating position for user ID: ${userId} - ${error.message}`,
+        error.stack,
+      );
       throw new Error(`Error creating position: ${error.message}`);
     }
   }
-  
 
   async sendWelcomeEmail(userId: number) {
     try {
       this.logger.log(`Fetching user details for user ID: ${userId} to send a welcome email.`);
-      
+
       const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId } });
-  
+
       if (!user) {
         this.logger.warn(`User not found with ID: ${userId}. Cannot send welcome email.`);
         return;
       }
-  
+
       this.logger.log(`Preparing welcome email for user: ${user.email}`);
-  
+
       const messageData = {
         from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
         to: user.email,
@@ -166,37 +182,40 @@ export class PositionService {
           </html>        
         `,
       };
-  
+
       await this.mailgunService.sendMail(messageData);
       this.logger.log(`Welcome email successfully sent to ${user.email}`);
-      
     } catch (error) {
-      this.logger.error(`Failed to send welcome email to user ID: ${userId} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send welcome email to user ID: ${userId} - ${error.message}`,
+        error.stack,
+      );
     }
   }
-  
 
   async getPositionById(positionId: number): Promise<PositionDto> {
     try {
       this.logger.log(`Fetching position with ID: ${positionId}`);
-  
+
       const position: PositionDto = await this.positionRepository.findOne({
         where: { id: positionId },
       });
-  
+
       if (!position) {
         this.logger.warn(`Position with ID: ${positionId} not found.`);
         throw new NotFoundException('Position not found');
       }
-  
+
       this.logger.log(`Successfully retrieved position with ID: ${positionId}`);
       return position;
     } catch (error) {
-      this.logger.error(`Error fetching position with ID: ${positionId} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching position with ID: ${positionId} - ${error.message}`,
+        error.stack,
+      );
       throw new Error(`Error getting position by ID: ${error.message}`);
     }
   }
-  
 
   async updatePosition(
     positionId: number,
@@ -205,55 +224,62 @@ export class PositionService {
     try {
       this.logger.log(`Attempting to update position with ID: ${positionId}`);
       this.logger.debug(`Update data: ${JSON.stringify(positionData)}`);
-  
+
       await this.positionRepository.update(positionId, positionData);
-  
+
       this.logger.log(`Successfully updated position with ID: ${positionId}`);
-      
+
       const updatedPosition = await this.getPositionById(positionId);
       this.logger.debug(`Updated position details: ${JSON.stringify(updatedPosition)}`);
-  
+
       return updatedPosition;
     } catch (error) {
-      this.logger.error(`Error updating position with ID: ${positionId} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating position with ID: ${positionId} - ${error.message}`,
+        error.stack,
+      );
       throw new Error(`Error updating position: ${error.message}`);
     }
   }
-  
 
   async deletePosition(positionId: number): Promise<void> {
     try {
       this.logger.log(`Attempting to delete position with ID: ${positionId}`);
-      
+
       // Delete related verification requests
       await this.verifyPositionRepository.delete({
         position: { id: positionId },
       });
       this.logger.log(`Deleted verification requests for position ID: ${positionId}`);
-  
+
       // Delete the position
       await this.positionRepository.delete(positionId);
       this.logger.log(`Successfully deleted position with ID: ${positionId}`);
     } catch (error) {
-      this.logger.error(`Error deleting position with ID: ${positionId} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error deleting position with ID: ${positionId} - ${error.message}`,
+        error.stack,
+      );
       throw new Error(`Error deleting position: ${error.message}`);
     }
   }
-  
+
   async getAllPositionsByUserId(userId: number): Promise<PositionDto[]> {
     try {
       this.logger.log(`Fetching all positions for user ID: ${userId}`);
-  
+
       const positions = await this.positionRepository.find({
         where: { user: { id: userId } },
       });
-  
+
       this.logger.log(`Successfully fetched ${positions.length} positions for user ID: ${userId}`);
       return positions;
     } catch (error) {
-      this.logger.error(`Error fetching positions for user ID: ${userId} - ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching positions for user ID: ${userId} - ${error.message}`,
+        error.stack,
+      );
       throw new Error(`Error getting positions by user ID: ${error.message}`);
     }
   }
-  
 }
