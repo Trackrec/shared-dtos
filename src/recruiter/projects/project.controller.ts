@@ -50,7 +50,7 @@ export class RecruiterProjectController {
 
   constructor(private readonly recruiterProjectService: RecruiterProjectService) {}
 
-  @Get('check_applied')
+  @Get('check-applied')
   async checkApplied(
     @Req() req: Request,
     @Query(new ZodValidationPipe(projectIdQuerySchema)) query: ProjectIdQueryDto,
@@ -230,7 +230,7 @@ export class RecruiterProjectController {
     }
   }
 
-  @Post('save_and_publish')
+  @Post('save-and-publish')
   @UseInterceptors(FileInterceptor('logo'))
   async saveAndPublish(
     @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
@@ -290,7 +290,7 @@ export class RecruiterProjectController {
     }
   }
 
-  @Post('update_and_publish/:id')
+  @Post('update-and-publish/:id')
   @UseInterceptors(FileInterceptor('logo'))
   async updateAndPublish(
     @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
@@ -473,7 +473,7 @@ export class RecruiterProjectController {
     }
   }
 
-  @Get('project_ranking/:id')
+  @Get('project-ranking/:id')
   async getRanking(
     @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
     @Req() req: Request,

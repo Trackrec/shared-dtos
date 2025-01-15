@@ -13,7 +13,7 @@ import {
 } from 'src/validations/recruiter_project.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 
-@Controller('project_visitor')
+@Controller('project-visitor')
 export class ProjectVisitorsController {
   private readonly logger = new Logger(ProjectVisitorsController.name);
 

@@ -23,13 +23,13 @@ export class SuperAdminController {
 
   constructor(private readonly superAdminService: SuperAdminService) {}
 
-  @Get('get_all_users')
+  @Get('get-all-users')
   getAllUsers(): Promise<AllUsersDto> {
     this.logger.log('Fetching all users');
     return this.superAdminService.getAllUsers();
   }
 
-  @Get('get_user_details/:userId')
+  @Get('get-user-details/:userId')
   getUserDetails(
     @Param(new ZodValidationPipe(getUserDetailsParamSchema)) param: GetUserDetailsParamDto,
   ): Promise<GetUserDetailsResponseDto> {
@@ -38,13 +38,13 @@ export class SuperAdminController {
     return this.superAdminService.getUserDetails(userId);
   }
 
-  @Get('get_all_companies')
+  @Get('get-all-companies')
   getAllCompanies(): Promise<CompaniesListDto> {
     this.logger.log('Fetching all companies');
     return this.superAdminService.getAllCompanies();
   }
 
-  @Post('update_block_user_status')
+  @Post('update-block-user-status')
   blockUser(
     @Req() req: Request,
     @Body(new ZodValidationPipe(adminBlockRequestSchema)) body: AdminBlockRequestDto,
@@ -53,7 +53,7 @@ export class SuperAdminController {
     return this.superAdminService.updateBlockStatus(body);
   }
 
-  @Post('impersonate_user')
+  @Post('impersonate-user')
   impersonateUser(
     @Req() req: Request,
     @Body(new ZodValidationPipe(impersonateUserRequestSchema)) body: ImpersonateUserRequestDto,

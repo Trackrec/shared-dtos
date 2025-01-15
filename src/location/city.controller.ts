@@ -63,7 +63,7 @@ export class CityController {
     }
   }
 
-  @Get('get_countries_states/search')
+  @Get('get-countries-states/search')
   async searchCountriesStates(
     @Query('term') searchTerm: string,
   ): Promise<SearchCountryStatesResponseDto> {

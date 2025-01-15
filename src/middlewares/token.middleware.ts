@@ -29,6 +29,7 @@ export class TokenMiddleware implements NestMiddleware {
         this.updateLastAccessed(decodedToken.id);
         next();
       } catch (err) {
+        console.log(err);
         res.status(401).json({ error: true, message: 'No Token Provided' });
       }
     } else {
@@ -46,6 +47,7 @@ export class TokenMiddleware implements NestMiddleware {
       user.last_accessed_at = new Date();
       await this.userRepository.save(user);
     } catch (error) {
+      console.log(error);
       console.log('Error updating last access!');
     }
   }

@@ -11,7 +11,7 @@ import {
 } from 'src/validations/position_detail.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 
-@Controller('position_details')
+@Controller('position-details')
 export class PositionDetailsController {
   private readonly logger = new Logger(PositionDetailsController.name);
 

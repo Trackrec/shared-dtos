@@ -186,6 +186,7 @@ export class VerifyPositionService {
         message: 'Verification request sent successfully!',
       };
     } catch (error) {
+      console.log(error);
       return { error: true, message: 'Error sending verification erequest.' };
     }
   }

@@ -22,7 +22,7 @@ export class PublishProfileController {
 
   constructor(private readonly publishProfileService: PublishProfileService) {}
 
-  @Post('publish_profile/:userId')
+  @Post('publish-profile/:userId')
   async publishProfile(
     @Param(new ZodValidationPipe(publishProfileParamSchema)) param: PublishProfileParamDto,
   ): Promise<{ error: boolean; message: string }> {
@@ -37,7 +37,7 @@ export class PublishProfileController {
     }
   }
 
-  @Post('public_profile/get_in_touch')
+  @Post('public-profile/get-in-touch')
   async GetInTouchMail(
     @Body(new ZodValidationPipe(getInTouchMailRequestSchema)) mailData: GetInTouchMailRequestDto,
   ): Promise<{ error: boolean; message: string }> {
@@ -51,7 +51,7 @@ export class PublishProfileController {
     }
   }
 
-  @Post('private_profile/:userId')
+  @Post('private-profile/:userId')
   async privateProfile(
     @Param(new ZodValidationPipe(privateProfileParamSchema)) param: PrivateProfileParamDto,
   ): Promise<{ error: boolean; message: string }> {
@@ -85,7 +85,7 @@ export class PublishProfileController {
     }
   }
 
-  @Get('my/profile_views')
+  @Get('my/profile-views')
   async profileViews(@Req() req: Request): Promise<ProfileViewsResponseDto> {
     const visitorId: number = req['user_id'];
     this.logger.log(`Fetching profile views for user ID: ${visitorId}`);

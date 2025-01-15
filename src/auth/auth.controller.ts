@@ -41,7 +41,7 @@ export class AuthController {
     req.session.savedQueryParams = new URLSearchParams(queryParams).toString();
     this.logger.log(`LinkedIn session value set with query params: ${JSON.stringify(queryParams)}`);
     const redirectPath = queryParams.request_token
-      ? '/secondary_linkedin/set-session'
+      ? '/secondary-linkedin/set-session'
       : '/linkedin/set-session';
     return res.redirect(redirectPath);
   }
@@ -52,7 +52,7 @@ export class AuthController {
     this.logger.log('LinkedIn login initiated');
   }
 
-  @Get('secondary_linkedin/set-session')
+  @Get('secondary-linkedin/set-session')
   @UseGuards(AuthGuard('linkedinSecondary'))
   secondaryLinkedinLogin() {
     this.logger.log('Secondary LinkedIn login initiated');
@@ -88,7 +88,7 @@ export class AuthController {
     }
   }
 
-  @Get('secondary_linkedin/callback')
+  @Get('secondary-linkedin/callback')
   @UseGuards(AuthGuard('linkedinSecondary'))
   async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
@@ -150,7 +150,7 @@ export class AuthController {
     return this.authService.updateUser(id, updateUserPayload);
   }
 
-  @Post('update_profile_picture/:id')
+  @Post('update-profile-picture/:id')
   @UseInterceptors(FileInterceptor('image'))
   async updateProfilePicture(
     @Param(new ZodValidationPipe(applicantUserParamSchema)) param: ApplicantUserParamDto,
