@@ -1,28 +1,27 @@
-import { Integrations } from "@sentry/node";
-import { PositionDto } from "./Position.dto";
-import { RecruiterCompanyDto } from "./recruiter_company";
+import { PositionDto } from './Position.dto';
+import { RecruiterCompanyDto } from './recruiter_company';
 
 export interface CompanyDto {
-    id: string; 
-    name: string;
-    company_id: string | null;
-    domain: string | null;
-    logo_url: string | null;
-    website_url: string | null;
-    created_at: Date;
-    updated_at: Date;
-    positions: PositionDto[]; 
-  }
-  
-export interface CompanyDataDto{
-    company_id: string | null,
-    company_name: string,
-    logo_url?: string | null,
-    website_url?: string | null,
-    domain?: string | null,
-    company_logo_url?: string | null,
-    company_website_url?: string | null,
-    company_domain?: string | null
+  id: string;
+  name: string;
+  company_id: string | null;
+  domain: string | null;
+  logo_url: string | null;
+  website_url: string | null;
+  created_at: Date;
+  updated_at: Date;
+  positions: PositionDto[];
+}
+
+export interface CompanyDataDto {
+  company_id: string | null;
+  company_name: string;
+  logo_url?: string | null;
+  website_url?: string | null;
+  domain?: string | null;
+  company_logo_url?: string | null;
+  company_website_url?: string | null;
+  company_domain?: string | null;
 }
 
 export interface CompanyCreateResponseDto {
@@ -31,11 +30,10 @@ export interface CompanyCreateResponseDto {
   createdCompany?: CompanyDto;
 }
 
-export interface CompaniesListDto{
+export interface CompaniesListDto {
   error: boolean;
   message?: string;
-  companies?: CompanyDto[]
-
+  companies?: CompanyDto[];
 }
 
 export interface CompanyUpdateResponseDto {
@@ -44,40 +42,40 @@ export interface CompanyUpdateResponseDto {
   updatedCompany?: CompanyDto;
 }
 
-export interface CompanyByIdDto{
+export interface CompanyByIdDto {
   error: boolean;
   message?: string;
-  company?: CompanyDto
+  company?: CompanyDto;
 }
 
-export interface CreateRecruiterCompanyDto{
-  error: boolean,
-  message: string,
-  company?: RecruiterCompanyDto,
+export interface CreateRecruiterCompanyDto {
+  error: boolean;
+  message: string;
+  company?: RecruiterCompanyDto;
 }
 
-export interface CreateRecruiterCompanyResponseDto{
-  error: boolean,
-  company?: CreateRecruiterCompanyDto,
-  message?: string
+export interface CreateRecruiterCompanyResponseDto {
+  error: boolean;
+  company?: CreateRecruiterCompanyDto;
+  message?: string;
 }
 
-export interface UpdateRecruiterCompanyDto{
-  error: boolean, 
-  message?: string, 
-  company?: RecruiterCompanyDto
+export interface UpdateRecruiterCompanyDto {
+  error: boolean;
+  message?: string;
+  company?: RecruiterCompanyDto;
 }
 
-export interface UpdateRecruiterCompanyResponseDto{
-  error: boolean, 
-  message?: string, 
-  company?: UpdateRecruiterCompanyDto
+export interface UpdateRecruiterCompanyResponseDto {
+  error: boolean;
+  message?: string;
+  company?: UpdateRecruiterCompanyDto;
 }
 
-export interface CompanyByIdParamDto{
-  id: string
+export interface CompanyByIdParamDto {
+  id: string;
 }
 
-export interface SearchCompanyParamDto{
-  company_name: string
+export interface SearchCompanyParamDto {
+  company_name: string;
 }
