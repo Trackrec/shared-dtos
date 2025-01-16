@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { PositionDto } from 'src/shared-dtos/src/Position.dto';
@@ -9,6 +9,8 @@ import { Position } from 'src/positions/positions.entity';
 
 @Injectable()
 export class RecruiterPointsService {
+    private readonly logger = new Logger(RecruiterPointsService.name);
+    
     private openAIClient: OpenAI;
 
     constructor() {
@@ -21,58 +23,83 @@ export class RecruiterPointsService {
     }
 
     points_for_ote(user_ote: number, project_ote: number): number {
+        this.logger.log(`Calculating points for user_ote: ${user_ote}, project_ote: ${project_ote}`);
+    
         if (!user_ote) {
             user_ote = 0;
+            this.logger.log('user_ote was not provided, defaulting to 0');
         }
         if (!project_ote) {
             project_ote = 0;
+            this.logger.log('project_ote was not provided, defaulting to 0');
         }
     
         // Case when user_ote is less than or equal to project_ote
         if (user_ote <= project_ote) {
+            this.logger.log('user_ote is less than or equal to project_ote, returning 10 points');
             return 10; // Always return 10 points
         } else {
             // Case when user_ote is greater than project_ote
             let diff = user_ote - project_ote;
+            this.logger.log(`user_ote is greater than project_ote, difference is: ${diff}`);
+    
             // Calculate points linearly between 0 to 10 based on the difference
             let points: number = 10 - (10 * diff) / user_ote;
+            this.logger.log(`Calculated points: ${points}`);
+    
             // Ensure points are within the range of 0 to 10
-            return parseFloat(Math.max(0, Math.min(10, points)).toFixed(2));
+            const finalPoints = parseFloat(Math.max(0, Math.min(10, points)).toFixed(2));
+            this.logger.log(`Final points (clamped between 0 and 10): ${finalPoints}`);
+            
+            return finalPoints;
         }
     }
+    
 
     async points_for_worked_in(positions: PositionDto[], Industry_Works_IN: string[]): Promise<number> {
-      const client = this.openAIClient;
-
-      const workedIn = positions.flatMap(position => position?.details?.worked_in || []);
-      const prompt = `
+        const client = this.openAIClient;
+      
+        this.logger.log(`Starting points calculation for industries worked in. Candidate's industries: ${JSON.stringify(positions)}, Target industries: ${JSON.stringify(Industry_Works_IN)}`);
+      
+        const workedIn = positions.flatMap(position => position?.details?.worked_in || []);
+        this.logger.log(`Extracted industries from candidate's experience: ${JSON.stringify(workedIn)}`);
+      
+        const prompt = `
           You are an expert at assessing job title matches. I will give you two lists:
           1. A list of industries the candidate has worked in.
           2. A list of industries required for the target role.
-
-        Experience Weighting:
-        Weight similar past experience more heavily if it aligns closely with the requirements of the job post, even if exact matches are not found.
-
+      
+          Experience Weighting:
+          Weight similar past experience more heavily if it aligns closely with the requirements of the job post, even if exact matches are not found.
+      
           Your task is to compare the two lists and assign a score from 0 to 10 based on how well the candidate's experience aligns with the target industries:
           - 10: All required industries are covered.
           - 7-9: Most industries match.
           - 4-6: Some industries match.
           - 1-3: Very few industries match.
           - 0: No relevant industries match.
-
+      
           Consider synonyms and similar roles. Provide only the score as the output. You example output will be a number from 0 to 10.
-
+      
           Candidate's industries: ${JSON.stringify(workedIn)}
           Target industries: ${JSON.stringify(Industry_Works_IN)}
-      `;
-
+        `;
+      
+        this.logger.log('Prompt generated for OpenAI API: ', prompt);
+      
         const chatCompletion = await client.chat.completions.create({
-            messages: [{ role: 'user', content: prompt }],
-            model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          model: 'gpt-4o-mini',
         });
+      
+        this.logger.log('Received response from OpenAI API.');
+      
         const result = parseInt(chatCompletion.choices[0].message.content);
+        this.logger.log(`Calculated score: ${result}`);
+      
         return result;
-    }
+      }
+      
 
     async points_for_sold_to(positions: PositionDto[], Sold_In: string[]): Promise<number> {
       const client = this.openAIClient
@@ -111,39 +138,57 @@ export class RecruiterPointsService {
         return result;
     }
 
-async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProjectDto): Promise<number> {
-    const client = this.openAIClient
-
-    const salesCycles = positions.map(position => ({
-        value: position.details.average_sales_cycle,
-       // type: position.details.type || 'Unknown'
-    }));
-
-    const prompt = `
-        You are an expert at analyzing sales cycle compatibility. Compare:
-        1. Candidate's sales cycles: ${JSON.stringify(salesCycles)}
-        2. Required minimum cycle: ${project.minimum_sale_cycle} ${project.minimum_salecycle_type}
-
-        Score from 0-10 based on:
-        - Sales cycle length similarity
-        - Business type matching (B2B/B2C)
-        - Industry complexity correlation
-        - Deal size implications
-        
-        Consider:
-        - Long-cycle B2B (6+ months) vs short-cycle B2C (1-3 months)
-        - Enterprise vs SMB sales patterns
-        - Industry-specific cycle norms
-
-        Output only the numerical score (0-10).`;
-
-    const chatCompletion = await client.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'gpt-4o-mini',
-    });
-
-    return parseInt(chatCompletion.choices[0].message.content);
-}
+    async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProjectDto): Promise<number> {
+        const client = this.openAIClient;
+    
+        // Extract sales cycle data from positions
+        const salesCycles = positions.map(position => ({
+            value: position.details.average_sales_cycle,
+            // type: position.details.type || 'Unknown'
+        }));
+    
+        this.logger.log(`Generated sales cycles for positions: ${JSON.stringify(salesCycles)}`);
+        this.logger.log(`Required minimum sales cycle: ${project.minimum_sale_cycle} ${project.minimum_salecycle_type}`);
+    
+        // Create the prompt for OpenAI API
+        const prompt = `
+            You are an expert at analyzing sales cycle compatibility. Compare:
+            1. Candidate's sales cycles: ${JSON.stringify(salesCycles)}
+            2. Required minimum cycle: ${project.minimum_sale_cycle} ${project.minimum_salecycle_type}
+    
+            Score from 0-10 based on:
+            - Sales cycle length similarity
+            - Business type matching (B2B/B2C)
+            - Industry complexity correlation
+            - Deal size implications
+            
+            Consider:
+            - Long-cycle B2B (6+ months) vs short-cycle B2C (1-3 months)
+            - Enterprise vs SMB sales patterns
+            - Industry-specific cycle norms
+    
+            Output only the numerical score (0-10).
+        `;
+    
+        this.logger.log(`Generated prompt for OpenAI API: ${prompt}`);
+    
+        try {
+            // Send the request to OpenAI API
+            const chatCompletion = await client.chat.completions.create({
+                messages: [{ role: 'user', content: prompt }],
+                model: 'gpt-4o-mini',
+            });
+    
+            const result = parseInt(chatCompletion.choices[0].message.content);
+            this.logger.log(`Received response from OpenAI: ${result}`);
+            
+            return result;
+        } catch (error) {
+            this.logger.error('Error calculating sales cycle points:', error);
+            return 0; // Return 0 in case of error
+        }
+    }
+    
 
     // points_for_sold_to(positions, Industry_Sold_To) {
     //     let combinedWorkedIn = [];
@@ -201,30 +246,39 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
             };
         }
     }
-    points_for_segment(positions:PositionDto[] , project: RecruiterProjectDto) : number{
+    points_for_segment(positions: PositionDto[], project: RecruiterProjectDto): number {
+        this.logger.log(`Calculating segment points for project`);
+      
         const segment_percentage = this.segment_percent(positions);
-    
+        this.logger.log(`Calculated segment percentages: SMB: ${segment_percentage.smb_percent}, Midmarket: ${segment_percentage.mid_market_percent}, Enterprise: ${segment_percentage.enterprise_percent}`);
+      
         // Calculate points for each segment
         const smb = segment_percentage.smb_percent >= project.smb ? 10 :
                     segment_percentage.smb_percent === 0 ? 0 :
                     10 * (segment_percentage.smb_percent / project.smb);
-    
+        this.logger.log(`SMB segment points: ${smb} (Segment Percentage: ${segment_percentage.smb_percent}, Project Requirement: ${project.smb})`);
+      
         const midmarket = segment_percentage.mid_market_percent >= project.midmarket ? 10 :
                           segment_percentage.mid_market_percent === 0 ? 0 :
                           10 * (segment_percentage.mid_market_percent / project.midmarket);
-    
+        this.logger.log(`Midmarket segment points: ${midmarket} (Segment Percentage: ${segment_percentage.mid_market_percent}, Project Requirement: ${project.midmarket})`);
+      
         const enterprise = segment_percentage.enterprise_percent >= project.enterprise ? 10 :
                            segment_percentage.enterprise_percent === 0 ? 0 :
                            10 * (segment_percentage.enterprise_percent / project.enterprise);
-    
+        this.logger.log(`Enterprise segment points: ${enterprise} (Segment Percentage: ${segment_percentage.enterprise_percent}, Project Requirement: ${project.enterprise})`);
+      
         // Calculate the average
         const average = (smb + midmarket + enterprise) / 3;
-    
+        this.logger.log(`Average segment points: ${average}`);
+      
         // Round to two decimal places
         const formatted_average = Math.round(average * 100) / 100;
-    
+        this.logger.log(`Formatted average points: ${formatted_average}`);
+      
         return formatted_average;
-    }
+      }
+      
     
 
     // points_for_sales_cycle( positions, project) {
@@ -311,39 +365,52 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
     //     }, 0);
     // }
     async points_for_dealsize(positions: PositionDto[], project: RecruiterProjectDto): Promise<number> {
-        const client = this.openAIClient
-    
+        const client = this.openAIClient;
+      
+        // Extract the average deal sizes from the positions
         const dealsizes = positions.map(position => position?.details?.average_deal_size || 0);
+        this.logger.log(`Candidate's average deal sizes: ${JSON.stringify(dealsizes)}, Required deal size: ${project.minimum_deal_size}`);
+      
+        // Generate the prompt for OpenAI API
         const prompt = `
-            You are an expert at evaluating sales experience alignment. Compare:
-            1. Candidate's average deal size(s): ${JSON.stringify(dealsizes)}
-            2. Required deal size: ${project.minimum_deal_size}
-    
-            Score from 0-10 based on deal size alignment:
-            - 10: Equal or higher deal size
-            - 7-9: Within 20% lower (shows ability to handle similar scale)
-            - 4-6: Within 50% lower (demonstrates growth potential)
-            - 1-3: >50% lower but still significant deals
-            - 0: Deal size too small to be relevant
-    
-            Consider: Selling $50K products shows readiness for $60K sales, but $1K to $60K is too big a gap.
-            Provide only the numeric score (0-10).
+          You are an expert at evaluating sales experience alignment. Compare:
+          1. Candidate's average deal size(s): ${JSON.stringify(dealsizes)}
+          2. Required deal size: ${project.minimum_deal_size}
+      
+          Score from 0-10 based on deal size alignment:
+          - 10: Equal or higher deal size
+          - 7-9: Within 20% lower (shows ability to handle similar scale)
+          - 4-6: Within 50% lower (demonstrates growth potential)
+          - 1-3: >50% lower but still significant deals
+          - 0: Deal size too small to be relevant
+      
+          Consider: Selling $50K products shows readiness for $60K sales, but $1K to $60K is too big a gap.
+          Provide only the numeric score (0-10).
         `;
-    
+        
+        this.logger.log(`Generated prompt for OpenAI API: ${prompt}`);
+      
         try {
-            const response = await client.chat.completions.create({
-                messages: [{ role: 'user', content: prompt }],
-                model: 'gpt-4o-mini',
-            });
-            
-            return parseInt(response.choices[0].message.content) || 0;
+          // Send the request to OpenAI API
+          const response = await client.chat.completions.create({
+            messages: [{ role: 'user', content: prompt }],
+            model: 'gpt-4o-mini',
+          });
+      
+          const result = parseInt(response.choices[0].message.content) || 0;
+          this.logger.log(`Received response from OpenAI: ${result}`);
+          
+          return result;
         } catch (error) {
-            console.error('Error calculating dealsize points:', error);
-            return 0;
+          this.logger.error('Error calculating dealsize points:', error);
+          return 0;
         }
-    }
+      }
+      
 
-    points_for_new_business(positions: PositionDto[], project: RecruiterProjectDto): number {
+      points_for_new_business(positions: PositionDto[], project: RecruiterProjectDto): number {
+        this.logger.log(`Calculating points for new business based on ${positions.length} positions`);
+    
         // Calculate the total new_business value
         const total_new_business: number = positions.reduce((acc, position) => {
             if (position.details && position.details.new_business) {
@@ -352,64 +419,96 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
             return acc;
         }, 0);
     
+        this.logger.log(`Total new business value calculated: ${total_new_business}`);
+    
         // Calculate the average new_business value
         const average_new_business: number = total_new_business / positions.length;
+        this.logger.log(`Average new business value: ${average_new_business}`);
     
         // Compare average value with project.business_range
         if (average_new_business >= project.business_range) {
+            this.logger.log(`Average new business (${average_new_business}) is greater than or equal to the project business range (${project.business_range}), returning 10 points`);
             return 10;
         } else {
             // Calculate points from 0 to 10 accordingly
             const ratio: number = average_new_business / project.business_range;
-            return Math.round(ratio * 10);
+            const points = Math.round(ratio * 10);
+            this.logger.log(`Average new business (${average_new_business}) is less than the project business range (${project.business_range}), returning ${points} points`);
+            return points;
         }
     }
     
+    
 
     points_for_outbound(positions: PositionDto[], project: RecruiterProjectDto): number {
-        // Calculate the total new_business value
-        const total_new_business: number = positions.reduce((acc, position) => {
+        this.logger.log(`Calculating points for outbound based on ${positions.length} positions`);
+    
+        // Calculate the total outbound value
+        const total_outbound: number = positions.reduce((acc, position) => {
             if (position.details && position.details.outbound) {
                 return acc + position.details.outbound;
             }
             return acc;
         }, 0);
     
-        // Calculate the average new_business value
-        const average_new_business: number = total_new_business / positions.length;
+        this.logger.log(`Total outbound value calculated: ${total_outbound}`);
     
-        // Compare average value with project.business_range
-        if (average_new_business >= project.outbound_range) {
+        // Calculate the average outbound value
+        const average_outbound: number = total_outbound / positions.length;
+        this.logger.log(`Average outbound value: ${average_outbound}`);
+    
+        // Compare average value with project.outbound_range
+        if (average_outbound >= project.outbound_range) {
+            this.logger.log(`Average outbound (${average_outbound}) is greater than or equal to the project outbound range (${project.outbound_range}), returning 10 points`);
             return 10;
         } else {
             // Calculate points from 0 to 10 accordingly
-            const ratio: number = average_new_business / project.outbound_range;
-            return Math.round(ratio * 10);
-        }
-    }
-
-    points_for_persona(positions: PositionDto[], selectedPersona: string[]): number {
-        let combinedPersonas: string[] = [];
-    
-        positions.forEach(position => {
-            combinedPersonas.push(...position.details.persona);
-        });
-    
-        const uniqueWorkedIn: string[] = [...new Set([...combinedPersonas, ...selectedPersona])];
-    
-        const allElementsPresent: boolean = selectedPersona.every(element => uniqueWorkedIn.includes(element));
-    
-        if (allElementsPresent) {
-            return 10;
-        } else {
-            const commonElements = selectedPersona.filter(element => uniqueWorkedIn.includes(element));
-            const points = (commonElements.length / selectedPersona.length) * 10;
+            const ratio: number = average_outbound / project.outbound_range;
+            const points = Math.round(ratio * 10);
+            this.logger.log(`Average outbound (${average_outbound}) is less than the project outbound range (${project.outbound_range}), returning ${points} points`);
             return points;
         }
     }
     
 
-    calculateTotalYears(positions: PositionDto[]) : number{
+    points_for_persona(positions: PositionDto[], selectedPersona: string[]): number {
+        this.logger.log(`Calculating points for persona based on ${positions.length} positions and selected persona: ${JSON.stringify(selectedPersona)}`);
+    
+        let combinedPersonas: string[] = [];
+        
+        // Combine all personas from positions
+        positions.forEach(position => {
+            this.logger.log(`Adding personas from position: ${position.details.persona}`);
+            combinedPersonas.push(...position.details.persona);
+        });
+    
+        this.logger.log(`Combined personas from all positions: ${JSON.stringify(combinedPersonas)}`);
+    
+        const uniqueWorkedIn: string[] = [...new Set([...combinedPersonas, ...selectedPersona])];
+        this.logger.log(`Unique personas after combining: ${JSON.stringify(uniqueWorkedIn)}`);
+    
+        const allElementsPresent: boolean = selectedPersona.every(element => uniqueWorkedIn.includes(element));
+        this.logger.log(`Are all selected personas present: ${allElementsPresent}`);
+    
+        if (allElementsPresent) {
+            this.logger.log('All selected personas are present, returning 10 points');
+            return 10;
+        } else {
+            const commonElements = selectedPersona.filter(element => uniqueWorkedIn.includes(element));
+            this.logger.log(`Common personas between selected and combined: ${JSON.stringify(commonElements)}`);
+            
+            const points = (commonElements.length / selectedPersona.length) * 10;
+            this.logger.log(`Calculated points: ${points}`);
+            
+            return points;
+        }
+    }
+    
+    
+
+    calculateTotalYears(positions: PositionDto[]): number {
+        this.logger.log(`Calculating total years from ${positions.length} positions`);
+    
         let totalYears = 0;
         let uniquePeriods = {};
     
@@ -419,6 +518,8 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
             let endYear: number = position.end_year;
             let endMonth: number = position.end_month;
     
+            this.logger.log(`Processing position: Start Year: ${startYear}, Start Month: ${startMonth}, End Year: ${endYear}, End Month: ${endMonth}`);
+    
             // If end_month and end_year are null, consider them as current month and year
             const currentDate: Date = new Date();
             const currentYear: number = currentDate.getFullYear();
@@ -426,11 +527,14 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
             if (endYear === null || endMonth === null) {
                 endYear = currentYear;
                 endMonth = currentMonth;
+                this.logger.log(`End date was null, using current year and month: End Year: ${endYear}, End Month: ${endMonth}`);
             }
     
             // Merge overlapping periods
             const startStr = startYear + "-" + startMonth;
             const endStr = endYear + "-" + endMonth;
+            this.logger.log(`Merging periods from ${startStr} to ${endStr}`);
+    
             for (let year = startYear; year <= endYear; year++) {
                 const monthStart = year === startYear ? startMonth : 1;
                 const monthEnd = year === endYear ? endMonth : 12;
@@ -438,6 +542,7 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
                 for (let month = monthStart; month <= monthEnd; month++) {
                     const periodStr = year + "-" + month;
                     if (!uniquePeriods[periodStr]) {
+                        this.logger.log(`Adding new period: ${periodStr}`);
                         uniquePeriods[periodStr] = true;
                     }
                 }
@@ -446,18 +551,28 @@ async points_for_sales_cycle(positions: PositionDto[], project: RecruiterProject
     
         // Calculate total years based on distinct periods
         totalYears = Object.keys(uniquePeriods).length / 12;
+        this.logger.log(`Total unique periods: ${Object.keys(uniquePeriods).length}, Calculated total years: ${totalYears}`);
+    
         return totalYears;
     }
+    
 
     points_for_years(positions: PositionDto[], project: RecruiterProjectDto): number {
+        this.logger.log(`Calculating points for years of experience based on ${positions.length} positions and project experience: ${project.experience}`);
+    
         const totalYears: number = this.calculateTotalYears(positions);
+        this.logger.log(`Total years of experience calculated: ${totalYears}`);
     
         if (totalYears >= project.experience) {
+            this.logger.log(`Total years of experience (${totalYears}) is greater than or equal to the required project experience (${project.experience}), returning 10 points`);
             return 10;
         } else {
             // Calculate points from 0 to 10 accordingly
             const ratio: number = totalYears / project.experience;
-            return Math.round(ratio * 10);
+            const points = Math.round(ratio * 10);
+            this.logger.log(`Total years of experience (${totalYears}) is less than the required project experience (${project.experience}), returning ${points} points`);
+            return points;
         }
     }
+    
 }

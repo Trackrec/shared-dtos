@@ -1,5 +1,5 @@
 // super-admin.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { Company } from 'src/company/company.entity';
@@ -11,6 +11,8 @@ import { CompanyDto } from 'src/shared-dtos/src/company.dto';
 
 @Injectable()
 export class SuperAdminService {
+    private readonly logger = new Logger(SuperAdminService.name);
+  
   constructor(
     @InjectRepository(UserAccounts)
     private readonly userRepository: Repository<UserAccounts>,
@@ -19,34 +21,47 @@ export class SuperAdminService {
     private readonly sharedService: SharedService
   ) {}
 
-  async getAllUsers():Promise<AllUsersDto> {
+  async getAllUsers(): Promise<AllUsersDto> {
     try {
+      this.logger.log('info', 'Fetching all users with role "Applicant" or "Super-Admin"');
+  
       const users: UserDto[] = await this.userRepository.find({
         where: {
           role: In(['Applicant', 'Super-Admin'])
         },
         select: ['id', 'full_name', 'email', 'created_at', 'last_accessed_at', 'is_preferences_save']
       });
+  
       if (!users || users.length === 0) {
+        this.logger.log('warn', 'No users found with role "Applicant" or "Super-Admin"');
         return { error: false, data: [] };
       }
-      return { error: false,  data: users };
+  
+      this.logger.log('info', `Successfully fetched ${users.length} users`);
+      return { error: false, data: users };
     } catch (error) {
+      this.logger.error(`Error fetching users: ${error.message}`);
       return { error: true, message: 'Error fetching users: ' + error.message };
     }
   }
+  
 
   async getUserDetails(user_id: number): Promise<GetUserDetailsResponseDto> {
     try {
+      this.logger.log(`Fetching details for user ID: ${user_id}`);
+  
       let user: UserDto = await this.userRepository.findOne({
         where: { id: user_id },
         relations: ['positions', 'positions.details', 'positions.company'],
       });
   
       if (!user) {
+        this.logger.log('warn', `User not found with ID: ${user_id}`);
         return { error: true, message: 'User not found.' };
       }
   
+      this.logger.log(`Successfully fetched user details for user ID: ${user_id}`);
+      
       delete user.password;
   
       const extendedUser: ExtendedUserDto = {
@@ -60,6 +75,8 @@ export class SuperAdminService {
         total_individual_contributor_experience: this.sharedService.calculateExperience(user.positions, 'individual_contributor'),
       };
   
+      this.logger.log(`Calculating total revenue and experience for user ID: ${user_id}`);
+      
       let totalRevenue = 0;
       const updated_positions = user.positions.map((position) => {
         const completion_percentage = position.details
@@ -83,68 +100,96 @@ export class SuperAdminService {
   
       delete extendedUser.positions;
   
+      this.logger.log(`Returning extended user details for user ID: ${user_id}`);
+      
       return { error: false, user: extendedUser };
     } catch (e) {
+      this.logger.error(`Error fetching user details for user ID: ${user_id}: ${e.message}`);
       return { error: true, message: 'User not found.' };
     }
   }
   
+  
 
-  async impersonateUser(body:ImpersonateUserRequestDto): Promise<RecruiterUserAuthResponseDto>{
-    try{
-      const {user_id, email, username}: ImpersonateUserRequestDto= body;
-      if(!user_id || !email ){
-        return {error: true, message: "Please send all the required fields."}
+  async impersonateUser(body: ImpersonateUserRequestDto): Promise<RecruiterUserAuthResponseDto> {
+    try {
+      const { user_id, email, username }: ImpersonateUserRequestDto = body;
+  
+      this.logger.log(`Attempting to impersonate user with ID: ${user_id}`);
+  
+      if (!user_id || !email) {
+        this.logger.warn('Required fields missing: user_id or email');
+        return { error: true, message: "Please send all the required fields." };
       }
-      let user: UserDto= await this.userRepository.findOne({where:{id:user_id}})
-
-      if(!user){
-        return {error:true, message: "User not found."}
+  
+      let user: UserDto = await this.userRepository.findOne({ where: { id: user_id } });
+  
+      if (!user) {
+        this.logger.warn(`User not found with ID: ${user_id}`);
+        return { error: true, message: "User not found." };
       }
-     
+  
+      this.logger.log(`User found with ID: ${user_id}, proceeding with impersonation`);
+  
       const payload = {
         id: user_id,
         email,
         username
-  
       };
   
-      const token: string= jwt.sign(payload, process.env.JWT_SECRET, { expiresIn:'30d' });
-      return {error: false, token}
-
-    }
-    catch(e){
-      return {error: true, message:"Not able to impersonate."}
+      const token: string = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
+  
+      this.logger.log(`Impersonation successful for user ID: ${user_id}`);
+  
+      return { error: false, token };
+    } catch (e) {
+      this.logger.error(`Error during impersonation process: ${e.message}`);
+      return { error: true, message: "Not able to impersonate." };
     }
   }
+  
 
-  async updateBlockStatus( body: AdminBlockRequestDto): Promise<{error: boolean; message: string}> {
+  async updateBlockStatus(body: AdminBlockRequestDto): Promise<{ error: boolean; message: string }> {
     const { block_status, user_id } = body;
+  
     if (block_status === undefined || block_status === null) {
-        return { error: true, message: "block_status field is required" };
+      this.logger.warn('block_status field is required');
+      return { error: true, message: "block_status field is required" };
     }
+  
     try {
-        await this.userRepository.update({id:user_id}, { blocked: block_status });
-        return { error: false, message: "Block status updated successfully!" };
+      this.logger.log(`Updating block status for user ID: ${user_id} to ${block_status ? 'Blocked' : 'Unblocked'}`);
+  
+      await this.userRepository.update({ id: user_id }, { blocked: block_status });
+  
+      this.logger.log(`Successfully updated block status for user ID: ${user_id}`);
+      return { error: false, message: "Block status updated successfully!" };
     } catch (error) {
-        return { error: true, message: "Error during updating block status." };
+      this.logger.error(`Error during updating block status for user ID: ${user_id}: ${error.message}`);
+      return { error: true, message: "Error during updating block status." };
     }
-}
-
-
-  async getAllCompanies(): Promise<CompaniesListDto>{
-      try{
-        const companies: CompanyDto[]= await this.companyRepository.find()
-        if(!companies || companies.length==0){
-            return {error: false, data: []}
-        }
-        return { error: false,  data: companies };
-
-      }
-      catch(error){
-        return { error: true, message: 'Error fetching companies: ' + error.message };
-
-      }
   }
+  
+
+
+  async getAllCompanies(): Promise<CompaniesListDto> {
+    try {
+      this.logger.log('Fetching all companies');
+  
+      const companies: CompanyDto[] = await this.companyRepository.find();
+  
+      if (!companies || companies.length === 0) {
+        this.logger.log('warn', 'No companies found');
+        return { error: false, data: [] };
+      }
+  
+      this.logger.log(`Successfully fetched ${companies.length} companies`);
+      return { error: false, data: companies };
+    } catch (error) {
+      this.logger.error(`Error fetching companies: ${error.message}`);
+      return { error: true, message: 'Error fetching companies: ' + error.message };
+    }
+  }
+  
 
 }

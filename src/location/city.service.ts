@@ -1,5 +1,5 @@
 // city.service.ts
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Like, Repository, getRepository } from 'typeorm';
 import { City } from './city.entity';
@@ -11,6 +11,8 @@ import { CityDto, FilteredPlacesDto, SearchCountryStatesDto, SearchCountryStates
 
 @Injectable()
 export class CityService {
+    private readonly logger = new Logger(CityService.name);
+  
   constructor(
     @InjectRepository(City)
     private readonly cityRepository: Repository<City>,
