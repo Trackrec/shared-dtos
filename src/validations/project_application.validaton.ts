@@ -1,10 +1,7 @@
 import { z } from 'zod';
 
 export const projectApplicationRequestSchema = z.object({
-  project_id: z
-    .number()
-    .int('Project ID must be an integer.')
-    .positive('Project ID must be a positive number.'),
+  project_id: z.string().or(z.number()),
   ote: z.number().positive('OTE must be a positive number.'),
   available: z.boolean(),
   position_id: z
