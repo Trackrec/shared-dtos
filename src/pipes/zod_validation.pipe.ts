@@ -28,16 +28,12 @@ export class ZodValidationPipe implements PipeTransform {
   private convertParams(value: unknown): Record<string, unknown> {
     if (typeof value === 'object' && value !== null) {
       return Object.fromEntries(
-        Object.entries(value).map(([key, val]) => [
-          key,
-          isNaN(Number(val)) ? val : Number(val),
-        ]),
+        Object.entries(value).map(([key, val]) => [key, isNaN(Number(val)) ? val : Number(val)]),
       );
     }
     return value as Record<string, unknown>;
   }
 
-  
   private convertQuery(value: unknown): Record<string, unknown> {
     if (typeof value === 'object' && value !== null) {
       return Object.fromEntries(

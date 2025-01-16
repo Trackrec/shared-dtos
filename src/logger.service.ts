@@ -3,10 +3,10 @@ import { Logger } from 'winston';
 
 @Injectable()
 export class AppLoggerService implements LoggerService {
-    constructor(
-        @Inject('WINSTON_LOGGER')  
-        private readonly logger: Logger
-      ) {}
+  constructor(
+    @Inject('WINSTON_LOGGER')
+    private readonly logger: Logger,
+  ) {}
 
   log(message: string, context?: string) {
     this.logger.info({ context, message });

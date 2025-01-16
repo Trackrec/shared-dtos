@@ -1,6 +1,6 @@
 // company.entity.ts
 import { Position } from 'src/positions/positions.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity()
 export class Company {
@@ -10,7 +10,7 @@ export class Company {
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ type:'varchar', length: 100, default: null })
+  @Column({ type: 'varchar', length: 100, default: null })
   company_id: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -28,6 +28,6 @@ export class Company {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 
-  @OneToMany(() => Position, position => position.company)
+  @OneToMany(() => Position, (position) => position.company)
   positions: Position[];
 }

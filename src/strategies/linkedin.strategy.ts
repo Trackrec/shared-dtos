@@ -1,5 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, Logger, Req } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Strategy, VerifyCallback } from 'passport-linkedin-oauth2';
 import { AuthService } from '../auth/auth.service';
 import * as jwt from 'jsonwebtoken';
@@ -43,8 +43,8 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
   ): Promise<void> {
     try {
       this.logger.debug(`LinkedIn profile: ${JSON.stringify(profile)}`);
-      const { id, displayName, emails, photos, _json } = profile;
-      const vanityName = _json.vanityName;
+      const { id, displayName, emails, photos, _json: jsonData } = profile;
+      const vanityName = jsonData.vanityName;
 
       // Create user object
       const user = {
@@ -68,15 +68,12 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
         return done(null, { token: null });
       }
     } catch (error) {
-      this.logger.error(
-        `Error during LinkedIn authentication: ${error.message}`,
-        error,
-      );
+      this.logger.error(`Error during LinkedIn authentication: ${error.message}`, error);
       return done(done, { token: null });
     }
   }
 
-  private generateToken(user: {id: number, email: string, username: string}): string {
+  private generateToken(user: { id: number; email: string; username: string }): string {
     const payload = {
       id: user.id,
       email: user.email,

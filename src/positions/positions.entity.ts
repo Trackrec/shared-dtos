@@ -1,5 +1,12 @@
-
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne, OneToMany, ManyToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToOne,
+  OneToMany,
+} from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { PositionDetails } from 'src/position_details/position_details.entity';
 import { Company } from 'src/company/company.entity';
@@ -28,23 +35,20 @@ export class Position {
   @JoinColumn({ name: 'user_id' })
   user: UserAccounts;
 
- 
-
-
-
   @Column({ nullable: true })
   alternative_brand_icon_url: string;
-  
 
-  @ManyToOne(() => Company, company => company.positions)
+  @ManyToOne(() => Company, (company) => company.positions)
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @OneToOne(type => PositionDetails, positionDetails => positionDetails.position, { nullable: true })
+  @OneToOne(() => PositionDetails, (positionDetails) => positionDetails.position, {
+    nullable: true,
+  })
   @JoinColumn()
   details: PositionDetails;
 
-  @OneToMany(() => VerifyPosition, verifyPosition => verifyPosition.position)
+  @OneToMany(() => VerifyPosition, (verifyPosition) => verifyPosition.position)
   @JoinColumn({ name: 'verify_request_id' })
   verify_request: VerifyPosition[];
 }

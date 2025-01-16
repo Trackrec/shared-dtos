@@ -13,11 +13,25 @@ import { RecruiterCompanyUser } from '../recruiter-company/recruiter-company-use
 import { Company } from 'src/company/company.entity';
 import { CompanyService } from 'src/company/company.service';
 
-
 @Module({
-  imports: [TypeOrmModule.forFeature([RecruiterProject, UserAccounts, ProjectApplication, ProjectVisitors, RecruiterCompanyUser, Company])],
+  imports: [
+    TypeOrmModule.forFeature([
+      RecruiterProject,
+      UserAccounts,
+      ProjectApplication,
+      ProjectVisitors,
+      RecruiterCompanyUser,
+      Company,
+    ]),
+  ],
   controllers: [RecruiterProjectController],
-  providers: [RecruiterProjectService, S3UploadService, SharedService, RecruiterPointsService, CompanyService],
+  providers: [
+    RecruiterProjectService,
+    S3UploadService,
+    SharedService,
+    RecruiterPointsService,
+    CompanyService,
+  ],
   exports: [RecruiterProjectService],
 })
 export class RecruiterProjectModule {}

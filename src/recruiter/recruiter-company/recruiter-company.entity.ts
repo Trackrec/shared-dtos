@@ -11,16 +11,16 @@ export class RecruiterCompany {
   @Column({ length: 255 })
   company_name: string;
 
-  @Column({  length: 255 })
-  logo: string; 
+  @Column({ length: 255 })
+  logo: string;
 
-  @Column({ length: 10, default: 'jpg' }) 
+  @Column({ length: 10, default: 'jpg' })
   logo_type: string;
 
   @OneToMany(() => RecruiterCompanyUser, (recruiterCompanyUser) => recruiterCompanyUser.company)
   recruiters: RecruiterCompanyUser[];
 
-  @OneToMany(() => RecruiterProject, project => project.company)
+  @OneToMany(() => RecruiterProject, (project) => project.company)
   projects: RecruiterProject[];
 
   @OneToOne(() => UserAccounts, (user) => user.companyCreated)

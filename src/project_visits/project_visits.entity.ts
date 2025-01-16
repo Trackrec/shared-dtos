@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  JoinColumn,
-  OneToOne,
-  OneToMany,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 @Entity('project_visitors')

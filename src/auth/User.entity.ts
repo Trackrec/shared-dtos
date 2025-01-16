@@ -2,21 +2,13 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  Length,
-  IsIn,
-  ArrayNotEmpty,
-} from 'class-validator';
+import { IsEmail, IsIn, ArrayNotEmpty } from 'class-validator';
 import { Position } from 'src/positions/positions.entity';
 import { Keywords } from 'src/keywords/keyword.entity';
 import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
@@ -97,14 +89,9 @@ export class UserAccounts {
 
   @Column('simple-array')
   @ArrayNotEmpty()
-  @IsIn(
-    [
-      LocationPreference.ONSITE,
-      LocationPreference.REMOTE,
-      LocationPreference.HYBRID,
-    ],
-    { each: true },
-  )
+  @IsIn([LocationPreference.ONSITE, LocationPreference.REMOTE, LocationPreference.HYBRID], {
+    each: true,
+  })
   location_preferences: LocationPreference[];
   constructor() {
     this.location_preferences = [LocationPreference.HYBRID];
@@ -163,7 +150,7 @@ export class UserAccounts {
   @CreateDateColumn({ default: null })
   last_accessed_at: Date;
 
-  @Column({  nullable: true })
+  @Column({ nullable: true })
   login_method: string;
 
   @OneToMany(() => Position, (position) => position.user)
@@ -185,9 +172,9 @@ export class UserAccounts {
   @OneToOne(() => RecruiterCompany, (company) => company.created_by)
   companyCreated: RecruiterCompany;
 
-   @Column({ nullable: true })
-   reset_password_token: string;
- 
-   @Column({  nullable: true })
-   reset_password_expires: Date;
+  @Column({ nullable: true })
+  reset_password_token: string;
+
+  @Column({ nullable: true })
+  reset_password_expires: Date;
 }

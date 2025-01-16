@@ -3,7 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './company.entity';
 import axios from 'axios';
-import { CompaniesListDto, CompanyDto, CompanyCreateResponseDto, CompanyUpdateResponseDto, CompanyByIdDto } from 'src/shared-dtos/src/company.dto';
+import {
+  CompaniesListDto,
+  CompanyDto,
+  CompanyCreateResponseDto,
+  CompanyUpdateResponseDto,
+  CompanyByIdDto,
+} from 'src/shared-dtos/src/company.dto';
 
 @Injectable()
 export class CompanyService {
@@ -55,27 +61,30 @@ export class CompanyService {
     }
   }
 
-  async searchCompany(company_name: string) {
-    this.logger.debug(`Searching for company: ${company_name}`);
+  async searchCompany(companyName: string) {
+    this.logger.debug(`Searching for company: ${companyName}`);
     try {
-      if (!company_name) {
+      if (!companyName) {
         this.logger.warn(`Search failed: company_name is required`);
-        return { error: true, message: "company_name is required." };
+        return { error: true, message: 'company_name is required.' };
       }
 
       const resp = await axios.get(
-        `https://api.apollo.io/api/v1/mixed_companies/search?api_key=${"OxlHrj_L0t16QUJvC-7nrA"}&q_organization_name=${company_name}`
+        `https://api.apollo.io/api/v1/mixed_companies/search?api_key=${'OxlHrj_L0t16QUJvC-7nrA'}&q_organization_name=${companyName}`,
       );
 
-      this.logger.log(`Search completed for company: ${company_name}`);
+      this.logger.log(`Search completed for company: ${companyName}`);
       return { error: false, data: resp.data };
     } catch (e) {
-      this.logger.error(`Error searching company: ${company_name} - ${e.message}`, e.stack);
-      return { error: true, message: "Not able to search companies." };
+      this.logger.error(`Error searching company: ${companyName} - ${e.message}`, e.stack);
+      return { error: true, message: 'Not able to search companies.' };
     }
   }
 
-  async updateCompany(id: string, companyData: Partial<CompanyDto>): Promise<CompanyUpdateResponseDto> {
+  async updateCompany(
+    id: string,
+    companyData: Partial<CompanyDto>,
+  ): Promise<CompanyUpdateResponseDto> {
     this.logger.debug(`Updating company with ID: ${id}`);
     try {
       await this.getCompanyById(id); // Validate existence

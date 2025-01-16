@@ -1,5 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, Logger, Req } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Strategy, VerifyCallback } from 'passport-linkedin-oauth2';
 import { AuthService } from '../auth/auth.service';
 import * as jwt from 'jsonwebtoken';
@@ -9,10 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class LinkedinSecondaryStrategy extends PassportStrategy(
-  Strategy,
-  'linkedinSecondary',
-) {
+export class LinkedinSecondaryStrategy extends PassportStrategy(Strategy, 'linkedinSecondary') {
   private readonly logger = new Logger(LinkedinSecondaryStrategy.name);
 
   constructor(
@@ -48,8 +45,8 @@ export class LinkedinSecondaryStrategy extends PassportStrategy(
       const session = req.session as { request_token?: string };
 
       this.logger.debug(`LinkedIn profile: ${JSON.stringify(profile)}`);
-      const { id, displayName, emails, photos, _json } = profile;
-      const vanityName = _json.vanityName;
+      const { id, displayName, photos, _json: jsonData } = profile;
+      const vanityName = jsonData.vanityName;
       const verifyPosition = await this.verifyPostionRepository.findOne({
         where: { unique_token: session?.request_token },
       });
@@ -81,15 +78,12 @@ export class LinkedinSecondaryStrategy extends PassportStrategy(
         return done(null, { token: null });
       }
     } catch (error) {
-      this.logger.error(
-        `Error during LinkedIn authentication: ${error.message}`,
-        error,
-      );
+      this.logger.error(`Error during LinkedIn authentication: ${error.message}`, error);
       return done(done, { token: null });
     }
   }
 
-  private generateToken(user: {id: number, email: string, username: string}): string {
+  private generateToken(user: { id: number; email: string; username: string }): string {
     const payload = {
       id: user.id,
       email: user.email,
