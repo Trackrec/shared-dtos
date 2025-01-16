@@ -1,5 +1,5 @@
 import { CompanyDto } from './company.dto';
-import { PositionDto, VerifyPositionDto } from './Position.dto';
+import { PositionDto, VerifyPositionDto } from './position.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 
 export enum LocationPreference {

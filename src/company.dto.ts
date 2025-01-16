@@ -1,4 +1,4 @@
-import { PositionDto } from './Position.dto';
+import { PositionDto } from './position.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 
 export interface CompanyDto {

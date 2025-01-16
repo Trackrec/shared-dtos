@@ -1,5 +1,5 @@
 import { CompanyDto } from './company.dto';
-import { PositionDto } from './Position.dto';
+import { PositionDto } from './position.dto';
 
 export interface PositionDetailsDto {
   id: string;
