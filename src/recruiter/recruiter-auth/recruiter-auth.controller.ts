@@ -12,6 +12,8 @@ import {
     Delete,
     ParseIntPipe,
     HttpStatus,
+    UnauthorizedException,
+    UseFilters,
   
   } from '@nestjs/common';
   import { AuthGuard } from '@nestjs/passport';
@@ -20,6 +22,45 @@ import { ChangePasswordRequestDto, ForgotPasswordRequestDto, InviteUserRequestDt
 import { changePasswordRequestSchema, forgotPasswordRequestSchema, inviteUserRequestSchema, loginRecruiterUserRequestSchema, recruiterUserAuthRequestSchema, recruiterUserParamSchema, resetPasswordRequestSchema, updateRecruiterUserSchema, verifyTokenRequestSchema } from 'src/validations/user.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 import { ThrottlerGuard } from '@nestjs/throttler';
+
+  import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
+  import { Response } from 'express';
+
+// Custom Exception Filter to catch all errors globally for LinkedIn login
+@Injectable()
+@Catch()
+export class LinkedInAuthExceptionFilter implements ExceptionFilter {
+  catch(exception: any, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+
+    console.error('LinkedIn Auth Error:', exception);
+
+    // Redirect to a custom error page with a meaningful message
+    return response.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
+  }
+}
+
+
+@Injectable()
+export class LinkedInAuthGuard extends AuthGuard('recruiter-linkedin') {
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw new UnauthorizedException('LinkedIn authentication failed');
+    }
+    return user;
+  }
+}
+
+@Injectable()
+export class GoogleAuthGuard extends AuthGuard('google') {
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw new UnauthorizedException('LinkedIn authentication failed');
+    }
+    return user;
+  }
+}
   @Controller('recruiter')
   export class RecruiterAuthController {
     private readonly logger = new Logger(RecruiterAuthController.name);
@@ -113,26 +154,35 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     
     @UseGuards(ThrottlerGuard)
     @Get('google-auth')
-    @UseGuards(AuthGuard('google'))
-    async googleAuth() {
-      this.logger.log('Google authentication initiated');
-    }
-    
-    @Get('google-auth/callback')
-    @UseGuards(AuthGuard('google'))
-    googleAuthRedirect(@Req() req, @Res() res) {
-      try {
-        const user = req.user;
-    
-        if (user && user.token) {
-          this.logger.log(`Google auth callback successful, redirecting with token`);
-          return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`);
-        } else {
-          this.logger.warn(`Google auth callback failed, redirecting without token`);
-          let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
-    
-          if (user && user.error) {
-            redirectUrl += `?error=${user.error}`;
+    @UseGuards(GoogleAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
+     async googleAuth(@Req() req) {
+       // Guard redirects to Google login page
+     }
+
+     @Get('google-auth/callback')
+     @UseGuards(GoogleAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
+     googleAuthRedirect(@Req() req, @Res() res) {
+        try {
+            const user = req.user;
+            
+            if (user && user.token) {
+              return res.redirect(
+                `${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`,
+              );
+            } else {
+              let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
+
+              if (user && user.error) {
+               redirectUrl += `?error=${user.error}`;
+               }
+              return res.redirect(redirectUrl);
+                        
+            }
+          } catch (error) {
+            this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
+            return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
           }
           return res.redirect(redirectUrl);
         }
@@ -144,16 +194,18 @@ import { ThrottlerGuard } from '@nestjs/throttler';
     
     @UseGuards(ThrottlerGuard)
     @Get('linkedin-auth')
-    @UseGuards(AuthGuard('recruiter-linkedin'))
-    linkedinLogin() {
-      this.logger.log('LinkedIn authentication initiated');
+    @UseGuards(LinkedInAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
+    linkedinLogin(@Req() req) {
+      this.logger.log('LinkedIn login initiated');
     }
     
    
   
     @Get('linkedin-auth/callback')
-    @UseGuards(AuthGuard('recruiter-linkedin'))
-    linkedinLoginCallback(@Req() req: Request, @Res() res) {
+    @UseGuards(LinkedInAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
+    linkedinLoginCallback(@Req() req, @Res() res) {
       try {
         const user = req['user'];
         this.logger.log(`LinkedIn login callback triggered for user: ${user?.email || 'Unknown user'}`);
