@@ -229,6 +229,7 @@ export interface UpdatePreferencesRequestDto {
   public_profile_username: string | null;
   published_at: string | null;
   is_preferences_save?: boolean;
+  preference_step?: number;
 }
 
 export interface GetMeResponseDto {
