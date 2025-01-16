@@ -31,7 +31,7 @@ import {
 import { RecruiterCompanyUserDto } from 'src/shared-dtos/src/recruiter_company';
 import { UserDto } from 'src/shared-dtos/src/user.dto';
 import { CompanyDataDto } from 'src/shared-dtos/src/company.dto';
-import { PositionDto, RecentYearPositionFilterDto } from 'src/shared-dtos/src/Position.dto';
+import { PositionDto, RecentYearPositionFilterDto } from 'src/shared-dtos/src/position.dto';
 
 @Injectable()
 export class RecruiterProjectService {

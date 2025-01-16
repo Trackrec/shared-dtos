@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import { PositionDto } from 'src/shared-dtos/src/Position.dto';
+import { PositionDto } from 'src/shared-dtos/src/position.dto';
 import { RecruiterProjectDto } from 'src/shared-dtos/src/recruiter_project.dto';
 
 @Injectable()
