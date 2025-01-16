@@ -7,8 +7,8 @@ export const createPositionRequestSchema = z.object({
     .number()
     .int()
     .min(1, 'End month must be between 1 and 12.')
-    .max(12, 'End month must be between 1 and 12.'),
-  end_year: z.number().int().min(1900, 'End year must be a valid year.'),
+    .max(12, 'End month must be between 1 and 12.').nullable(),
+  end_year: z.number().int().min(1900, 'End year must be a valid year.').nullable(),
   start_month: z
     .number()
     .int()
@@ -41,14 +41,8 @@ export const verifyPositionRequestSchema = z.object({
     .string()
     .min(1, 'Last name is required.')
     .max(50, 'Last name must not exceed 50 characters.'),
-  positionId: z
-    .number()
-    .int('Position ID must be an integer.')
-    .positive('Position ID must be a positive number.'),
-  requestBy: z
-    .number()
-    .int('Request By must be an integer.')
-    .positive('Request By must be a positive number.'),
+  positionId: z.string().or(z.number()),
+  requestBy: z.string().or(z.number()),
   role: z.string().min(1, 'Role is required.').max(50, 'Role must not exceed 50 characters.'),
 });
 

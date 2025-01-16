@@ -33,8 +33,7 @@ export const getPublicProfileParamSchema = z.object({
   userName: z
     .string()
     .min(1, 'Username is required.')
-    .max(50, 'Username must not exceed 50 characters.')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Username must contain only letters, numbers, and underscores.'),
+    .max(50, 'Username must not exceed 50 characters.'),
 });
 
 export const inviteUserRequestSchema = z.object({
@@ -154,38 +153,57 @@ export const userParamSchema = z.object({
 });
 
 export const updatePreferencesRequestSchema = z.object({
-  about: z.string().nullable(),
-  city: z.string().min(1, 'City is required.').max(100, 'City must not exceed 100 characters.'),
+  about: z.string().nullable().optional(),
+  city: z
+    .string()
+    .min(1, 'City is required.')
+    .max(100, 'City must not exceed 100 characters.')
+    .nullable()
+    .optional(),
   currency: z
     .string()
     .min(1, 'Currency is required.')
-    .max(10, 'Currency must not exceed 10 characters.'),
+    .max(10, 'Currency must not exceed 10 characters.')
+    .nullable()
+    .optional(),
   currency_country: z
     .string()
     .min(1, 'Currency country is required.')
-    .max(100, 'Currency country must not exceed 100 characters.'),
-  current_ote: z.number().nullable(),
-  custom_current_role: z.string().nullable(),
-  email: z.string().email('Email must be a valid email address.'),
+    .max(100, 'Currency country must not exceed 100 characters.')
+    .nullable()
+    .optional(),
+  current_ote: z.number().nullable().optional(),
+  custom_current_role: z.string().nullable().optional(),
+  email: z.string().email('Email must be a valid email address.').nullable().optional(),
   full_name: z
     .string()
     .min(1, 'Full name is required.')
-    .max(100, 'Full name must not exceed 100 characters.'),
+    .max(100, 'Full name must not exceed 100 characters.')
+    .nullable()
+    .optional(),
   languages: z
     .array(z.string().min(1, 'Language must not be empty.'))
-    .min(1, 'At least one language is required.'),
+    .min(1, 'At least one language is required.')
+    .nullable()
+    .optional(),
   location_preferences: z
     .array(z.string().min(1, 'Location preference must not be empty.'))
-    .min(1, 'At least one location preference is required.'),
+    .min(1, 'At least one location preference is required.')
+    .nullable()
+    .optional(),
   next_desired_titles: z
     .array(z.string().min(1, 'Desired title must not be empty.'))
-    .min(1, 'At least one desired title is required.'),
-  open_to_work: z.boolean(),
-  ote_expectation: z.number().nullable(),
-  ote_max: z.number().nullable(),
-  ote_min: z.number().nullable(),
-  phone: z.string().nullable(),
-  public_profile_username: z.string().nullable(),
-  published_at: z.string().nullable(),
+    .min(1, 'At least one desired title is required.')
+    .nullable()
+    .optional(),
+  open_to_work: z.boolean().nullable().optional(),
+  ote_expectation: z.number().nullable().optional(),
+  ote_max: z.number().nullable().optional(),
+  ote_min: z.number().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  public_profile_username: z.string().nullable().optional(),
+  published_at: z.string().nullable().optional(),
+  preference_step: z.number().nullable().optional(),
   is_preferences_save: z.boolean().optional(),
 });
+
