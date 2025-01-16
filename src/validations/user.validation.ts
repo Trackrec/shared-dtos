@@ -205,5 +205,7 @@ export const updatePreferencesRequestSchema = z.object({
   published_at: z.string().nullable().optional(),
   preference_step: z.number().nullable().optional(),
   is_preferences_save: z.boolean().optional(),
+  is_welcome: z.boolean().optional(),
+
 });
 
