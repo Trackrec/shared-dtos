@@ -2,11 +2,13 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable, tap, catchError } from 'rxjs';
 import { SensitiveDataSanitizer } from '../utils/sensitive_data_sanitizer';
 import { AppLoggerService } from 'src/logger.service';
-
+import { v4 as uuidv4 } from 'uuid';
+import { ClsService, ClsServiceManager } from 'nestjs-cls';
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
     
-  constructor(private readonly logger: AppLoggerService) {}
+  private readonly cls: ClsService;
+  constructor(private readonly logger: AppLoggerService ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
@@ -15,6 +17,11 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const start = Date.now();
 
+    const requestId = uuidv4();
+    const cls = ClsServiceManager.getClsService();
+    
+    // Store requestId in the CLS context
+    cls.set('requestId', requestId);
     // ✅ Log the incoming HTTP request
     this.logger.http(`Incoming Request: ${method} ${url} - Params: ${JSON.stringify(params)} - Query: ${JSON.stringify(query)} - Body: ${JSON.stringify(sanitizedBody)}`);
 

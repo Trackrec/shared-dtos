@@ -13,6 +13,7 @@ import {
   Query,
   ParseIntPipe,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { RecruiterProject } from './project.entity';
 import { RecruiterProjectService } from './project.service';
@@ -23,6 +24,7 @@ import { CompanyDataDto } from 'src/shared-dtos/src/company.dto';
 import { ApplicationRankingListResponseDto } from 'src/shared-dtos/src/project_application.dto';
 import { candidatesListQuerySchema, projectByIdParamSchema, projectIdQuerySchema, projectListQuerySchema, projectRankingQuerySchema, projectViewByUrlParamSchema, recruiterProjectRequestSchema } from 'src/validations/recruiter_project.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
+import { ThrottlerGuard } from '@nestjs/throttler';
 @Controller('recruiter/projects')
 export class RecruiterProjectController {
   private readonly logger = new Logger(RecruiterProjectController.name);
@@ -102,6 +104,7 @@ export class RecruiterProjectController {
     }
   }
   
+  @UseGuards(ThrottlerGuard)
   @Get('project-view/:project_url')
   async findOne(
     @Param(new ZodValidationPipe(projectViewByUrlParamSchema)) param: ProjectViewByUrlParamDto,

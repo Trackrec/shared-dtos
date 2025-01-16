@@ -21,6 +21,8 @@ import {
 import { ChangePasswordRequestDto, ForgotPasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthRequestDto, RecruiterUserAuthResponseDto, RecruiterUserParamDto, ResetPasswordRequestDto, UserInfoResponseDto, VerifyTokenRequestDto, VerifyTokenResponse } from 'src/shared-dtos/src/user.dto';
 import { changePasswordRequestSchema, forgotPasswordRequestSchema, inviteUserRequestSchema, loginRecruiterUserRequestSchema, recruiterUserAuthRequestSchema, recruiterUserParamSchema, resetPasswordRequestSchema, updateRecruiterUserSchema, verifyTokenRequestSchema } from 'src/validations/user.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
+import { ThrottlerGuard } from '@nestjs/throttler';
+
   import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
   import { Response } from 'express';
 
@@ -103,7 +105,8 @@ export class GoogleAuthGuard extends AuthGuard('google') {
         return { error: true, message: 'Failed to update user.' };
       }
     }
-    
+      
+    @UseGuards(ThrottlerGuard)
     @Post('register')
     async registerUser(
       @Body(new ZodValidationPipe(recruiterUserAuthRequestSchema)) body: RecruiterUserAuthRequestDto
@@ -126,6 +129,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Post('login')
     async loginUser(
       @Body(new ZodValidationPipe(loginRecruiterUserRequestSchema)) body: Partial<RecruiterUserAuthRequestDto>
@@ -148,6 +152,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Get('google-auth')
     @UseGuards(GoogleAuthGuard) 
     @UseFilters(LinkedInAuthExceptionFilter)
@@ -187,6 +192,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Get('linkedin-auth')
     @UseGuards(LinkedInAuthGuard) 
     @UseFilters(LinkedInAuthExceptionFilter)
@@ -282,6 +288,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       }
     }
     
+    @UseGuards(ThrottlerGuard)
     @Post('forgot-password')
     async forgotPassword(
       @Body(new ZodValidationPipe(forgotPasswordRequestSchema)) body: ForgotPasswordRequestDto

@@ -21,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { ApplicantUserParamDto, GetMeResponseDto, UpdatePreferencesRequestDto } from 'src/shared-dtos/src/user.dto';
 import { applicantUserParamSchema, updatePreferencesRequestSchema } from 'src/validations/user.validation';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe'
 import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
@@ -70,6 +71,7 @@ export class AuthController {
 
   constructor(private readonly authService: AuthService) {}
 
+  @UseGuards(ThrottlerGuard)
   @Get('linkedin')
   setLinkedinSession(
     @Query() queryParams: Record<string, string>,

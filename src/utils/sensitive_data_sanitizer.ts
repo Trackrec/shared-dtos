@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class SensitiveDataSanitizer {
-    private static _sensitiveKeys: string[] = [];
+    private static _sensitiveKeys: string[] = ['token', 'password', 'cuurent_password', 'new_password', 'old_password'];
   
     /**
      * Initialize the sanitizer with a list of keys to sanitize

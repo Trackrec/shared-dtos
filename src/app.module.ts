@@ -66,8 +66,18 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './interceptors/logging.intercepter';
 import { AppLoggerService } from './logger.service';
 import winston from 'winston';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ClsModule } from 'nestjs-cls';
 @Module({
   imports: [
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     TypeOrmModule.forRoot(databaseConfig),
     ScheduleModule.forRoot(),
     AuthModule,
