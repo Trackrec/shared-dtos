@@ -85,28 +85,6 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       }
     }
     
-    @Put('update-user/:id')
-    async updateUser(
-      @Param(new ZodValidationPipe(recruiterUserParamSchema)) param: RecruiterUserParamDto,
-      @Body(new ZodValidationPipe(updateRecruiterUserSchema)) inviteUserRequest: InviteUserRequestDto,
-      @Req() req: Request
-    ): Promise<{ error: boolean, message: string }> {
-      const user_id: number = req['user_id'];
-      const { id } = param;
-      const { email, full_name, role } = inviteUserRequest;
-    
-      this.logger.log(`User ${user_id} is updating user with ID: ${id}, email: ${email}, full_name: ${full_name}, role: ${role}`);
-      
-      try {
-        const result = await this.authService.updateCompanyUser(id, email, full_name, role, user_id);
-        return result;
-      } catch (error) {
-        this.logger.error(`Failed to update user with ID: ${id}`, error.stack);
-        return { error: true, message: 'Failed to update user.' };
-      }
-    }
-  }
-
   @Put('update-user/:id')
   async updateUser(
     @Param(new ZodValidationPipe(recruiterUserParamSchema)) param: RecruiterUserParamDto,
@@ -133,132 +111,93 @@ export class GoogleAuthGuard extends AuthGuard('google') {
   @UseGuards(ThrottlerGuard)
   @Post('register')
   async registerUser(
-    @Body(new ZodValidationPipe(recruiterUserAuthRequestSchema)) body: RecruiterUserAuthRequestDto,
+    @Body(new ZodValidationPipe(recruiterUserAuthRequestSchema)) body: RecruiterUserAuthRequestDto
   ): Promise<RecruiterUserAuthResponseDto> {
-    const { email, password, first_name: firstName, last_name: lastName } = body;
-
-    this.logger.log(`Attempting to register user with email: ${email}`);
-
-    if (!email || !password || !firstName || !lastName) {
-      this.logger.warn(`Registration failed due to missing fields`);
-      return {
-        error: true,
-        message: 'All fields (email, password, first_name, last_name) are required.',
-      };
-    }
-
-    @UseGuards(ThrottlerGuard)
-    @Get('google-auth')
-    @UseGuards(GoogleAuthGuard) 
-    @UseFilters(LinkedInAuthExceptionFilter)
-     async googleAuth(@Req() req) {
-       // Guard redirects to Google login page
-     }
-
-     @Get('google-auth/callback')
-     @UseGuards(GoogleAuthGuard) 
-    @UseFilters(LinkedInAuthExceptionFilter)
-     googleAuthRedirect(@Req() req, @Res() res) {
-        try {
-            const user = req.user;
-            
-            if (user && user.token) {
-              return res.redirect(
-                `${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`,
-              );
-            } else {
-              let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
-
-              if (user && user.error) {
-               redirectUrl += `?error=${user.error}`;
-               }
-              return res.redirect(redirectUrl);
-                        
-            }
-          } catch (error) {
-            this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-            return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
-          }
-          return res.redirect(redirectUrl);
-        }
-      } catch (error) {
-        this.logger.error(`Error during Google auth callback`, error.stack);
-        return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
-      }
-    }
-    
-    @UseGuards(ThrottlerGuard)
-    @Get('linkedin-auth')
-    @UseGuards(LinkedInAuthGuard) 
-    @UseFilters(LinkedInAuthExceptionFilter)
-    linkedinLogin(@Req() req) {
-      this.logger.log('LinkedIn login initiated');
-    }
-    
-   
+    const { email, password, first_name, last_name } = body;
   
-    @Get('linkedin-auth/callback')
-    @UseGuards(LinkedInAuthGuard) 
-    @UseFilters(LinkedInAuthExceptionFilter)
-    linkedinLoginCallback(@Req() req, @Res() res) {
-      try {
-        const user = req['user'];
-        this.logger.log(`LinkedIn login callback triggered for user: ${user?.email || 'Unknown user'}`);
-    
-        if (user && user.token) {
-          this.logger.log(`LinkedIn login successful. Redirecting with token for user: ${user?.email}`);
-          return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`);
-        } else {
-          let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
-    
-          if (user && user.error) {
-            this.logger.warn(`LinkedIn login failed for user. Error: ${user.error}`);
-            redirectUrl += `?error=${user.error}`;
-          } else {
-            this.logger.warn(`LinkedIn login failed. No user data found.`);
-          }
-    
-          return res.redirect(redirectUrl);
-        }
-        return res.redirect(redirectUrl);
-      }
+    this.logger.log(`Attempting to register user with email: ${email}`);
+  
+    if (!email || !password || !first_name || !last_name) {
+      this.logger.warn(`Registration failed due to missing fields`);
+      return { error: true, message: 'All fields (email, password, first_name, last_name) are required.' };
+    }
+  
+    try {
+      const result = await this.authService.registerUser(email, password, first_name, last_name);
+      return result;
     } catch (error) {
-      this.logger.error(`Error during Google auth callback`, error.stack);
-      return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
+      this.logger.error(`Error during registration for email: ${email}`, error.stack);
+      return { error: true, message: 'An unexpected error occurred.' };
     }
   }
 
   @UseGuards(ThrottlerGuard)
-  @Get('linkedin-auth')
-  @UseGuards(AuthGuard('recruiter-linkedin'))
-  linkedinLogin() {
-    this.logger.log('LinkedIn authentication initiated');
+  @Get('google-auth')
+  @UseGuards(GoogleAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
+   async googleAuth(@Req() req: Request) {
+     // Guard redirects to Google login page
+   }
+
+   @Get('google-auth/callback')
+   @UseGuards(GoogleAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
+   googleAuthRedirect(@Req() req, @Res() res) {
+      try {
+          const user = req.user;
+          
+          if (user && user.token) {
+            return res.redirect(
+              `${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`,
+            );
+          } else {
+            let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
+
+            if (user && user.error) {
+             redirectUrl += `?error=${user.error}`;
+             }
+            return res.redirect(redirectUrl);
+                      
+          }
+        } catch (error) {
+          this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
+          return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
+        }
+       
   }
+  
+  
+  @UseGuards(ThrottlerGuard)
+  @Get('linkedin-auth')
+  @UseGuards(LinkedInAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
+  linkedinLogin(@Req() req) {
+    this.logger.log('LinkedIn login initiated');
+  }
+  
+ 
 
   @Get('linkedin-auth/callback')
-  @UseGuards(AuthGuard('recruiter-linkedin'))
-  linkedinLoginCallback(@Req() req: Request, @Res() res) {
+  @UseGuards(LinkedInAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
+  linkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req['user'];
-      this.logger.log(
-        `LinkedIn login callback triggered for user: ${user?.email || 'Unknown user'}`,
-      );
-
+      this.logger.log(`LinkedIn login callback triggered for user: ${user?.email || 'Unknown user'}`);
+  
       if (user && user.token) {
-        this.logger.log(
-          `LinkedIn login successful. Redirecting with token for user: ${user?.email}`,
-        );
+        this.logger.log(`LinkedIn login successful. Redirecting with token for user: ${user?.email}`);
         return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`);
       } else {
         let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
-
+  
         if (user && user.error) {
           this.logger.warn(`LinkedIn login failed for user. Error: ${user.error}`);
           redirectUrl += `?error=${user.error}`;
         } else {
           this.logger.warn(`LinkedIn login failed. No user data found.`);
         }
-
+  
         return res.redirect(redirectUrl);
       }
     } catch (error) {
@@ -267,7 +206,8 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     }
   }
 
-  @Get('me')
+  
+ @Get('me')
   async getMe(@Req() req: Request): Promise<UserInfoResponseDto> {
     const userId: number = req['user_id'];
     this.logger.log(`Fetching user details for user ID: ${userId}`);
