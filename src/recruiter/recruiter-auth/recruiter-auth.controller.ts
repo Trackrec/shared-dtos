@@ -206,6 +206,28 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     }
   }
 
+  @UseGuards(ThrottlerGuard)
+  @Post('login')
+  async loginUser(
+    @Body(new ZodValidationPipe(loginRecruiterUserRequestSchema)) body: Partial<RecruiterUserAuthRequestDto>
+  ): Promise<RecruiterUserAuthResponseDto> {
+    const { email, password } = body;
+  
+    this.logger.log(`Attempting to log in user with email: ${email}`);
+  
+    if (!email || !password) {
+      this.logger.warn(`Login failed due to missing credentials`);
+      return { error: true, message: 'Email and password are required.' };
+    }
+  
+    try {
+      const result = await this.authService.loginUser(email, password);
+      return result;
+    } catch (error) {
+      this.logger.error(`Login failed for email: ${email}`, error.stack);
+      return { error: true, message: 'An unexpected error occurred.' };
+    }
+  }
   
  @Get('me')
   async getMe(@Req() req: Request): Promise<UserInfoResponseDto> {
