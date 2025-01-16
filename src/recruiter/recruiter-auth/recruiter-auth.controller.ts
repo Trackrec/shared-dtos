@@ -12,11 +12,51 @@ import {
     Delete,
     ParseIntPipe,
     HttpStatus,
+    UnauthorizedException,
+    UseFilters,
   
   } from '@nestjs/common';
   import { AuthGuard } from '@nestjs/passport';
   import { RecruiterAuthService } from './recruiter-auth.service';
 import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthRequestDto, RecruiterUserAuthResponseDto, UserInfoResponseDto, VerifyTokenResponse } from 'src/shared-dtos/src/user.dto';
+  import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
+  import { Response } from 'express';
+
+// Custom Exception Filter to catch all errors globally for LinkedIn login
+@Injectable()
+@Catch()
+export class LinkedInAuthExceptionFilter implements ExceptionFilter {
+  catch(exception: any, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+
+    console.error('LinkedIn Auth Error:', exception);
+
+    // Redirect to a custom error page with a meaningful message
+    return response.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
+  }
+}
+
+
+@Injectable()
+export class LinkedInAuthGuard extends AuthGuard('recruiter-linkedin') {
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw new UnauthorizedException('LinkedIn authentication failed');
+    }
+    return user;
+  }
+}
+
+@Injectable()
+export class GoogleAuthGuard extends AuthGuard('google') {
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw new UnauthorizedException('LinkedIn authentication failed');
+    }
+    return user;
+  }
+}
   @Controller('recruiter')
   export class RecruiterAuthController {
     private readonly logger = new Logger(RecruiterAuthController.name);
@@ -76,13 +116,15 @@ import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthReques
     }
 
     @Get('google-auth')
-    @UseGuards(AuthGuard('google'))
-     async googleAuth() {
+    @UseGuards(GoogleAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
+     async googleAuth(@Req() req) {
        // Guard redirects to Google login page
      }
 
      @Get('google-auth/callback')
-     @UseGuards(AuthGuard('google'))
+     @UseGuards(GoogleAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
      googleAuthRedirect(@Req() req, @Res() res) {
         try {
             const user = req.user;
@@ -109,16 +151,18 @@ import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthReques
 
 
     @Get('linkedin-auth')
-    @UseGuards(AuthGuard('recruiter-linkedin'))
-    linkedinLogin() {
+    @UseGuards(LinkedInAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
+    linkedinLogin(@Req() req) {
       this.logger.log('LinkedIn login initiated');
     }
   
    
   
     @Get('linkedin-auth/callback')
-    @UseGuards(AuthGuard('recruiter-linkedin'))
-    linkedinLoginCallback(@Req() req: Request, @Res() res) {
+    @UseGuards(LinkedInAuthGuard) 
+    @UseFilters(LinkedInAuthExceptionFilter)
+    linkedinLoginCallback(@Req() req, @Res() res) {
       try {
         const user = req['user'];
         if (user && user.token) {
