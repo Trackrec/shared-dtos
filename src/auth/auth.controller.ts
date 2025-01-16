@@ -12,6 +12,8 @@ import {
   UploadedFile,
   Post,
   Query,
+  UseFilters,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -27,7 +29,50 @@ import {
   updatePreferencesRequestSchema,
 } from 'src/validations/user.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
+
 import { ThrottlerGuard } from '@nestjs/throttler';
+
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe'
+import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
+import { Response } from 'express';
+
+// Custom Exception Filter to catch all errors globally for LinkedIn login
+@Injectable()
+@Catch()
+export class LinkedInAuthExceptionFilter implements ExceptionFilter {
+  catch(exception: any, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+
+    console.error('LinkedIn Auth Error:', exception);
+
+    // Redirect to a custom error page with a meaningful message
+    return response.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+  }
+}
+
+
+@Injectable()
+export class LinkedInAuthGuard extends AuthGuard('linkedin') {
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw new UnauthorizedException('LinkedIn authentication failed');
+    }
+    return user;
+  }
+}
+
+@Injectable()
+export class LinkedInSecondaryAuthGuard extends AuthGuard('linkedinSecondary') {
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw new UnauthorizedException('LinkedIn authentication failed');
+    }
+    return user;
+  }
+}
+
+
 
 @Controller()
 export class AuthController {
@@ -47,19 +92,22 @@ export class AuthController {
   }
 
   @Get('linkedin/set-session')
-  @UseGuards(AuthGuard('linkedin'))
-  linkedinLogin() {
+  @UseGuards(LinkedInAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
+  linkedinLogin(@Req() req) {
     this.logger.log('LinkedIn login initiated');
   }
 
   @Get('secondary-linkedin/set-session')
-  @UseGuards(AuthGuard('linkedinSecondary'))
-  secondaryLinkedinLogin() {
+  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
+  secondaryLinkedinLogin(@Req() req) {
     this.logger.log('Secondary LinkedIn login initiated');
   }
 
   @Get('linkedin/callback')
-  @UseGuards(AuthGuard('linkedin'))
+  @UseGuards(LinkedInAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
   async linkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
@@ -88,8 +136,10 @@ export class AuthController {
     }
   }
 
-  @Get('secondary-linkedin/callback')
-  @UseGuards(AuthGuard('linkedinSecondary'))
+
+  @Get('secondar-_linkedin/callback')
+  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @UseFilters(LinkedInAuthExceptionFilter)
   async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
