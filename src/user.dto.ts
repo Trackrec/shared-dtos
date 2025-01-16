@@ -230,6 +230,7 @@ export interface UpdatePreferencesRequestDto {
   published_at: string | null;
   is_preferences_save?: boolean;
   preference_step?: number;
+  is_welcome?: boolean;
 }
 
 export interface GetMeResponseDto {
