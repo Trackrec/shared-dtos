@@ -17,7 +17,7 @@ import {
   ProfileViewsResponseDto,
   UserDto,
 } from 'src/shared-dtos/src/user.dto';
-import { PositionDto, VerifyPositionDto } from 'src/shared-dtos/src/Position.dto';
+import { PositionDto, VerifyPositionDto } from 'src/shared-dtos/src/position.dto';
 @Injectable()
 export class PublishProfileService {
   private readonly logger = new Logger(PublishProfileService.name);

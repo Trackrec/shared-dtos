@@ -7,7 +7,7 @@ import {
   PositionRequestDto,
   PositionWithCompany,
   PostionResponseDto,
-} from 'src/shared-dtos/src/Position.dto';
+} from 'src/shared-dtos/src/position.dto';
 import {
   createPositionRequestSchema,
   positionByIdSchema,

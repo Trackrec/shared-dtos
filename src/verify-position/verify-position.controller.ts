@@ -7,7 +7,7 @@ import {
   UpdateUserIdRequestDto,
   VerifyPositionRequestDto,
   VerifyRequestsResponseDto,
-} from 'src/shared-dtos/src/Position.dto';
+} from 'src/shared-dtos/src/position.dto';
 import {
   changeVerificationRequestSchema,
   deleteVerificationSchema,

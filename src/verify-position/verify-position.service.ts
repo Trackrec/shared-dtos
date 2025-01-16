@@ -15,7 +15,7 @@ import {
   VerifyPositionDto,
   VerifyPositionRequestDto,
   VerifyRequestsResponseDto,
-} from 'src/shared-dtos/src/Position.dto';
+} from 'src/shared-dtos/src/position.dto';
 
 @Injectable()
 export class VerifyPositionService {

@@ -11,7 +11,7 @@ import {
   PositionDto,
   PositionRequestDto,
   PositionWithCompany,
-} from 'src/shared-dtos/src/Position.dto';
+} from 'src/shared-dtos/src/position.dto';
 @Injectable()
 export class PositionService {
   private readonly logger = new Logger(PositionService.name);
