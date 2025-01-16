@@ -8,6 +8,8 @@ import {
   Req,
 } from '@nestjs/common';
 import { ProjectVisitorsService } from './project_visits.service';
+import { ProjectVisitors } from './project_visits.entity';
+import { CreateProjectVisitorRequestDto, CreateProjectVisitorResponseDto, ProjectVisitorsCountResponseDto, ProjectVisitorsDto } from 'src/shared-dtos/src/recruiter_project.dto';
 
 @Controller('project_visitor')
 export class ProjectVisitorsController {
@@ -17,12 +19,12 @@ export class ProjectVisitorsController {
 
   @Post()
   async createProjectVisitor(
-    @Body() projectVisitorsData: { project_id: number },
-    @Req() req: any
-  ) {
+    @Body() projectVisitorsData: CreateProjectVisitorRequestDto,
+    @Req() req: Request
+  ) : Promise<CreateProjectVisitorResponseDto> {
     try {
-      const user_id=req['user_id']
-      const visitor =
+      const user_id: number=req['user_id']
+      const visitor: ProjectVisitorsDto =
         await this.projectVisitorssService.create(projectVisitorsData, user_id);
       return { error: false, position: visitor };
     } catch (error) {
@@ -33,9 +35,9 @@ export class ProjectVisitorsController {
   @Get(':projectId')
   async getProjectVisitors(
     @Param('projectId', ParseIntPipe) projectId: number,
-  ) {
+  ): Promise<ProjectVisitorsCountResponseDto> {
     try {
-      const visitorsCount =
+      const visitorsCount: number =
         await this.projectVisitorssService.getProjectVisitors(projectId);
       return { error: false, data: visitorsCount };
     } catch (error) {

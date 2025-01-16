@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { RecruiterProject } from './project.entity';
 import { UserAccounts } from 'src/auth/User.entity';
-import { validate } from 'class-validator';
+import { validate, ValidationError } from 'class-validator';
 import { S3UploadService } from 'src/storage_bucket/storage_bucket.service';
 import { ApplicationService } from 'src/applications/application.service';
 import { ProjectApplication } from 'src/applications/application.entity';
@@ -13,6 +13,12 @@ import { ProjectVisitors } from 'src/project_visits/project_visits.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 import { Company } from 'src/company/company.entity';
 import { CompanyService } from 'src/company/company.service';
+import { ApplicationRankingListResponseDto, PointsCalculationDto, PointsDto, ProjectApplicationDto, ProjectApplicationWithPostions, ProjectApplicationWithUserPointsDto } from 'src/shared-dtos/src/project_application.dto';
+import { AllUsersProjectsResponseDto, CheckAppliedResponseDto, GetCandidatesResponseDto, ProjectResponseDto, ProjectListResponseDto, RecruiterProjectDto, RecruiterProjectRequestDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { RecruiterCompanyDto, RecruiterCompanyUserDto } from 'src/shared-dtos/src/recruiter_company';
+import { UserDto } from 'src/shared-dtos/src/user.dto';
+import { CompanyDataDto } from 'src/shared-dtos/src/company.dto';
+import { PositionDto, RecentYearPositionFilterDto } from 'src/shared-dtos/src/Position.dto';
 
 @Injectable()
 export class RecruiterProjectService {
@@ -45,10 +51,10 @@ export class RecruiterProjectService {
     startDate?: Date,
     status?: 'published' | 'draft',
     ref?: number // Project ID
-  ): Promise<any> {
+  ): Promise<ProjectListResponseDto> {
     try {
       // Check if the user exists and has the correct role
-      const user = await this.userRepository.findOne({
+      const user: UserDto = await this.userRepository.findOne({
         where: { id: userId, role: In(['User', 'Admin']) },
       });
   
@@ -57,7 +63,7 @@ export class RecruiterProjectService {
       }
   
       // Find the recruiter company user
-      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      const recruiterCompanyUser: RecruiterCompanyUserDto = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: userId } },
         relations: ['company'],
       });
@@ -67,7 +73,7 @@ export class RecruiterProjectService {
       }
   
       // Build the query dynamically based on filters
-      const queryBuilder = this.recruiterProjectRepository.createQueryBuilder('project')
+      const queryBuilder : SelectQueryBuilder<RecruiterProject>= this.recruiterProjectRepository.createQueryBuilder('project')
         .where('project.company.id = :companyId', { companyId: recruiterCompanyUser.company.id });
   
       // Apply filters if provided
@@ -97,7 +103,7 @@ export class RecruiterProjectService {
       //   .take(limit) // Limit the number of records per page
       //   .getManyAndCount(); // Get both data and total count
 
-       const projects = await queryBuilder.getMany();
+       const projects: RecruiterProjectDto[] = await queryBuilder.getMany();
   
       return {
         error: false,
@@ -114,9 +120,9 @@ export class RecruiterProjectService {
   
   
 
-  async getCandidates(userId: number, page: number, limit: number): Promise<any> {
+  async getCandidates(userId: number, page: number, limit: number): Promise<GetCandidatesResponseDto> {
     try {
-      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      const recruiterCompanyUser: RecruiterCompanyUserDto = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: userId } },
         relations: ['company'],
       });
@@ -125,7 +131,7 @@ export class RecruiterProjectService {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
   
-      const [candidates, total] = await this.userRepository.createQueryBuilder("user")
+      const [candidates, total]: [UserDto[], number] = await this.userRepository.createQueryBuilder("user")
         .select([
           "user.id", 
           "user.full_name", 
@@ -157,9 +163,9 @@ export class RecruiterProjectService {
   
   
 
-  async checkApplied(projectId: number, userId: number): Promise<any> {
+  async checkApplied(projectId: number, userId: number): Promise<CheckAppliedResponseDto> {
     try {
-      const application = await this.applicationService.findOne({
+      const application: ProjectApplicationDto = await this.applicationService.findOne({
         where: { user: { id: userId }, project: { id: projectId } },
       });
 
@@ -173,9 +179,9 @@ export class RecruiterProjectService {
     }
   }
 
-  async findAllUsersProjects(user_id): Promise<any> {
+  async findAllUsersProjects(user_id: number): Promise<AllUsersProjectsResponseDto> {
     try {
-      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      const recruiterCompanyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: user_id } },
         relations: ['company'],
       });
@@ -185,7 +191,7 @@ export class RecruiterProjectService {
     
       }
     
-      const projects = await this.recruiterProjectRepository.find({
+      const projects: RecruiterProjectDto[] = await this.recruiterProjectRepository.find({
         where:{
            company: recruiterCompanyUser.company
         }
@@ -196,9 +202,9 @@ export class RecruiterProjectService {
     }
   }
 
-  async findOne(id: number, checkPublished: any = false): Promise<any> {
+  async findOne(id: number, checkPublished: any = false): Promise<ProjectResponseDto> {
     try {
-      const project = await this.recruiterProjectRepository.findOne({
+      const project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { id },
         relations: ['company']
       });
@@ -217,9 +223,9 @@ export class RecruiterProjectService {
     }
   }
 
-  async findOneByUrl(project_url: string): Promise<any> {
+  async findOneByUrl(project_url: string): Promise<ProjectResponseDto> {
     try {
-      const project = await this.recruiterProjectRepository.findOne({
+      const project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { project_custom_url: project_url },
         relations: ['company']
       });
@@ -269,16 +275,16 @@ export class RecruiterProjectService {
   }
   
 
-  async createAndPublish(accountProjectData: RecruiterProject, userId: number, buffer: any, imageType:any, companyData): Promise<any> {
+  async createAndPublish(body: RecruiterProjectRequestDto, userId: number, buffer: Buffer, imageType:string | null, companyData: CompanyDataDto): Promise<ProjectResponseDto> {
     try {
       // Find the user by userId
-      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+      let accountProjectData: RecruiterProject = this.parseRecruiterProjectData(body);
 
-      const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
       // Check if the user is associated with a recruiter company
-      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      const recruiterCompanyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: userId } },
         relations: ['company'],
       });
@@ -290,7 +296,7 @@ export class RecruiterProjectService {
       if(!accountProjectData.project_custom_url)
         accountProjectData.project_custom_url= await this.generateUniqueProjectUrl(accountProjectData.title)
       else{
-        const urlExist = await this.recruiterProjectRepository.findOne({
+        const urlExist: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
           where: {
              project_custom_url: accountProjectData.project_custom_url,
            },
@@ -306,7 +312,7 @@ export class RecruiterProjectService {
   
       if(imageType){
            // Upload the new image for the company
-          let storedImage = await this.uploadService.uploadNewImage(
+          let storedImage: string = await this.uploadService.uploadNewImage(
              buffer,
             'recruiter_project_images',
              imageType
@@ -333,7 +339,7 @@ export class RecruiterProjectService {
         accountProjectData.published = true;
   
         // Create and validate the project
-        const project = this.recruiterProjectRepository.create(accountProjectData);
+        const project: RecruiterProjectDto = this.recruiterProjectRepository.create(accountProjectData);
         // const errors = await validate(project);
   
         // if (errors.length > 0) {
@@ -361,17 +367,17 @@ export class RecruiterProjectService {
     }
   }
   
-  async updateAndPublish(accountProjectData: RecruiterProject, userId: number, project_id: any, buffer: any, imageType, companyData): Promise<any> {
+  async updateAndPublish(body: RecruiterProjectRequestDto, userId: number, project_id: number, buffer: Buffer, imageType: string | null, companyData: CompanyDataDto): Promise<ProjectResponseDto> {
     try {
       // Find the user by userId
 
-      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+      let accountProjectData: RecruiterProject = this.parseRecruiterProjectData(body);
 
-      const user = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId, role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
   
       // Check if the user is associated with a recruiter company
-      const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+      const recruiterCompanyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
         where: { user: { id: userId } },
         relations: ['company'],
       });
@@ -380,7 +386,7 @@ export class RecruiterProjectService {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
 
-      let project = await this.recruiterProjectRepository.findOne({
+      let project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { id: project_id },
       });
   
@@ -389,7 +395,7 @@ export class RecruiterProjectService {
       }
   
       if(accountProjectData.project_custom_url){
-        const urlExist = await this.recruiterProjectRepository.findOne({
+        const urlExist: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
             where: {
                project_custom_url: accountProjectData.project_custom_url,
              },
@@ -406,7 +412,7 @@ export class RecruiterProjectService {
   
       if(imageType){
         // Upload the new image for the company
-       let storedImage = await this.uploadService.uploadNewImage(
+       let storedImage: string = await this.uploadService.uploadNewImage(
           buffer,
          'recruiter_project_images',
           imageType
@@ -466,22 +472,22 @@ export class RecruiterProjectService {
     }
   }
   async create(
-    accountProjectData: Partial<RecruiterProject>,
+    body: RecruiterProjectRequestDto,
     userId: number,
-    buffer: any,
-    imageType: any,
-    companyData
-  ): Promise<any> {
+    buffer: Buffer,
+    imageType: string | null,
+    companyData: CompanyDataDto
+  ): Promise<ProjectResponseDto> {
     try {
 
-      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+      let accountProjectData: RecruiterProject = this.parseRecruiterProjectData(body);
       console.log(accountProjectData)
-      const user = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
+      const user: UserAccounts = await this.userRepository.findOne({ where: { id: userId,  role: In(['User', 'Admin']) } });
       accountProjectData.user = user;
 
 
       // Check if the user is associated with a company
-  const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+  const recruiterCompanyUser: RecruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
     where: { user: { id: userId } },
     relations: ['company'],
   });
@@ -510,7 +516,7 @@ export class RecruiterProjectService {
 
   if(imageType){
    // Upload the new image for the company
-   let storedImage = await this.uploadService.uploadNewImage(
+   let storedImage: string = await this.uploadService.uploadNewImage(
     buffer,
     'recruiter_project_images',
     imageType
@@ -532,8 +538,8 @@ export class RecruiterProjectService {
   accountProjectData.company = recruiterCompanyUser.company;
 
   accountProjectData.user = user;
-      const project = this.recruiterProjectRepository.create(accountProjectData);
-      const errors = await validate(project);
+      const project: RecruiterProjectDto = this.recruiterProjectRepository.create(accountProjectData);
+      const errors: ValidationError[] = await validate(project);
       console.log(errors);
       if (errors.length > 0) {
         return { error: true, message: 'Please send all the required fields.' };
@@ -552,9 +558,9 @@ export class RecruiterProjectService {
   async publishProject(
     projectId: number,
     userId: number,
-  ): Promise<any> {
+  ): Promise<ProjectResponseDto> {
     try {
-      const project = await this.recruiterProjectRepository.findOne({
+      const project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { id: projectId, user: { id: userId } },
       });
   
@@ -590,9 +596,9 @@ export class RecruiterProjectService {
   async unpublishProject(
     projectId: number,
     userId: number,
-  ): Promise<any> {
+  ): Promise<ProjectResponseDto> {
     try {
-      const project = await this.recruiterProjectRepository.findOne({
+      const project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { id: projectId},
       });
   
@@ -622,7 +628,7 @@ export class RecruiterProjectService {
   
   
   // Helper method to check if required fields are filled
-  private hasRequiredFields(project: RecruiterProject): boolean {
+  private hasRequiredFields(project: RecruiterProject | RecruiterProjectDto): boolean {
     return !!(
       project.title &&
       project.company_name && 
@@ -653,13 +659,13 @@ export class RecruiterProjectService {
   async update(
     userId: number,
     id: number,
-    accountProjectData: Partial<RecruiterProject>,
-    buffer:any,
-    imageType: any,
-    companyData
-  ): Promise<any> {
+    body: RecruiterProjectRequestDto,
+    buffer:Buffer,
+    imageType: string | null,
+    companyData: CompanyDataDto
+  ): Promise<ProjectResponseDto> {
     try {
-      const project = await this.recruiterProjectRepository.findOne({
+      const project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { id},
       });
       if (!project) {
@@ -669,10 +675,10 @@ export class RecruiterProjectService {
         };
       }
 
-      accountProjectData = this.parseRecruiterProjectData(accountProjectData);
+      let accountProjectData: RecruiterProject = this.parseRecruiterProjectData(body);
 
       if(accountProjectData.project_custom_url){
-        const urlExist = await this.recruiterProjectRepository.findOne({
+        const urlExist: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
             where: {
                project_custom_url: accountProjectData.project_custom_url,
              },
@@ -689,7 +695,7 @@ export class RecruiterProjectService {
 
       if(imageType){
         // Upload the new image for the company
-        let storedImage = await this.uploadService.uploadNewImage(
+        let storedImage: string = await this.uploadService.uploadNewImage(
          buffer,
          'recruiter_project_images',
          imageType
@@ -722,9 +728,9 @@ export class RecruiterProjectService {
     }
   }
 
-  async remove(id: number, userId: number): Promise<any> {
+  async remove(id: number, userId: number): Promise<ProjectResponseDto> {
     try {
-      const project = await this.recruiterProjectRepository.findOne({
+      const project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { id},
       });
       if (!project) {
@@ -733,12 +739,12 @@ export class RecruiterProjectService {
           message: 'Project not found.',
         };
       }
-      const applications = await this.applicationService.find({
+      const applications: ProjectApplication[] = await this.applicationService.find({
         where: { project: { id: id } },
       });
       await this.applicationService.remove(applications);
 
-      const visitors = await this.visitorRepository.find({
+      const visitors: ProjectVisitors[] = await this.visitorRepository.find({
         where: { project: { id: id } },
       });
       await this.visitorRepository.remove(visitors);
@@ -781,9 +787,9 @@ export class RecruiterProjectService {
     }
   }
 
-    calculatePointsForUser = async (application) => {
+    calculatePointsForUser = async (application: ProjectApplicationWithPostions): Promise<{points: PointsDto, percentage: number}> => {
       try {
-        const points = {
+        const points: PointsDto = {
           ote_points: 0,
           worked_in_points: 0,
           sold_to_points: 0,
@@ -801,6 +807,33 @@ export class RecruiterProjectService {
         }
     
         // Wait for all point calculations to complete
+        const pointsArray: [
+          number, // otepoints
+          number, // worked_in_points
+          number, // sold_to_points
+          number, // segment_points
+          number, // salescycle_points
+          number, // dealsize_points
+          number, // newbusiness_points
+          number, // outbound_points
+          number, // points_for_persona
+          number  // points_for_experience
+        ] = await Promise.all([
+          this.pointsService.points_for_ote(application.user.ote_expectation, application.ote),
+          this.pointsService.points_for_worked_in(application.user.positions, application.project.Industry_Works_IN),
+          this.pointsService.points_for_sold_to(application.user.positions, application.project.Industry_Sold_To),
+          this.pointsService.points_for_segment(application.user.positions, application.project),
+          this.pointsService.points_for_sales_cycle(application.user.positions, application.project),
+          this.pointsService.points_for_dealsize(application.user.positions, application.project),
+          this.pointsService.points_for_new_business(application.user.positions, application.project),
+          this.pointsService.points_for_outbound(application.user.positions, application.project),
+          this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona),
+          this.pointsService.points_for_years(application.user.positions, application.project),
+        ]);
+        // console.log(worked_in_points)
+        // console.log(sold_to_points)
+        // console.log(dealsize_points)
+        // console.log(newbusiness_points)
         const [
           otepoints,
           worked_in_points,
@@ -811,24 +844,8 @@ export class RecruiterProjectService {
           newbusiness_points,
           outbound_points,
           points_for_persona,
-          points_for_experience
-        ] = await Promise.all([
-          this.pointsService.points_for_ote(parseInt(application.user.ote_expectation), parseInt(application.ote)),
-          this.pointsService.points_for_worked_in(application.user.positions, application.project.Industry_Works_IN),
-          this.pointsService.points_for_sold_to(application.user.positions, application.project.Industry_Sold_To),
-          this.pointsService.points_for_segment(application.user.positions, application.project),
-          this.pointsService.points_for_sales_cycle(application.user.positions, application.project),
-          this.pointsService.points_for_dealsize(application.user.positions, application.project),
-          this.pointsService.points_for_new_business(application.user.positions, application.project),
-          this.pointsService.points_for_outbound(application.user.positions, application.project),
-          this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona),
-          this.pointsService.points_for_years(application.user.positions, application.project)
-        ]);
-        // console.log(worked_in_points)
-        // console.log(sold_to_points)
-        // console.log(dealsize_points)
-        // console.log(newbusiness_points)
-    
+          points_for_experience,
+        ] = pointsArray;
         Object.assign(points, {
           ote_points: otepoints,
           worked_in_points,
@@ -842,9 +859,9 @@ export class RecruiterProjectService {
           points_for_experience
         });
     
-        const sum = this.sumObjectValues(points);
-        const maxpossiblesum = 10 * Object.keys(points).length;
-        let percentage = Math.round((sum / maxpossiblesum) * 100);
+        const sum: number = this.sumObjectValues(points);
+        const maxpossiblesum: number = 10 * Object.keys(points).length;
+        let percentage: number = Math.round((sum / maxpossiblesum) * 100);
         percentage = Math.min(percentage, 100);
     
         return { points, percentage };
@@ -864,13 +881,13 @@ export class RecruiterProjectService {
   }
 
   private filterPositionsByRecentYears(
-    positions: any[],
+    positions: PositionDto[],
     filter: string
-  ): any[] {
+  ): PositionDto[] {
     if(!filter){
       return positions
     }
-    const filterMapping: any = {
+    const filterMapping: RecentYearPositionFilterDto = {
       one: 1,
       two: 2,
       three: 3,
@@ -879,18 +896,18 @@ export class RecruiterProjectService {
       five_plus: null, 
     };
   
-    const selectedYears = filterMapping[filter];
+    const selectedYears: number | null = filterMapping[filter];
     if (selectedYears == undefined) {
       return positions; 
     }
   
-    const currentDate = new Date();
-    const thresholdDate = new Date();
+    const currentDate: Date = new Date();
+    const thresholdDate: Date = new Date();
     thresholdDate.setFullYear(currentDate.getFullYear() - selectedYears);
   
     return positions.filter((position) => {
-      const positionStartDate = new Date(position.start_year, (position.start_month || 1) - 1);
-      const positionEndDate = position.end_year
+      const positionStartDate: Date = new Date(position.start_year, (position.start_month || 1) - 1);
+      const positionEndDate: Date = position.end_year
         ? new Date(position.end_year, (position.end_month || 12) - 1)
         : currentDate; // Use current date if end date is null (ongoing position)
   
@@ -901,9 +918,9 @@ export class RecruiterProjectService {
   
   
   
-  async getRanking(project_id: number, user_id: number, min_experience?: string) {
+  async getRanking(project_id: number, user_id: number, min_experience?: string): Promise<ApplicationRankingListResponseDto> {
     try {
-       const recruiterCompanyUser = await this.recruiterCompanyUserRepository.findOne({
+       const recruiterCompanyUser: RecruiterCompanyUserDto = await this.recruiterCompanyUserRepository.findOne({
           where: { user: { id: user_id } },
           relations: ['company'],
         });
@@ -912,7 +929,7 @@ export class RecruiterProjectService {
         return { error: true, message: 'User is not associated with any recruiter company.' };
       }
 
-      const project = await this.recruiterProjectRepository.findOne({
+      const project: RecruiterProjectDto = await this.recruiterProjectRepository.findOne({
         where: { id: project_id },
         relations: ['company']
       });
@@ -920,7 +937,7 @@ export class RecruiterProjectService {
       if(!project || project.company.id!=recruiterCompanyUser.company.id){
         return {error: true, message: "Project not found."}
       }
-      const applications = await this.applicationService
+      const applications: ProjectApplication[] = await this.applicationService
         .createQueryBuilder('application')
         .leftJoinAndSelect('application.project', 'project')
         .leftJoinAndSelect('application.user', 'user')
@@ -933,9 +950,10 @@ export class RecruiterProjectService {
         .getMany();
 
   
-        let updatedApplications = applications.map((application) => {
-          const filteredPositions = this.filterPositionsByRecentYears(application.user.positions, min_experience);
-          const validPositions = filteredPositions.filter(
+     
+        let updatedApplications: ProjectApplicationWithPostions[] = applications.map((application: ProjectApplicationDto) => {
+          const filteredPositions: PositionDto[] = this.filterPositionsByRecentYears(application.user.positions, min_experience);
+          const validPositions: PositionDto[] = filteredPositions.filter(
             (position) =>
               position.details &&
               this.sharedService.calculateCompletionPercentage(position) == 100.0
@@ -953,8 +971,8 @@ export class RecruiterProjectService {
         
      
       
-       const updatedApplicationsWithUserPoints = await Promise.all(
-        updatedApplications.map(async (application) => {
+       const updatedApplicationsWithUserPoints: ProjectApplicationWithUserPointsDto[] = await Promise.all(
+        updatedApplications.map(async (application: ProjectApplicationWithPostions) => {
             const updatedUser = await this.calculatePointsForUser(application);
             return {
               ...application,
@@ -965,14 +983,14 @@ export class RecruiterProjectService {
       
 
 
-      let above75Count = 0;
+      let above75Count: number = 0;
       updatedApplicationsWithUserPoints?.map((item) => {
         if (item?.user?.points?.percentage >= 75) {
           above75Count++;
         }
       });
 
-      const visitorCount = await this.projectVisitorsRepository.count({
+      const visitorCount: number = await this.projectVisitorsRepository.count({
         where: { project: { id: project_id } },
       });
 
@@ -983,7 +1001,7 @@ export class RecruiterProjectService {
   }
 
 
-   parseRecruiterProjectData(data: any): RecruiterProject {
+   parseRecruiterProjectData(data: RecruiterProjectRequestDto): RecruiterProject {
     const parsedData = new RecruiterProject();
   
     // Parse numeric fields
@@ -1011,24 +1029,25 @@ export class RecruiterProjectService {
   
     // Parse simple-array fields
     parsedData.Industry_Works_IN = data.Industry_Works_IN 
-    ? data.Industry_Works_IN.replace(/[\[\]']+/g, '').split(',').join(',') 
+    ? data.Industry_Works_IN.replace(/[\[\]']/g, '').split(',').map(item => item.trim())
     : null;
+  
 
 // Handle other fields which might need splitting and joining as comma-separated strings
 parsedData.Industry_Sold_To = data.Industry_Sold_To 
-    ? data.Industry_Sold_To.replace(/[\[\]']+/g, '').split(',').join(',') 
+? data.Industry_Sold_To.replace(/[\[\]']/g, '').split(',').map(item => item.trim())
     : null;
 
 parsedData.selectedPersona = data.selectedPersona 
-    ? data.selectedPersona.replace(/[\[\]']+/g, '').split(',').join(',') 
+     ? data.selectedPersona.replace(/[\[\]']/g, '').split(',').map(item => item.trim()) 
     : null;
 
 parsedData.territory = data.territory 
-    ? data.territory.replace(/[\[\]']+/g, '').split(',').join(',') 
+     ? data.territory.replace(/[\[\]']/g, '').split(',').map(item => item.trim()) 
     : null;
 
 parsedData.languages = data.languages 
-    ? data.languages.replace(/[\[\]']+/g, '').split(',').join(',') 
+     ? data.languages.replace(/[\[\]']/g, '').split(',').map(item => item.trim()) 
     : null;
   
     // Parse string fields
@@ -1042,7 +1061,7 @@ parsedData.languages = data.languages
     parsedData.company_elevator_pitch = data.company_elevator_pitch || null;
     parsedData.main_problem = data.main_problem || null;
     parsedData.location = data.location 
-    ? data.location.replace(/[\[\]']+/g, '').split(',').join(',') 
+    ? data.location.replace(/[\[\]']/g, '').split(',').map(item => item.trim()) 
     : null;
     parsedData.linkedin_profile = data.linkedin_profile || null;
     parsedData.minimum_salecycle_type = data.minimum_salecycle_type || null;

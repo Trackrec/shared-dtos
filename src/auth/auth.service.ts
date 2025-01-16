@@ -15,6 +15,8 @@ import { Console } from 'console';
 import { Position } from 'src/positions/positions.entity';
 import { Company } from 'src/company/company.entity';
 import { MailgunService } from 'src/mailgun/mailgun.service';
+import { ExtendedPositionDto, ExtendedUserDetailsDto, GetMeResponseDto, UpdatePreferencesRequestDto, UserDto } from 'src/shared-dtos/src/user.dto';
+import { CompanyDto } from 'src/shared-dtos/src/company.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -32,9 +34,9 @@ export class AuthService {
   ) {}
 
   private async generateUniqueUsername(fullname: string): Promise<string> {
-    let baseUsername = fullname.toLowerCase().replace(/\s+/g, '-');
-    let username = baseUsername;
-    let counter = 2;
+    let baseUsername: string = fullname.toLowerCase().replace(/\s+/g, '-');
+    let username: string = baseUsername;
+    let counter: number = 2;
 
     while (
       await this.userRepository.findOne({
@@ -48,7 +50,7 @@ export class AuthService {
     return username;
   }
   async findOrCreate(
-    userDto: any,
+    userDto: {email: string, displayName: string, profilePicture: string, accessToken: string, vanityName?: string, username: string},
     registerEmail: boolean,
   ): Promise<{ error: boolean; message?: string; user?: UserAccounts }> {
     const {
@@ -64,7 +66,7 @@ export class AuthService {
       /** todo: Create a condition here that if email is present then
        * search based on email, otherwise search based on username for old data
        */
-      let user = await this.userRepository.findOne({
+      let user: UserAccounts = await this.userRepository.findOne({
         where: [
           { email, role: 'Applicant' },
           { email, role: 'Super-Admin' },
@@ -81,10 +83,10 @@ export class AuthService {
 
         return { error: false, user };
       }
-      let public_profile_username = (await this.generateUniqueUsername(
+      let public_profile_username: string = (await this.generateUniqueUsername(
         displayName,
-      )) as any;
-      let imageName =
+      ));
+      let imageName: string =
         await this.uploadService.uploadImageFromURL(profilePicture);
       user = this.userRepository.create({
         email,
@@ -183,15 +185,15 @@ export class AuthService {
 
   async updateProfilePciture(
     id: number,
-    image,
+    image: Buffer,
   ): Promise<{ error: boolean; message: string }> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user: UserDto = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       return { error: true, message: 'User not found' };
     }
 
     try {
-      let storedImage = await this.uploadService.uploadNewImage(
+      let storedImage: string = await this.uploadService.uploadNewImage(
         image,
         'profile_images',
       );
@@ -207,7 +209,7 @@ export class AuthService {
 
   async updateUser(
     id: number,
-    updateUserPayload: any,
+    updateUserPayload: UpdatePreferencesRequestDto,
   ): Promise<{ error: boolean; message: string }> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
@@ -215,7 +217,7 @@ export class AuthService {
     }
     try {
       updateUserPayload.is_preferences_save = true;
-      const existingUser = await this.userRepository.findOne({
+      const existingUser: UserDto = await this.userRepository.findOne({
         where: {
           public_profile_username: updateUserPayload.public_profile_username,
         },
@@ -240,9 +242,9 @@ export class AuthService {
 
   async updatepreference(
     id: number,
-    updateUserPreferencePayload: any,
+    updateUserPreferencePayload: UpdatePreferencesRequestDto,
   ): Promise<{ error: boolean; message: string }> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user: UserDto = await this.userRepository.findOne({ where: { id } });
     console.log(id);
     if (!user) {
       return { error: true, message: 'User not found' };
@@ -277,12 +279,12 @@ export class AuthService {
    }
   async getMe(
     user_id: number,
-  ): Promise<{ error: boolean; user?: any; message?: string }> {
+  ): Promise<GetMeResponseDto> {
     try {
       /** todo: Create a condition here that if email is present then
        * search based on email, otherwise search based on username for old data
        */
-      let user = await this.userRepository.findOne({
+      let user: ExtendedUserDetailsDto = await this.userRepository.findOne({
         where: { id: user_id },
         relations: [
           'keywords',
@@ -301,7 +303,7 @@ export class AuthService {
         await this.importExperiences(user, user_id, user.username);
         user.isExperienceImported = true;
         await this.userRepository.save(user);
-        let updatedUser = await this.userRepository.findOne({
+        let updatedUser: ExtendedUserDetailsDto = await this.userRepository.findOne({
           where: { id: user_id },
           relations: [
             'keywords',
@@ -323,7 +325,7 @@ export class AuthService {
           let totalRevenue = 0;
 
           for (let i = 0; i < updatedUser.positions.length; i++) {
-            let completion_percentage =
+            let completion_percentage: number =
               user.positions[i] && user.positions[i]?.details
                 ? this.sharedService.calculateCompletionPercentage(
                     user.positions[i],
@@ -342,14 +344,14 @@ export class AuthService {
                 +updatedUser.positions[i].details.revenue_generated;
             }
           }
-          (updatedUser as any).total_revenue = totalRevenue;
-          (updatedUser as any).total_years_experience =
+          updatedUser.total_revenue = totalRevenue;
+          updatedUser.total_years_experience =
             this.sharedService.calculateExperience(updatedUser.positions);
-            (updatedUser as any).total_bdr_experience =
+            updatedUser.total_bdr_experience =
             this.sharedService.calculateExperience(updatedUser.positions, "bdr");
-            (updatedUser as any).total_leadership_experience =
+            updatedUser.total_leadership_experience =
             this.sharedService.calculateExperience(updatedUser.positions, "leadership");
-            (updatedUser as any).total_individual_contributor_experience =
+            updatedUser.total_individual_contributor_experience =
             this.sharedService.calculateExperience(updatedUser.positions, "individual_contributor");
           const {
             existing_business_average,
@@ -366,26 +368,26 @@ export class AuthService {
             this.sharedService.calculateWeightedAverageForSegment(
               updatedUser.positions,
             );
-          (updatedUser as any).weightedAverageExistingBusiness =
+          updatedUser.weightedAverageExistingBusiness =
             existing_business_average;
-          (updatedUser as any).weightedAverageNewBusiness =
+          updatedUser.weightedAverageNewBusiness =
             new_business_average;
-          (updatedUser as any).weightedAveragePartnershipBusiness =
+          updatedUser.weightedAveragePartnershipBusiness =
             partnership_average;
-          (updatedUser as any).outbound_average = outbound_average;
-          (updatedUser as any).inbound_average = inbound_average;
-          (updatedUser as any).smb_average = smb_average;
-          (updatedUser as any).midmarket_average = midmarket_average;
-          (updatedUser as any).enterprise_average = enterprise_average;
+          updatedUser.outbound_average = outbound_average;
+          updatedUser.inbound_average = inbound_average;
+          updatedUser.smb_average = smb_average;
+          updatedUser.midmarket_average = midmarket_average;
+          updatedUser.enterprise_average = enterprise_average;
           updatedUser.positions =updated_positions;
-          (updatedUser as any).groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
+          updatedUser.groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
         }
         return { error: false, user: updatedUser };
       }
       delete user.password;
       delete user.linkedin_access_token;
       if (user && user.positions && user.positions.length > 0) {
-        let updated_positions = [];
+        let updated_positions: ExtendedPositionDto[] = [];
         let totalRevenue = 0;
         for (let i = 0; i < user.positions.length; i++) {
           let completion_percentage = user.positions[i].details
@@ -405,16 +407,16 @@ export class AuthService {
             totalRevenue += +user.positions[i].details.revenue_generated;
           }
         }
-        (user as any).total_revenue = totalRevenue;
-        (user as any).total_years_experience =
+        user.total_revenue = totalRevenue;
+        user.total_years_experience =
           this.sharedService.calculateExperience(
             updated_positions.filter((pos) => pos.is_completed),
           );
-        (user as any).total_bdr_experience =
+        user.total_bdr_experience =
           this.sharedService.calculateExperience(user.positions, "bdr");
-        (user as any).total_leadership_experience =
+        user.total_leadership_experience =
           this.sharedService.calculateExperience(user.positions, "leadership");
-        (user as any).total_individual_contributor_experience =
+        user.total_individual_contributor_experience =
           this.sharedService.calculateExperience(user.positions, "individual_contributor");
         const {
           existing_business_average,
@@ -430,17 +432,17 @@ export class AuthService {
         const { smb_average, midmarket_average, enterprise_average } =
           this.sharedService.calculateWeightedAverageForSegment(user.positions);
 
-        (user as any).weightedAverageExistingBusiness =
+        user.weightedAverageExistingBusiness =
           existing_business_average;
-        (user as any).weightedAverageNewBusiness = new_business_average;
-        (user as any).weightedAveragePartnershipBusiness = partnership_average;
-        (user as any).outbound_average = outbound_average;
-        (user as any).inbound_average = inbound_average;
-        (user as any).smb_average = smb_average;
-        (user as any).midmarket_average = midmarket_average;
-        (user as any).enterprise_average = enterprise_average;
+        user.weightedAverageNewBusiness = new_business_average;
+        user.weightedAveragePartnershipBusiness = partnership_average;
+        user.outbound_average = outbound_average;
+        user.inbound_average = inbound_average;
+        user.smb_average = smb_average;
+        user.midmarket_average = midmarket_average;
+        user.enterprise_average = enterprise_average;
         user.positions=updated_positions;
-        (user as any).groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
+        user.groupPositions = this.sharedService.groupAndSortPositions(updated_positions);
       }
       return { error: false, user };
     } catch (error) {
@@ -452,7 +454,7 @@ export class AuthService {
     }
   }
 
-  async importExperiences(user, userId, username) {
+  async importExperiences(user: UserDto, userId: number, username: string) {
     const headers = {
       Authorization: `Bearer ${process.env.nobellaAccessToken}`,
     };
@@ -463,12 +465,12 @@ export class AuthService {
       if (response && response.data && response.data.experiences.length > 0) {
         const { experiences } = response.data;
         const positionsPromises = experiences.map(async (experience) => {
-          let company = await this.companyRepository.findOne({
+          let company: CompanyDto = await this.companyRepository.findOne({
             where: [{ name: experience.company }],
           });
           let newCompany = null;
           if (!company){
-            let appoloCompany= await this.companyService.searchCompany({company_name: experience.company})
+            let appoloCompany= await this.companyService.searchCompany(experience.company);
             const website_url = 
                  appoloCompany && !appoloCompany.error 
                     ? (

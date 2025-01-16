@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProjectVisitors } from './project_visits.entity';
 import { UserAccounts } from 'src/auth/User.entity';
-import { AccountProject } from 'src/admin/projects/project.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
+import { CreateProjectVisitorRequestDto, ProjectVisitorsDto } from 'src/shared-dtos/src/recruiter_project.dto';
 @Injectable()
 export class ProjectVisitorsService {
   constructor(
@@ -16,11 +16,9 @@ export class ProjectVisitorsService {
     private readonly accountsProjectRepository: Repository<RecruiterProject>,
   ) {}
 
-  async create(projectVisitorsData: {
-    project_id: number;
-  }, user_id: any): Promise<any> {
+  async create(projectVisitorsData: CreateProjectVisitorRequestDto, user_id: number): Promise<ProjectVisitorsDto> {
 
-    const user = await this.accountsUserRepository.findOne({
+    const user: UserAccounts = await this.accountsUserRepository.findOne({
       where: { id: user_id },
     });
 
@@ -28,7 +26,7 @@ export class ProjectVisitorsService {
       throw new Error('User not found');
     }
 
-    const project = await this.accountsProjectRepository.findOne({
+    const project: RecruiterProject = await this.accountsProjectRepository.findOne({
       where: { id: projectVisitorsData.project_id },
     });
 
@@ -36,7 +34,7 @@ export class ProjectVisitorsService {
       throw new Error('Project not found');
     }
 
-    const existing_visitor = await this.projectVisitorsRepository.findOne({
+    const existing_visitor: ProjectVisitorsDto = await this.projectVisitorsRepository.findOne({
       where: {
         project: { id: projectVisitorsData.project_id },
         user: { id: user_id },
@@ -47,7 +45,7 @@ export class ProjectVisitorsService {
       throw new Error('Visitor already exist');
     }
 
-    const project_visitors = new ProjectVisitors();
+    const project_visitors: ProjectVisitors = new ProjectVisitors();
 
     project_visitors.project = project;
     project_visitors.user = user;
@@ -56,8 +54,8 @@ export class ProjectVisitorsService {
     return project_visitors;
   }
 
-  async getProjectVisitors(projectId: number): Promise<any> {
-    const project = await this.accountsProjectRepository.findOne({
+  async getProjectVisitors(projectId: number): Promise<number> {
+    const project : RecruiterProject= await this.accountsProjectRepository.findOne({
       where: { id: projectId },
     });
 
@@ -65,7 +63,7 @@ export class ProjectVisitorsService {
       throw new Error('Project not found');
     }
 
-    const visitorCount = await this.projectVisitorsRepository.count({
+    const visitorCount: number = await this.projectVisitorsRepository.count({
       where: { project: { id: projectId } },
     });
 

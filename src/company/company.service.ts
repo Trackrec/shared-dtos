@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './company.entity';
 import axios from 'axios';
+import { CompaniesListDto, CompanyDto, CompanyCreateResponseDto, CompanyUpdateResponseDto, CompanyByIdDto } from 'src/shared-dtos/src/company.dto';
 
 @Injectable()
 export class CompanyService {
@@ -12,9 +13,9 @@ export class CompanyService {
     private readonly companyRepository: Repository<Company>,
   ) {}
 
-  async createCompany(companyData: Partial<Company>): Promise<{ error: boolean; message?: string; createdCompany?: Company }> {
+  async createCompany(companyData: Partial<Company>): Promise<CompanyCreateResponseDto> {
     try {
-      const company = this.companyRepository.create(companyData);
+      const company: CompanyDto = this.companyRepository.create(companyData);
       const createdCompany = await this.companyRepository.save(company);
 
       return { error: false, createdCompany };
@@ -23,18 +24,18 @@ export class CompanyService {
     }
   }
 
-  async getCompanies(): Promise<{ error: boolean; message?: string; companies?: Company[] }> {
+  async getCompanies(): Promise<CompaniesListDto> {
     try {
-      const companies = await this.companyRepository.find();
+      const companies: CompanyDto[] = await this.companyRepository.find();
       return { error: false, companies };
     } catch (error) {
       return { error: true, message: `Error getting companies: ${error.message}` };
     }
   }
 
-  async getCompanyById(id: string): Promise<{ error: boolean; message?: string; company?: Company }> {
+  async getCompanyById(id: string): Promise<CompanyByIdDto> {
     try {
-      const company = await this.companyRepository.findOne({where:{id}});
+      const company: CompanyDto = await this.companyRepository.findOne({where:{id}});
       if (!company) {
         throw new NotFoundException('Company not found');
       }
@@ -45,11 +46,8 @@ export class CompanyService {
     }
   }
 
-  async searchCompany(body: any) {
+  async searchCompany(company_name: string) {
     try {
-        const {
-            company_name
-        } = body;
         if (!company_name) {
             return {
                 error: true,
@@ -72,12 +70,12 @@ export class CompanyService {
     }
 }
 
-  async updateCompany(id: string, companyData: Partial<Company>): Promise<{ error: boolean; message?: string; updatedCompany?: Company }> {
+  async updateCompany(id: string, companyData: Partial<CompanyDto>): Promise<CompanyUpdateResponseDto> {
     try {
       await this.getCompanyById(id); // Check if the company exists
 
       await this.companyRepository.update(id, companyData);
-      const updatedCompany = await this.companyRepository.findOne({where:{id}});
+      const updatedCompany: CompanyDto = await this.companyRepository.findOne({where:{id}});
 
       return { error: false, updatedCompany };
     } catch (error) {

@@ -5,6 +5,9 @@ import { PositionDetails } from './position_details.entity';
 import { Position } from 'src/positions/positions.entity';
 import { Company } from 'src/company/company.entity';
 import { CompanyService } from 'src/company/company.service';
+import { PositionDto } from 'src/shared-dtos/src/Position.dto';
+import { PositionDetailsDto, PositionDetailsRequestDto, PositionDetailsResponseDto } from 'src/shared-dtos/src/position_detail.dto';
+import { CompanyCreateResponseDto, CompanyDto } from 'src/shared-dtos/src/company.dto';
 @Injectable()
 export class PositionDetailsService {
   constructor(
@@ -19,7 +22,7 @@ export class PositionDetailsService {
     
   ) {}
 
-  async createOrUpdatePositionDetails(data: { position_id: any, positionData: any, companyData: any, [key: string]: any }): Promise<{ error: boolean, message?: string, data?: any }> {
+  async createOrUpdatePositionDetails(data: PositionDetailsRequestDto): Promise<{ error: boolean, message: string}> {
     try {
         const { position_id, positionData, companyData, ...restData } = data;
 
@@ -28,12 +31,12 @@ export class PositionDetailsService {
         }
 
         // Find or create company
-        let company;
+        let company: CompanyDto;
         if(companyData){
         company = await this.companyRepository.findOne({ where: {company_id: data?.company_id} });
 
         if (!company) {
-            const newCompany = await this.companyService.createCompany({
+            const newCompany: CompanyCreateResponseDto = await this.companyService.createCompany({
                 company_id: data?.company_id,
                 name: companyData?.name,
                 logo_url: data.logo_url ? data.logo_url : null,
@@ -45,22 +48,22 @@ export class PositionDetailsService {
                 return { error: true, message: 'Error creating company.' };
             }
 
-            company = { id: newCompany.createdCompany.id };
+            company = newCompany.createdCompany // { id: newCompany.createdCompany.id };
         }
        }
         // Find position
-        let position = await this.positionRepository.findOne({ where: { id: parseInt(position_id) } });
+        let position: Position = await this.positionRepository.findOne({ where: { id: parseInt(position_id) } });
         if (!position) {
             return { error: true, message: 'Position not found.' };
         }
 
         // Merge position data
         if(companyData && positionData)
-        positionData.company = { id: company.id };
+        positionData.company = company // { id: company.id };
       
 
         // Find or create position details
-        let positionDetails = await this.positionDetailsRepository.findOne({ where: { position_id: position_id } });
+        let positionDetails: PositionDetails = await this.positionDetailsRepository.findOne({ where: { position_id: position_id } });
 
         if (!positionDetails) {
             positionDetails = this.positionDetailsRepository.create({
@@ -75,9 +78,9 @@ export class PositionDetailsService {
         let positionUpdate={details:null, company:null};
         if(positionData){
           if(positionData && companyData)
-          positionData.company = { id: company.id };
+          positionData.company = company//{ id: company.id };
 
-        positionData.details = { id: updatedPositionDetails.id };
+        positionData.details = updatedPositionDetails//{ id: updatedPositionDetails.id };
         }
         else{
           if(companyData)
@@ -95,9 +98,9 @@ export class PositionDetailsService {
     }
 }
 
-  async getPositionDetails(position_id: string): Promise<{ error: boolean, message?: string, data?: PositionDetails }> {
+  async getPositionDetails(position_id: string): Promise<PositionDetailsResponseDto> {
     try {
-      const positionDetails = await this.positionDetailsRepository.findOne({ where: { position_id: position_id } });
+      const positionDetails: PositionDetailsDto = await this.positionDetailsRepository.findOne({ where: { position_id: position_id } });
 
       if (!positionDetails) {
         return { error: true, message: 'Position details not found.' };

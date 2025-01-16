@@ -25,7 +25,7 @@ export class TokenMiddleware implements NestMiddleware {
     if (token!="null" && token ) {
       try {
 
-        const decodedToken: any = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedToken: {id: number} = jwt.verify(token, process.env.JWT_SECRET);
         req['user_id'] = decodedToken.id;
         this.updateLastAccessed(decodedToken.id)
         next();

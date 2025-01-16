@@ -1,10 +1,11 @@
 import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { ExtendedPositionDto } from 'src/shared-dtos/src/user.dto';
 
 
 @Injectable()
 export class SharedService {
 
-  calculateExperience(positions, type='all') {
+  calculateExperience(positions: ExtendedPositionDto[], type: string='all') {
     if (positions.length === 0) {
       return "N/A";
     }
@@ -16,7 +17,7 @@ export class SharedService {
       return dateA - dateB;
     });
 
-    let completedPositions = positions.filter(position => {
+    let completedPositions: ExtendedPositionDto[] = positions.filter(position => {
       let completionPercentage = position.details
         ? this.calculateCompletionPercentage(position)
         : 0.0;
@@ -38,7 +39,7 @@ export class SharedService {
       });
     }
     
-    const result = completedPositions.reduce(
+    const result: {totalDays: number; maxEndDate: Date} = completedPositions.reduce(
       (acc, position) => this.calculatePositionDays(position, acc),
       { totalDays: 0, maxEndDate: null }
     );
@@ -46,43 +47,48 @@ export class SharedService {
     return this.calculateYearsAndMonths(result.totalDays);
   }
 
-  calculatePositionDays(position, { totalDays, maxEndDate }) {
-    const startDate: any = new Date(
+  calculatePositionDays(
+    position: ExtendedPositionDto,
+    { totalDays, maxEndDate }: { totalDays: number; maxEndDate: Date | null }
+  ): { totalDays: number; maxEndDate: Date } {
+    const startDate: Date = new Date(
       position.start_year,
       position.start_month - 1,
       1
     );
-    const endDate: any =
+  
+    const endDate: Date =
       position.end_year && position.end_month
         ? new Date(position.end_year, position.end_month - 1, 1)
-        : new Date(); // Use the current date if end date is null
-
-    let daysToAdd;
-
+        : new Date();
+  
+    let daysToAdd: number;
+  
     if (maxEndDate === null || startDate >= maxEndDate) {
       // Include all days for the position
       daysToAdd = Math.max(
-        Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1,
+        Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1,
         0
       );
     } else {
       // Include only days after the previous max end date
       const maxEndDateDiff = Math.max(
-        Math.ceil((startDate - maxEndDate) / (1000 * 60 * 60 * 24)),
+        Math.ceil((startDate.getTime() - maxEndDate.getTime()) / (1000 * 60 * 60 * 24)),
         0
       );
       daysToAdd = Math.max(
-        Math.ceil((endDate - maxEndDate) / (1000 * 60 * 60 * 24)) -
+        Math.ceil((endDate.getTime() - maxEndDate.getTime()) / (1000 * 60 * 60 * 24)) -
           maxEndDateDiff +
           1,
         0
       );
     }
-
+  
     return { totalDays: totalDays + daysToAdd, maxEndDate: endDate };
   }
+  
 
-  calculateYearsAndMonths(diff) {
+  calculateYearsAndMonths(diff: number): string {
     const years = Math.floor(diff / 365);
     const remainingDays = diff % 365;
 
@@ -100,7 +106,7 @@ export class SharedService {
   }
 
 
-       calculateCompletionPercentage(position) {
+       calculateCompletionPercentage(position: ExtendedPositionDto): number {
         let totalFields = 0;
         let filledFields=0;
         if(position.details.is_leadership){
@@ -115,14 +121,14 @@ export class SharedService {
           totalFields=15;
           filledFields = this.calculateIsBookingMeetingFields(position)
         }
-        const completionPercentage = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
+        const completionPercentage: number = filledFields == 0 ? 0.00 : parseFloat(((filledFields * 100) / totalFields).toFixed(2));
         return completionPercentage;
     }
     
-    calculateIsBookingMeetingFields(position) {
+    calculateIsBookingMeetingFields(position: ExtendedPositionDto): number {
       let totalFilled = 1;
     
-      const positionFields=[
+      const positionFields: string[]=[
         'company', 'role', 
       ]
     
@@ -158,22 +164,45 @@ export class SharedService {
       // Check additional conditions
 
 
-      if (parseInt(position.details.segment_smb) || parseInt(position.details.segment_mid_market) || parseInt(position.details.segment_enterprise))
-      {
+      if (
+        Number(position.details.segment_smb) || 
+        Number(position.details.segment_mid_market) || 
+        Number(position.details.segment_enterprise)
+      ) {
         totalFilled++;
       }
-     
-      if (parseInt(position.details.existing_business) || parseInt(position.details.new_business)) {
+      
+      if (
+        Number(position.details.existing_business) || 
+        Number(position.details.new_business)
+      ) {
         totalFilled++;
       }
-      if(position.start_month && position.start_year)
-        totalFilled+=1;
-      if (parseInt(position.details.outbound) || parseInt(position.details.inbound)) {
+      
+      if (Number(position.start_month) && Number(position.start_year)) {
         totalFilled++;
       }
-      if(!position.details.is_prospecting_channel_relevant &&( parseInt(position.details.linkedin_percentage) || parseInt(position.details.email_percentage) || parseInt(position.details.cold_call_percentage) || parseInt(position.details.tradeshow_percentage) || parseInt(position.details.refferals_percentage))){
+      
+      if (
+        Number(position.details.outbound) || 
+        Number(position.details.inbound)
+      ) {
         totalFilled++;
       }
+      
+      if (
+        !position.details.is_prospecting_channel_relevant &&
+        (
+          Number(position.details.linkedin_percentage) || 
+          Number(position.details.email_percentage) || 
+          Number(position.details.cold_call_percentage) || 
+          Number(position.details.tradeshow_percentage) || 
+          Number(position.details.refferals_percentage)
+        )
+      ) {
+        totalFilled++;
+      }
+      
       else if(position.details.is_prospecting_channel_relevant){
         totalFilled++
       }
@@ -182,10 +211,10 @@ export class SharedService {
     }
     
     
-    calculateIsIndividualContributerFields(position) {
+    calculateIsIndividualContributerFields(position: ExtendedPositionDto): number {
       let totalFilled = 1;
     
-      const positionFields=[
+      const positionFields: string[]=[
         'company', 'role'
       ]
     
@@ -222,20 +251,45 @@ export class SharedService {
       });
     
       // Check additional conditions
-      if (parseInt(position.details.segment_smb) || parseInt(position.details.segment_mid_market) || parseInt(position.details.segment_enterprise)) {
+      if (
+        Number(position.details.segment_smb) || 
+        Number(position.details.segment_mid_market) || 
+        Number(position.details.segment_enterprise)
+      ) {
         totalFilled++;
       }
-      if (parseInt(position.details.existing_business) || parseInt(position.details.new_business)) {
+      
+      if (
+        Number(position.details.existing_business) || 
+        Number(position.details.new_business)
+      ) {
         totalFilled++;
       }
-      if(parseInt(position.start_month) && parseInt(position.start_year))
-        totalFilled+=1;
-      if (parseInt(position.details.outbound) || parseInt(position.details.inbound)) {
+      
+      if (Number(position.start_month) && Number(position.start_year)) {
         totalFilled++;
       }
-      if(!position.details.is_prospecting_channel_relevant &&( parseInt(position.details.linkedin_percentage) || parseInt(position.details.email_percentage) || parseInt(position.details.cold_call_percentage) || parseInt(position.details.tradeshow_percentage) || parseInt(position.details.refferals_percentage))){
+      
+      if (
+        Number(position.details.outbound) || 
+        Number(position.details.inbound)
+      ) {
         totalFilled++;
       }
+      
+      if (
+        !position.details.is_prospecting_channel_relevant &&
+        (
+          Number(position.details.linkedin_percentage) || 
+          Number(position.details.email_percentage) || 
+          Number(position.details.cold_call_percentage) || 
+          Number(position.details.tradeshow_percentage) || 
+          Number(position.details.refferals_percentage)
+        )
+      ) {
+        totalFilled++;
+      }
+      
       else if(position.details.is_prospecting_channel_relevant){
         totalFilled++
       }
@@ -244,9 +298,9 @@ export class SharedService {
     }
     
     
-    calculateIsLeadershipFields(position) {
+    calculateIsLeadershipFields(position: ExtendedPositionDto): number {
       let totalFilled = 1;
-      const positionFields=[
+      const positionFields: string[]=[
         'company', 'role'
       ]
    
@@ -283,26 +337,41 @@ export class SharedService {
       });
   
       // Check additional conditions
-      if (parseInt(position.details.segment_smb) || parseInt(position.details.segment_mid_market) || parseInt(position.details.segment_enterprise)) {
+      if (
+        Number(position.details.segment_smb) || 
+        Number(position.details.segment_mid_market) || 
+        Number(position.details.segment_enterprise)
+      ) {
         totalFilled++;
       }
-
-      if (parseInt(position.details.existing_business) || parseInt(position.details.new_business)) {
+      
+      if (
+        Number(position.details.existing_business) || 
+        Number(position.details.new_business)
+      ) {
         totalFilled++;
       }
-    
-      if(parseInt(position.start_month) && parseInt(position.start_year))
-        totalFilled+=1;
-
-      if (parseInt(position.details.outbound) || parseInt(position.details.inbound)) {
+      
+      if (
+        Number(position.start_month) && 
+        Number(position.start_year)
+      ) {
         totalFilled++;
       }
+      
+      if (
+        Number(position.details.outbound) || 
+        Number(position.details.inbound)
+      ) {
+        totalFilled++;
+      }
+      
      
       return totalFilled;
     }
 
 
-    calculateWeightedAverageForBusiness(positions){
+    calculateWeightedAverageForBusiness(positions: ExtendedPositionDto[]): { existing_business_average: number, new_business_average: number , partnership_average: number }{
         let totalWeightedExistingBusiness = 0;
         let totalWeightedNewBusiness = 0;
         let totalWeightedPartnershipBusiness = 0;
@@ -379,7 +448,7 @@ export class SharedService {
       
       }
 
-      calculateDuration(startMonth, startYear, endMonth, endYear) {
+      calculateDuration(startMonth: number, startYear: number, endMonth: number, endYear: number): number {
         let startDate = new Date(startYear, startMonth - 1);
         let endDate:Date;
         if (endMonth === null || endYear === null) {
@@ -392,7 +461,7 @@ export class SharedService {
         return durationInMonths;
       }
 
-      calculateWeightedAverageForOutbound(positions){
+      calculateWeightedAverageForOutbound(positions: ExtendedPositionDto[]){
         let totalWeightedOutbound = 0;
         let totalWeightedInbound = 0;
         let totalDuration = 0;
@@ -460,7 +529,7 @@ export class SharedService {
       }
       
       
-      calculateWeightedAverageForSegment(positions) {
+      calculateWeightedAverageForSegment(positions: ExtendedPositionDto[]): { smb_average: number, midmarket_average: number, enterprise_average: number }{
         let totalSmb = 0;
         let totalMidmarket = 0;
         let totalEnterprise = 0;
@@ -537,7 +606,7 @@ export class SharedService {
         };
       }
 
-      groupAndSortPositions(positions) {
+      groupAndSortPositions(positions: ExtendedPositionDto[]) {
         // Step 1: Group by company object
         const groupedByCompany = new Map();
     

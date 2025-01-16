@@ -28,8 +28,7 @@ export class Position {
   @JoinColumn({ name: 'user_id' })
   user: UserAccounts;
 
-  @Column({ type: 'json', nullable: true })
-  achievements: any;
+ 
 
 
 

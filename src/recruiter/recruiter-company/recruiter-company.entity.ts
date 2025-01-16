@@ -1,8 +1,8 @@
 // recruiter-company.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, OneToOne } from 'typeorm';
 import { RecruiterCompanyUser } from './recruiter-company-user.entity';
-import { AccountProject } from 'src/admin/projects/project.entity';
 import { UserAccounts } from 'src/auth/User.entity';
+import { RecruiterProject } from '../projects/project.entity';
 @Entity()
 export class RecruiterCompany {
   @PrimaryGeneratedColumn()
@@ -20,8 +20,8 @@ export class RecruiterCompany {
   @OneToMany(() => RecruiterCompanyUser, (recruiterCompanyUser) => recruiterCompanyUser.company)
   recruiters: RecruiterCompanyUser[];
 
-  @OneToMany(() => AccountProject, project => project.company)
-  projects: AccountProject[];
+  @OneToMany(() => RecruiterProject, project => project.company)
+  projects: RecruiterProject[];
 
   @OneToOne(() => UserAccounts, (user) => user.companyCreated)
   @JoinColumn({ name: 'created_by' })

@@ -33,9 +33,17 @@ export class LinkedinSecondaryStrategy extends PassportStrategy(
     req: Request,
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: {
+      id: string;
+      displayName: string;
+      emails: { value: string }[];
+      photos: { value: string }[];
+      _json: {
+        vanityName: string;
+      };
+    },
     done: VerifyCallback,
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       const session = req.session as { request_token?: string };
 
@@ -61,7 +69,7 @@ export class LinkedinSecondaryStrategy extends PassportStrategy(
       if (!createdUser.error) {
         if (session?.request_token) {
           if (verifyPosition && verifyPosition.user == null) {
-            verifyPosition.user = createdUser.user.id as any;
+            verifyPosition.user = createdUser.user;
             await this.verifyPostionRepository.save(verifyPosition);
           }
         }
@@ -81,7 +89,7 @@ export class LinkedinSecondaryStrategy extends PassportStrategy(
     }
   }
 
-  private generateToken(user: any): string {
+  private generateToken(user: {id: number, email: string, username: string}): string {
     const payload = {
       id: user.id,
       email: user.email,

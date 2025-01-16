@@ -3,6 +3,8 @@ import { Controller, Post, Body, BadRequestException, InternalServerErrorExcepti
 import { RecruiterCompanyService } from './recruiter-company.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import { CreateRecruiterCompanyDto, CreateRecruiterCompanyResponseDto, UpdateRecruiterCompanyDto, UpdateRecruiterCompanyResponseDto } from 'src/shared-dtos/src/company.dto';
+import { UsersInCompanyResponseDto } from 'src/shared-dtos/src/user.dto';
 
 @Controller('recruiter/company')
 export class RecruiterCompanyController {
@@ -13,9 +15,9 @@ export class RecruiterCompanyController {
   async createCompany(
     @Body() body: { company_name: string; },
     @UploadedFile() image: Multer.File,
-    @Req() req
-  ): Promise<any> {
-    const user_id=req.user_id;
+    @Req() req: Request
+  ): Promise<CreateRecruiterCompanyResponseDto> {
+    const user_id=req['user_id'];
     const { company_name } = body;
     if(!image && !company_name){
       return { error: true, message: 'Company name, logo are required.' };
@@ -30,7 +32,7 @@ export class RecruiterCompanyController {
     }
 
     try {
-      const company = await this.recruiterCompanyService.createCompany(company_name, user_id, image.buffer, imageType);
+      const company: CreateRecruiterCompanyDto = await this.recruiterCompanyService.createCompany(company_name, user_id, image.buffer, imageType);
       return { error: false, company };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -38,8 +40,8 @@ export class RecruiterCompanyController {
   }
 
   @Get('/all-users')
-  findAllUsersProjects(@Req() req: any): Promise<any> {
-    const user_id=req['user_id']
+  findAllUsersProjects(@Req() req: Request): Promise<UsersInCompanyResponseDto> {
+    const user_id: number=req['user_id']
     return this.recruiterCompanyService.findAllUsersInCompany(user_id);
   }
 
@@ -47,19 +49,19 @@ export class RecruiterCompanyController {
   @Put(':id')
   @UseInterceptors(FileInterceptor('logo'))
   async updateCompany(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() body: { company_name?: string },
     @UploadedFile() image: Multer.File,
     @Req() req
-  ): Promise<any> {
-    const user_id = req["user_id"];
+  ): Promise<UpdateRecruiterCompanyResponseDto> {
+    const user_id: number = req["user_id"];
     const { company_name } = body;
   
     // Check if an image is uploaded
     if (image) {
-      const imageType = this.getImageTypeFromMimetype(image.mimetype);
+      const imageType : string = this.getImageTypeFromMimetype(image.mimetype);
       // List of allowed image types
-      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+      const allowedImageTypes: string[] = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
       // Validate image type
       if (!imageType || !allowedImageTypes.includes(imageType)) {
         return { error: true, message: 'Please upload an image in a valid format (svg, png, jpg, jpeg, gif).' };
@@ -67,7 +69,7 @@ export class RecruiterCompanyController {
     }
   
     try {
-      const company = await this.recruiterCompanyService.updateCompany(
+      const company: UpdateRecruiterCompanyDto = await this.recruiterCompanyService.updateCompany(
         id,
         user_id,
         company_name,

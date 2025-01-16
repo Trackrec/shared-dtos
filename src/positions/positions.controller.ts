@@ -2,15 +2,16 @@ import { Controller, Post, Get, Param, Body, Put, Delete, UseGuards, Req } from 
 import { AuthGuard } from '@nestjs/passport';
 import { PositionService } from './positions.service';
 import { Position } from './positions.entity';
+import { AllPositionsByUserIdResponseDto, PositionDto, PositionRequestDto, PositionWithCompany, PostionResponseDto } from 'src/shared-dtos/src/Position.dto';
 @Controller('positions')
 export class PositionController {
   constructor(private readonly positionService: PositionService) {}
 
   @Post()
-  async createPosition(@Req() req, @Body() positionData: Partial<Position>) {
+  async createPosition(@Req() req: Request, @Body() positionData: PositionRequestDto) {
     try {
-      const userId = req.user_id;
-      const createdPosition = await this.positionService.createPosition(null,userId, positionData);
+      const userId: number = req["user_id"];
+      const createdPosition: PositionWithCompany = await this.positionService.createPosition(null,userId, positionData);
       return { error: false, position: createdPosition };
     } catch (error) {
       return { error: true, message: error.message };
@@ -19,9 +20,9 @@ export class PositionController {
   }
 
   @Get(':id')
-  async getPositionById(@Param('id') positionId: number) {
+  async getPositionById(@Param('id') positionId: number): Promise<PostionResponseDto> {
     try {
-      const position = await this.positionService.getPositionById(positionId);
+      const position: PositionDto = await this.positionService.getPositionById(positionId);
       return { error: false, position };
     } catch (error) {
       //todo: add logger here
@@ -30,9 +31,9 @@ export class PositionController {
   }
 
   @Put(':id')
-  async updatePosition(@Param('id') positionId: number, @Body() positionData: Partial<Position>) {
+  async updatePosition(@Param('id') positionId: number, @Body() positionData: Partial<PositionDto>) {
     try {
-      const updatedPosition = await this.positionService.updatePosition(positionId, positionData);
+      const updatedPosition: PositionDto = await this.positionService.updatePosition(positionId, positionData);
       return { error: false, position: updatedPosition };
     } catch (error) {
       //todo: add logger here
@@ -41,7 +42,7 @@ export class PositionController {
   }
 
   @Delete(':id')
-  async deletePosition(@Param('id') positionId: number) {
+  async deletePosition(@Param('id') positionId: number): Promise<{error: boolean; message: string}> {
     try {
       await this.positionService.deletePosition(positionId);
       return { error: false, message: 'Position deleted successfully' };
@@ -52,9 +53,9 @@ export class PositionController {
   }
 
   @Get('user')
-  async getAllPositionsByUserId(@Req() req) {
+  async getAllPositionsByUserId(@Req() req: Request): Promise<AllPositionsByUserIdResponseDto> {
     try {
-      const positions = await this.positionService.getAllPositionsByUserId(req.user_id);
+      const positions: PositionDto[] = await this.positionService.getAllPositionsByUserId(req['user_id']);
       return { error: false, positions };
     } catch (error) {
       //todo: add logger here

@@ -18,6 +18,7 @@ import {
   } from '@nestjs/common';
   import { AuthGuard } from '@nestjs/passport';
   import { RecruiterAuthService } from './recruiter-auth.service';
+import { ChangePasswordRequestDto, InviteUserRequestDto, RecruiterUserAuthRequestDto, RecruiterUserAuthResponseDto, UserInfoResponseDto, VerifyTokenResponse } from 'src/shared-dtos/src/user.dto';
   import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
   import { Response } from 'express';
 
@@ -63,28 +64,29 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     constructor(private readonly authService: RecruiterAuthService) {}
     
     @Post('invite-user')
-    async createUser(@Body('email') email: string, @Body('full_name') full_name:string, @Body('role') role: string, @Req() req){
-    const user_id= req['user_id']
+    async createUser(@Body() inviteUserRequest: InviteUserRequestDto, @Req() req: Request): Promise<Promise<{error: boolean, message: string}>>{
+    const user_id: number= req['user_id']
+    const { email, full_name, role } = inviteUserRequest;
     return await this.authService.createUser(email, full_name, role, user_id)
   }
 
     @Put('update-user/:id')
      async updateUser(
          @Param('id') id: number,
-         @Body('email') email: string,
-         @Body('full_name') full_name: string,
-         @Body('role') role: string,
-         @Req() req
-         ) {
-          const user_id = req['user_id'];
+         @Body() inviteUserRequest: InviteUserRequestDto,
+         @Req() req: Request
+         ): Promise<{error: boolean, message: string}> {
+          const user_id: number = req['user_id'];
+          const { email, full_name, role } = inviteUserRequest;
+
           return await this.authService.updateCompanyUser(id, email, full_name, role, user_id);
       }
 
 
 
     @Post('register')
-    async registerUser(@Body() body: any): Promise<any> {
-      const { email, password, first_name, last_name } = body;
+    async registerUser(@Body() body: RecruiterUserAuthRequestDto): Promise<RecruiterUserAuthResponseDto> {
+      const { email, password, first_name, last_name }: RecruiterUserAuthRequestDto = body;
   
       // Validate required fields
       if (!email || !password || !first_name || !last_name) {
@@ -99,8 +101,8 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     }
 
     @Post('login')
-    async loginUser(@Body() body: any): Promise<any> {
-      const { email, password } = body;
+    async loginUser(@Body() body: Partial<RecruiterUserAuthRequestDto>): Promise<RecruiterUserAuthResponseDto> {
+      const { email, password } : Partial<RecruiterUserAuthRequestDto>= body;
   
       if (!email || !password) {
         return { error: true, message: 'Email and password are required.' };
@@ -162,7 +164,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     @UseFilters(LinkedInAuthExceptionFilter)
     linkedinLoginCallback(@Req() req, @Res() res) {
       try {
-        const user = req.user;
+        const user = req['user'];
         if (user && user.token) {
           return res.redirect(
             `${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`,
@@ -184,8 +186,8 @@ export class GoogleAuthGuard extends AuthGuard('google') {
    
   
     @Get('me')
-    async getMe(@Req() req) {
-      const user_id = req['user_id'];
+    async getMe(@Req() req: Request): Promise<UserInfoResponseDto> {
+      const user_id: number = req['user_id'];
       try {
         const result = await this.authService.getMe(user_id);
   
@@ -205,31 +207,31 @@ export class GoogleAuthGuard extends AuthGuard('google') {
 
     @Post('change-password')
     async changePassword(
-    @Req() req,
-    @Body() body: any
-  ): Promise<any> {
-    const user_id=req['user_id'];
+    @Req() req: Request,
+    @Body() body: ChangePasswordRequestDto
+  ): Promise<{error: boolean, message: string} > {
+    const user_id: number=req['user_id'];
     return await this.authService.changePassword(body, user_id);
   }
 
   @Delete('delete-user/:id')
-  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<any> {
+  async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<{ error: boolean; message: string }> {
     return await this.authService.deleteUser(id);
   }
   
 
   @Post('forgot-password')
-  async forgotPassword(@Body('email') email: string) : Promise<any>{
+  async forgotPassword(@Body('email') email: string) : Promise<{error: boolean, message: string}>{
       return await this.authService.sendResetEmail(email);
   }
   
   @Post('verify-token')
-  async verifyPassword(@Body('token') token: string) : Promise<any>{
+  async verifyPassword(@Body('token') token: string) : Promise<VerifyTokenResponse>{
       return await this.authService.verifyToken(token);
   }
 
   @Post('reset-password/:token')
-  async resetPassword(@Param('token') token: string, @Body('new_password') new_password: string): Promise<any> {
+  async resetPassword(@Param('token') token: string, @Body('new_password') new_password: string): Promise<{error: boolean, message: string}> {
     return await this.authService.resetPassword(token, new_password);
   }
    

@@ -10,7 +10,6 @@ import { State } from "src/location/state.entity";
 import { Keywords } from "src/keywords/keyword.entity";
 import { AccountsVisitors } from "src/visitors/accounts_visitor.entity";
 import { AnalyticsAccess } from "src/visitors/analytics_access.entity";
-import { AccountProject } from "src/admin/projects/project.entity";
 import { ProjectApplication } from "src/applications/application.entity";
 import { ProjectVisitors } from "src/project_visits/project_visits.entity";
 import { VerifyPosition } from "src/verify-position/verify-position.entity";
@@ -28,7 +27,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
     password: DB_PASSWORD,
     database: DB_DATABASE,
     connectTimeout: 60000,
-    entities: [UserAccounts, Position, PositionDetails, Company, City, Country, State, Keywords, AccountsVisitors, AnalyticsAccess, AccountProject, ProjectApplication,ProjectVisitors, VerifyPosition, RecruiterCompanyUser, RecruiterCompany, RecruiterProject],
+    entities: [UserAccounts, Position, PositionDetails, Company, City, Country, State, Keywords, AccountsVisitors, AnalyticsAccess, ProjectApplication,ProjectVisitors, VerifyPosition, RecruiterCompanyUser, RecruiterCompany, RecruiterProject],
     logging: false,
     synchronize: true,
   };

@@ -20,7 +20,11 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
     
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
+  async validate(accessToken: string, refreshToken: string, profile: {
+    name: { givenName: string; familyName: string };
+    emails: { value: string }[];
+    photos: { value: string }[];
+  }, done: VerifyCallback): Promise<void> {
     const { name, emails, photos } = profile;
 
 
@@ -43,7 +47,7 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
     }
   }
 
-  private generateToken(user: any): string {
+  private generateToken(user: {id: number, email: string, username: string}): string {
     const payload = {
       id: user.id,
       email: user.email,

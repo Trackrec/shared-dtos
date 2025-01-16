@@ -6,6 +6,8 @@ import { Company } from 'src/company/company.entity';
 import { In, Repository } from 'typeorm';
 import { SharedService } from 'src/shared/shared.service';
 import * as jwt from 'jsonwebtoken';
+import { AdminBlockRequestDto, AllUsersDto, CompaniesListDto, ExtendedUserDto, GetUserDetailsResponseDto, ImpersonateUserRequestDto, RecruiterUserAuthResponseDto, UserDto } from 'src/shared-dtos/src/user.dto';
+import { CompanyDto } from 'src/shared-dtos/src/company.dto';
 
 @Injectable()
 export class SuperAdminService {
@@ -17,15 +19,15 @@ export class SuperAdminService {
     private readonly sharedService: SharedService
   ) {}
 
-  async getAllUsers() {
+  async getAllUsers():Promise<AllUsersDto> {
     try {
-      const users = await this.userRepository.find({
+      const users: UserDto[] = await this.userRepository.find({
         where: {
           role: In(['Applicant', 'Super-Admin'])
         },
         select: ['id', 'full_name', 'email', 'created_at', 'last_accessed_at', 'is_preferences_save']
       });
-              if (!users || users.length === 0) {
+      if (!users || users.length === 0) {
         return { error: false, data: [] };
       }
       return { error: false,  data: users };
@@ -34,72 +36,67 @@ export class SuperAdminService {
     }
   }
 
-  async getUserDetails(user_id:any){
-    try{
-      let user = await this.userRepository.findOne({
+  async getUserDetails(user_id: number): Promise<GetUserDetailsResponseDto> {
+    try {
+      let user: UserDto = await this.userRepository.findOne({
         where: { id: user_id },
-        relations: [
-          'positions',
-          'positions.details',
-          'positions.company',
-        ],
-      });     if(!user){
+        relations: ['positions', 'positions.details', 'positions.company'],
+      });
+  
+      if (!user) {
         return { error: true, message: 'User not found.' };
-     }
-     delete user.password;
-
-     (user as any).imported_positions = user.positions.length;
-
-     let is_completed: boolean=false;
-     let updated_positions = [];
-        let totalRevenue = 0;
-        for (let i = 0; i < user.positions.length; i++) {
-          let completion_percentage = user.positions[i].details
-            ? this.sharedService.calculateCompletionPercentage(
-                user.positions[i],
-              )
-            : 0.0;
-          let is_completed: boolean =
-            completion_percentage == 100.0 ? true : false;
-          updated_positions.push({
-            ...user.positions[i],
-            is_completed: is_completed,
-            completion_percentage,
-          });
-          if (is_completed) {
-            totalRevenue += +user.positions[i].details.revenue_generated;
-          }
+      }
+  
+      delete user.password;
+  
+      const extendedUser: ExtendedUserDto = {
+        ...user,
+        imported_positions: user.positions.length,
+        npm: false,
+        total_revenue: 0,
+        total_years_experience: this.sharedService.calculateExperience(user.positions),
+        total_bdr_experience: this.sharedService.calculateExperience(user.positions, 'bdr'),
+        total_leadership_experience: this.sharedService.calculateExperience(user.positions, 'leadership'),
+        total_individual_contributor_experience: this.sharedService.calculateExperience(user.positions, 'individual_contributor'),
+      };
+  
+      let totalRevenue = 0;
+      const updated_positions = user.positions.map((position) => {
+        const completion_percentage = position.details
+          ? this.sharedService.calculateCompletionPercentage(position)
+          : 0.0;
+        const is_completed = completion_percentage === 100.0;
+  
+        if (is_completed) {
+          totalRevenue += +position.details.revenue_generated;
         }
-     (user as any).npm= is_completed;
-     (user as any).total_revenue = totalRevenue;
-     (user as any).total_years_experience=this.sharedService.calculateExperience(user.positions);
-     (user as any).total_bdr_experience =
-     this.sharedService.calculateExperience(user.positions, "bdr");
-     (user as any).total_leadership_experience =
-     this.sharedService.calculateExperience(user.positions, "leadership");
-     (user as any).total_individual_contributor_experience =
-
-     this.sharedService.calculateExperience(user.positions, "individual_contributor");
- 
-
-     delete user.positions;
-     return {error: false, user}
-
+  
+        return {
+          ...position,
+          is_completed,
+          completion_percentage,
+        };
+      });
+  
+      extendedUser.npm = updated_positions.some((pos) => pos.is_completed);
+      extendedUser.total_revenue = totalRevenue;
+  
+      delete extendedUser.positions;
+  
+      return { error: false, user: extendedUser };
+    } catch (e) {
+      return { error: true, message: 'User not found.' };
     }
-    catch(e){
-        return { error: true, message: 'User not found.' };
-
-    }
-
   }
+  
 
-  async impersonateUser(body:any){
+  async impersonateUser(body:ImpersonateUserRequestDto): Promise<RecruiterUserAuthResponseDto>{
     try{
-      const {user_id, email, username}= body;
+      const {user_id, email, username}: ImpersonateUserRequestDto= body;
       if(!user_id || !email ){
         return {error: true, message: "Please send all the required fields."}
       }
-      let user= await this.userRepository.findOne({where:{id:user_id}})
+      let user: UserDto= await this.userRepository.findOne({where:{id:user_id}})
 
       if(!user){
         return {error:true, message: "User not found."}
@@ -112,7 +109,7 @@ export class SuperAdminService {
   
       };
   
-      const token= jwt.sign(payload, process.env.JWT_SECRET, { expiresIn:'30d' });
+      const token: string= jwt.sign(payload, process.env.JWT_SECRET, { expiresIn:'30d' });
       return {error: false, token}
 
     }
@@ -121,7 +118,7 @@ export class SuperAdminService {
     }
   }
 
-  async updateBlockStatus( body: any) {
+  async updateBlockStatus( body: AdminBlockRequestDto): Promise<{error: boolean; message: string}> {
     const { block_status, user_id } = body;
     if (block_status === undefined || block_status === null) {
         return { error: true, message: "block_status field is required" };
@@ -135,9 +132,9 @@ export class SuperAdminService {
 }
 
 
-  async getAllCompanies(){
+  async getAllCompanies(): Promise<CompaniesListDto>{
       try{
-        const companies= await this.companyRepository.find()
+        const companies: CompanyDto[]= await this.companyRepository.find()
         if(!companies || companies.length==0){
             return {error: false, data: []}
         }

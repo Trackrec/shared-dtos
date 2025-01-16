@@ -1,4 +1,3 @@
-import { AccountProject } from 'src/admin/projects/project.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

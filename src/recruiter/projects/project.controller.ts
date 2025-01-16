@@ -17,6 +17,9 @@ import { RecruiterProject } from './project.entity';
 import { RecruiterProjectService } from './project.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import { AllUsersProjectsResponseDto, CheckAppliedResponseDto, ProjectResponseDto, GetCandidatesResponseDto, ProjectListResponseDto, RecruiterProjectDto, RecruiterProjectRequestDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { CompanyDataDto } from 'src/shared-dtos/src/company.dto';
+import { ApplicationRankingListResponseDto } from 'src/shared-dtos/src/project_application.dto';
 @Controller('recruiter/projects')
 export class RecruiterProjectController {
   constructor(private readonly recruiterProjectService: RecruiterProjectService) {}
@@ -26,8 +29,8 @@ export class RecruiterProjectController {
     @Req() req: Request,
     @Query('project_id', ParseIntPipe) projectId: number,
 
-  ): Promise<any> {
-    const user_id = req['user_id'];
+  ): Promise<CheckAppliedResponseDto> {
+    const user_id: number = req['user_id'];
     return this.recruiterProjectService.checkApplied(+projectId, +user_id);
   }
   
@@ -36,8 +39,8 @@ export class RecruiterProjectController {
     @Req() req: Request,
     @Query('page') page: number = 1, // Default to page 1
     @Query('limit') limit: number = 10 // Default to 10 items per page
-  ): Promise<any> {
-    const user_id = req['user_id'];
+  ): Promise<GetCandidatesResponseDto> {
+    const user_id: number = req['user_id'];
     return this.recruiterProjectService.getCandidates(+user_id, +page, +limit);
   }
   
@@ -51,16 +54,16 @@ export class RecruiterProjectController {
     @Query('startDate') startDate?: string,
     @Query('status') status?: 'published' | 'draft',
     @Query('ref') ref?: number // Project ID
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    const parsedStartDate = startDate ? new Date(startDate) : undefined;
+  ): Promise<ProjectListResponseDto> {
+    const user_id: number = req['user_id'];
+    const parsedStartDate: Date = startDate ? new Date(startDate) : undefined;
 
     return this.recruiterProjectService.findAll(user_id, +page, +limit, title, parsedStartDate, status, ref);
   }
 
   @Get('/all-users')
-  findAllUsersProjects(@Req() req: any): Promise<any> {
-    const user_id=req['user_id']
+  findAllUsersProjects(@Req() req: Request): Promise<AllUsersProjectsResponseDto> {
+    const user_id: number=req['user_id']
     return this.recruiterProjectService.findAllUsersProjects(user_id);
   }
 
@@ -68,7 +71,7 @@ export class RecruiterProjectController {
   findOne(
     @Param('project_url') project_url: string,
     @Req() req: Request,
-  ): Promise<RecruiterProject> {
+  ): Promise<ProjectResponseDto> {
     return this.recruiterProjectService.findOneByUrl(project_url);
   }
 
@@ -76,23 +79,23 @@ export class RecruiterProjectController {
   findOneProject(
     @Param('id') id: string,
     @Req() req: Request,
-  ): Promise<RecruiterProject> {
+  ): Promise<ProjectResponseDto> {
     return this.recruiterProjectService.findOne(+id);
   }
 
   @Post()
   @UseInterceptors(FileInterceptor('logo'))
   create(
-    @Body() accountProjectData,
+    @Body() accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
+  ): Promise<ProjectResponseDto> {
+    const user_id: number = req['user_id'];
+    let imageType: string | null=null;
     if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
       // List of allowed image types
-      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+      const allowedImageTypes: string[] = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
   
       // Validate image type
       if (imgType || allowedImageTypes.includes(imgType)) {
@@ -102,7 +105,7 @@ export class RecruiterProjectController {
     
     const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
-    const companyData = {
+    const companyData: CompanyDataDto = {
       company_id,
       company_name,
       logo_url,
@@ -115,14 +118,14 @@ export class RecruiterProjectController {
   @Post('save_and_publish')
   @UseInterceptors(FileInterceptor('logo'))
   saveAndPublish(
-    @Body() accountProjectData,
+    @Body() accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
+  ): Promise<ProjectResponseDto> {
+    const user_id: number = req['user_id'];
+    let imageType: string | null=null;
     if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
       // List of allowed image types
       const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
   
@@ -133,7 +136,7 @@ export class RecruiterProjectController {
     }
     const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
-    const companyData = {
+    const companyData: CompanyDataDto = {
       company_id,
       company_name,
       logo_url,
@@ -146,17 +149,17 @@ export class RecruiterProjectController {
   @Post('update_and_publish/:id')
   @UseInterceptors(FileInterceptor('logo'))
   updateAndPublish(
-    @Body() accountProjectData,
+    @Body() accountProjectData: RecruiterProjectRequestDto,
     @Req() req: Request,
     @UploadedFile() image: Multer.File,
-    @Param('id') id: string,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
+    @Param('id') id: number,
+  ): Promise<ProjectResponseDto> {
+    const user_id: number = req['user_id'];
+    let imageType: string | null=null;
     if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
       // List of allowed image types
-      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+      const allowedImageTypes: string[] = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
   
       // Validate image type
       if (imgType || allowedImageTypes.includes(imgType)) {
@@ -166,7 +169,7 @@ export class RecruiterProjectController {
 
     const {company_id, company_name, company_logo_url, company_website_url, company_domain} = accountProjectData;
 
-    const companyData = {
+    const companyData: CompanyDataDto = {
       company_id,
       company_name,
       company_logo_url,
@@ -180,8 +183,8 @@ export class RecruiterProjectController {
   async publishProject(
     @Param('id') projectId: number,
     @Req() req: Request,
-  ): Promise<any> {
-    const userId = req['user_id'];
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
     return this.recruiterProjectService.publishProject(projectId, userId);
   }
 
@@ -189,8 +192,8 @@ export class RecruiterProjectController {
 async unpublishProject(
   @Param('id') projectId: number,
   @Req() req: Request,
-): Promise<any> {
-  const userId = req['user_id'];
+): Promise<ProjectResponseDto> {
+  const userId: number = req['user_id'];
   return this.recruiterProjectService.unpublishProject(projectId, userId);
 }
 
@@ -198,16 +201,16 @@ async unpublishProject(
   @UseInterceptors(FileInterceptor('logo'))
   update(
     @Param('id') id: string,
-    @Body() accountProjectData,
+    @Body() accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
+  ): Promise<ProjectResponseDto> {
+    const user_id: number = req['user_id'];
+    let imageType: string | null=null;
     if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
       // List of allowed image types
-      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+      const allowedImageTypes: string[] = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
   
       // Validate image type
       if (imgType || allowedImageTypes.includes(imgType)) {
@@ -217,7 +220,7 @@ async unpublishProject(
 
     const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
-    const companyData = {
+    const companyData: CompanyDataDto = {
       company_id,
       company_name,
       logo_url,
@@ -228,22 +231,22 @@ async unpublishProject(
   }
 
   @Delete('/:id')
-  remove(@Param('id') id: string, @Req() req: Request): Promise<void> {
-    const user_id = req['user_id'];
+  remove(@Param('id') id: number, @Req() req: Request): Promise<ProjectResponseDto> {
+    const user_id: number = req['user_id'];
     return this.recruiterProjectService.remove(+id, user_id);
   }
 
  
 
   @Get('project_ranking/:id')
-  async getRanking(@Param('id') project_id: number, @Req() req: Request,   @Query('min_experience') min_experience?: string) {
-    const user_id = req['user_id'];
+  async getRanking(@Param('id') project_id: number, @Req() req: Request,   @Query('min_experience') min_experience?: string): Promise<ApplicationRankingListResponseDto> {
+    const user_id: number = req['user_id'];
     return await this.recruiterProjectService.getRanking(project_id, user_id, min_experience);
   }
 
   getImageTypeFromMimetype(mimetype: string): string | null {
     // Split the mimetype string by '/'
-    const parts = mimetype.split('/');
+    const parts: string[] = mimetype.split('/');
   
     // Check if the first part is 'image'
     if (parts[0] === 'image' && parts[1]) {

@@ -30,9 +30,17 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
     req: Request,
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: {
+      id: string;
+      displayName: string;
+      emails: { value: string }[];
+      photos: { value: string }[];
+      _json: {
+        vanityName: string;
+      };
+    },
     done: VerifyCallback,
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       this.logger.debug(`LinkedIn profile: ${JSON.stringify(profile)}`);
       const { id, displayName, emails, photos, _json } = profile;
@@ -68,7 +76,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
     }
   }
 
-  private generateToken(user: any): string {
+  private generateToken(user: {id: number, email: string, username: string}): string {
     const payload = {
       id: user.id,
       email: user.email,

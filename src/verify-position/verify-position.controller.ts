@@ -11,14 +11,15 @@ import {
   Param,
 } from '@nestjs/common';
 import { VerifyPositionService } from './verify-position.service';
+import { ChangeVerificationRequestDto, VerifyPositionRequestDto, VerifyRequestsResponseDto } from 'src/shared-dtos/src/Position.dto';
 @Controller('verify')
 export class VerifyPositionController {
   constructor(private readonly verifyPositionService: VerifyPositionService) {}
 
   @Post('request_verification')
-  async requestVerification(@Body() requestBody: any, @Req() req) {
+  async requestVerification(@Body() requestBody: VerifyPositionRequestDto, @Req() req: Request): Promise<{error: boolean, message: string}>  {
     try {
-      const userId = req.user_id;
+      const userId: number = req['user_id'];
       return await this.verifyPositionService.requestVerification(
         requestBody,
         userId,
@@ -29,10 +30,10 @@ export class VerifyPositionController {
   }
 
   @Post('resend_verification_email')
-  async resendVerificationEmail(@Body() requestBody: any) {
+  async resendVerificationEmail(@Body('requestId') requestId: number): Promise<{error: boolean, message: string}> {
     try {
       return await this.verifyPositionService.resendVerificationEmail(
-        requestBody,
+        requestId,
       );
     } catch (error) {
       return { error: true, message: 'Something went wrong please try again.' };
@@ -40,7 +41,7 @@ export class VerifyPositionController {
   }
 
   @Post('change_verification_status')
-  async changeVerificationStatus(@Body() requestBody: any) {
+  async changeVerificationStatus(@Body() requestBody: ChangeVerificationRequestDto): Promise<{error?: boolean, message: string, success?: boolean}> {
     try {
       return await this.verifyPositionService.changeVerificationStatus(
         requestBody,
@@ -51,9 +52,9 @@ export class VerifyPositionController {
   }
 
   @Get('all_requests')
-  async getAllRequests(@Req() req) {
+  async getAllRequests(@Req() req: Request): Promise<VerifyRequestsResponseDto> {
     try {
-      const userId = req.user_id;
+      const userId: number = req['user_id'];
       return await this.verifyPositionService.getAllRequests(userId);
     } catch (error) {
       return { error: true, message: 'Something went wrong please try again.' };
@@ -61,10 +62,10 @@ export class VerifyPositionController {
   }
 
   @Post('update_user_id')
-  async updateUserIdInRequest(@Req() req,@Body() requestBody: any ){
+  async updateUserIdInRequest(@Req() req: Request,@Body('request_token') request_token: string ): Promise<{error: boolean; message: string}>{
     try{
-      const userId = req.user_id;
-      return await this.verifyPositionService.updateUserIdInRequest(userId, requestBody)
+      const userId : number = req['user_id'];
+      return await this.verifyPositionService.updateUserIdInRequest(userId, request_token)
     }
     catch(error){
       return { error: true, message: 'Something went wrong please try again.' };
@@ -72,7 +73,7 @@ export class VerifyPositionController {
   }
 
   @Delete('delete_verification/:request_id')
-  async deleteVerificationRequest(@Param('request_id') request_id: string) {
+  async deleteVerificationRequest(@Param('request_id') request_id: number): Promise<{error: boolean, message : string} | void> {
     try {
       await this.verifyPositionService.deleteVerificationRequest(request_id);
       return { error: false, message: 'Request deleted successfully' };
