@@ -153,6 +153,7 @@ export class PositionService {
 
   async getPositionById(positionId: number): Promise<PositionDto> {
     try {
+      console.log(positionId)
       const position : PositionDto= await this.positionRepository.findOne({
         where: { id: positionId },
       });
@@ -170,7 +171,7 @@ export class PositionService {
 
   async updatePosition(
     positionId: number,
-    positionData: Partial<PositionDto>,
+    positionData: Partial<PositionRequestDto>,
   ): Promise<PositionDto> {
     try {
       //todo: remove

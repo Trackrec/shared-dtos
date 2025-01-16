@@ -3,7 +3,9 @@
 import { Controller, Post, Param, Get, Req, Body } from '@nestjs/common';
 import { PublishProfileService } from './publish-profile.service';
 import { UserAccounts } from 'src/auth/User.entity';
-import { ExtendedUserDetailsDto, GetInTouchMailRequestDto, ProfileViewsResponseDto, UserDto } from 'src/shared-dtos/src/user.dto';
+import { ExtendedUserDetailsDto, GetInTouchMailRequestDto, GetPublicProfileParamDto, PrivateProfileParamDto, ProfileViewsResponseDto, PublishProfileParamDto, UserDto } from 'src/shared-dtos/src/user.dto';
+import { getInTouchMailRequestSchema, getPublicProfileParamSchema, privateProfileParamSchema, publishProfileParamSchema } from 'src/validations/user.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 
 @Controller()
 export class PublishProfileController {
@@ -11,15 +13,16 @@ export class PublishProfileController {
 
   @Post('publish_profile/:userId')
   async publishProfile(
-    @Param('userId') userId: number,
+    @Param(new ZodValidationPipe(publishProfileParamSchema)) param: PublishProfileParamDto,
   ): Promise<{ error: boolean; message: string }> {
+    const { userId } =param;
     const result: { error: boolean; message: string } = await this.publishProfileService.publishProfile(userId);
     return result;
   }
-
+  
   @Post('public_profile/get_in_touch')
   async GetInTouchMail(
-    @Body() mailData: GetInTouchMailRequestDto,
+    @Body(new ZodValidationPipe(getInTouchMailRequestSchema)) mailData: GetInTouchMailRequestDto,
   ): Promise<{ error: boolean; message: string }> {
     const result =
       await this.publishProfileService.sendGetInTouchMail(mailData);
@@ -28,19 +31,21 @@ export class PublishProfileController {
 
   @Post('private_profile/:userId')
   async privateProfile(
-    @Param('userId') userId: number,
+    @Param(new ZodValidationPipe(privateProfileParamSchema)) param: PrivateProfileParamDto,
   ): Promise<{ error: boolean; message: string }> {
+    const { userId } = param;
     const result = await this.publishProfileService.privateProfile(userId);
     return result;
   }
 
   @Get('p/:userName')
   async getUserProfile(
-    @Param('userName') userName: string,
+    @Param(new ZodValidationPipe(getPublicProfileParamSchema)) param: GetPublicProfileParamDto,
     @Req() req: Request,
   ): Promise<{ error: boolean; user?: ExtendedUserDetailsDto; message?: string }> {
     try {
       const visitor_id: number = req['user_id'];
+      const { userName } = param;
       const user = await this.publishProfileService.findUserByIdAndName(
         userName,
         visitor_id,

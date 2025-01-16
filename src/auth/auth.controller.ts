@@ -19,7 +19,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
-import { GetMeResponseDto, UpdatePreferencesRequestDto } from 'src/shared-dtos/src/user.dto';
+import { ApplicantUserParamDto, GetMeResponseDto, UpdatePreferencesRequestDto } from 'src/shared-dtos/src/user.dto';
+import { applicantUserParamSchema, updatePreferencesRequestSchema } from 'src/validations/user.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe'
 import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -58,6 +60,7 @@ export class LinkedInSecondaryAuthGuard extends AuthGuard('linkedinSecondary') {
     return user;
   }
 }
+
 
 @Controller()
 export class AuthController {
@@ -172,7 +175,8 @@ export class AuthController {
     }
   }
   @Put('profile/:id')
-  async updateUser(@Param('id') id: number, @Body() updateUserPayload: UpdatePreferencesRequestDto): Promise<{ error: boolean; message: string }> {
+  async updateUser(@Param(new ZodValidationPipe(applicantUserParamSchema)) param: ApplicantUserParamDto, @Body(new ZodValidationPipe(updatePreferencesRequestSchema)) updateUserPayload: UpdatePreferencesRequestDto): Promise<{ error: boolean; message: string }> {
+    const {id}=param;
     // Pass image along with other payload data to service for update
     return this.authService.updateUser(id, updateUserPayload);
   }
@@ -180,15 +184,18 @@ export class AuthController {
   @Post('update_profile_picture/:id')
   @UseInterceptors(FileInterceptor('image'))
   async updateProfilePicture(
-    @Param('id') id: number,
+    @Param(new ZodValidationPipe(applicantUserParamSchema)) param: ApplicantUserParamDto,
     @UploadedFile() image: Multer.File,
   ): Promise<{ error: boolean; message: string }> {
+    const {id}=param;
     // Pass image along with other payload data to service for update
     return this.authService.updateProfilePciture(id, image.buffer);
   }
 
+  
+  
   @Put('preference/update')
-  async updatePreference(@Body() updateUserPreferencePayload: UpdatePreferencesRequestDto, @Req() req: Request): Promise<{ error: boolean; message: string }> {
+  async updatePreference(@Body(new ZodValidationPipe(updatePreferencesRequestSchema)) updateUserPreferencePayload: UpdatePreferencesRequestDto, @Req() req: Request): Promise<{ error: boolean; message: string }> {
     const user_id = req['user_id'];
     console.log(updateUserPreferencePayload);
     return this.authService.updatepreference(

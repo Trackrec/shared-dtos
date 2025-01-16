@@ -17,30 +17,33 @@ import { RecruiterProject } from './project.entity';
 import { RecruiterProjectService } from './project.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
-import { AllUsersProjectsResponseDto, CheckAppliedResponseDto, ProjectResponseDto, GetCandidatesResponseDto, ProjectListResponseDto, RecruiterProjectDto, RecruiterProjectRequestDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { AllUsersProjectsResponseDto, CheckAppliedResponseDto, ProjectResponseDto, GetCandidatesResponseDto, ProjectListResponseDto, RecruiterProjectDto, RecruiterProjectRequestDto, ProjectIdQueryDto, CandidatesListQueryDto, ProjectListQueryDto, ProjectViewByUrlParamDto, ProjectByIdParamDto, ProjectRankingQueryDto } from 'src/shared-dtos/src/recruiter_project.dto';
 import { CompanyDataDto } from 'src/shared-dtos/src/company.dto';
 import { ApplicationRankingListResponseDto } from 'src/shared-dtos/src/project_application.dto';
+import { candidatesListQuerySchema, projectByIdParamSchema, projectIdQuerySchema, projectListQuerySchema, projectRankingQuerySchema, projectViewByUrlParamSchema, recruiterProjectRequestSchema } from 'src/validations/recruiter_project.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 @Controller('recruiter/projects')
 export class RecruiterProjectController {
   constructor(private readonly recruiterProjectService: RecruiterProjectService) {}
-
+  
   @Get('check_applied')
   async checkApplied(
     @Req() req: Request,
-    @Query('project_id', ParseIntPipe) projectId: number,
+    @Query(new ZodValidationPipe(projectIdQuerySchema)) query: ProjectIdQueryDto,
 
   ): Promise<CheckAppliedResponseDto> {
     const user_id: number = req['user_id'];
-    return this.recruiterProjectService.checkApplied(+projectId, +user_id);
+    const {project_id}=query;
+    return this.recruiterProjectService.checkApplied(+project_id, +user_id);
   }
   
   @Get('candidates')
   async getCandidates(
     @Req() req: Request,
-    @Query('page') page: number = 1, // Default to page 1
-    @Query('limit') limit: number = 10 // Default to 10 items per page
+    @Query(new ZodValidationPipe(candidatesListQuerySchema)) query: CandidatesListQueryDto,
   ): Promise<GetCandidatesResponseDto> {
     const user_id: number = req['user_id'];
+    const { page = 1, limit = 10 } = query;
     return this.recruiterProjectService.getCandidates(+user_id, +page, +limit);
   }
   
@@ -48,14 +51,10 @@ export class RecruiterProjectController {
   @Get()
   async findAll(
     @Req() req: Request,
-    @Query('page') page = 1, 
-    @Query('limit') limit = 10,
-    @Query('role') title?: string, // Project title
-    @Query('startDate') startDate?: string,
-    @Query('status') status?: 'published' | 'draft',
-    @Query('ref') ref?: number // Project ID
+    @Query(new ZodValidationPipe(projectListQuerySchema)) query: ProjectListQueryDto,
   ): Promise<ProjectListResponseDto> {
     const user_id: number = req['user_id'];
+    const { page = 1, limit = 10, title, startDate, status, ref } = query;
     const parsedStartDate: Date = startDate ? new Date(startDate) : undefined;
 
     return this.recruiterProjectService.findAll(user_id, +page, +limit, title, parsedStartDate, status, ref);
@@ -66,27 +65,29 @@ export class RecruiterProjectController {
     const user_id: number=req['user_id']
     return this.recruiterProjectService.findAllUsersProjects(user_id);
   }
-
+  
   @Get('project-view/:project_url')
   findOne(
-    @Param('project_url') project_url: string,
+    @Param(new ZodValidationPipe(projectViewByUrlParamSchema)) param: ProjectViewByUrlParamDto,
     @Req() req: Request,
   ): Promise<ProjectResponseDto> {
+    const {project_url}= param
     return this.recruiterProjectService.findOneByUrl(project_url);
   }
 
   @Get(':id')
   findOneProject(
-    @Param('id') id: string,
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
     @Req() req: Request,
   ): Promise<ProjectResponseDto> {
+    const {id}= param;
     return this.recruiterProjectService.findOne(+id);
   }
-
+  
   @Post()
   @UseInterceptors(FileInterceptor('logo'))
   create(
-    @Body() accountProjectData: RecruiterProjectRequestDto,
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema)) accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<ProjectResponseDto> {
@@ -118,7 +119,7 @@ export class RecruiterProjectController {
   @Post('save_and_publish')
   @UseInterceptors(FileInterceptor('logo'))
   saveAndPublish(
-    @Body() accountProjectData: RecruiterProjectRequestDto,
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema)) accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<ProjectResponseDto> {
@@ -149,12 +150,13 @@ export class RecruiterProjectController {
   @Post('update_and_publish/:id')
   @UseInterceptors(FileInterceptor('logo'))
   updateAndPublish(
-    @Body() accountProjectData: RecruiterProjectRequestDto,
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema)) accountProjectData: RecruiterProjectRequestDto,
     @Req() req: Request,
     @UploadedFile() image: Multer.File,
-    @Param('id') id: number,
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
   ): Promise<ProjectResponseDto> {
     const user_id: number = req['user_id'];
+    const {id}= param;
     let imageType: string | null=null;
     if(image){
       const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
@@ -181,31 +183,34 @@ export class RecruiterProjectController {
 
   @Post('/:id/publish')
   async publishProject(
-    @Param('id') projectId: number,
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
     @Req() req: Request,
   ): Promise<ProjectResponseDto> {
     const userId: number = req['user_id'];
-    return this.recruiterProjectService.publishProject(projectId, userId);
+    const {id}= param;
+    return this.recruiterProjectService.publishProject(id, userId);
   }
 
   @Post('/:id/unpublish')
 async unpublishProject(
-  @Param('id') projectId: number,
+  @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
   @Req() req: Request,
 ): Promise<ProjectResponseDto> {
   const userId: number = req['user_id'];
-  return this.recruiterProjectService.unpublishProject(projectId, userId);
+  const {id}= param;
+  return this.recruiterProjectService.unpublishProject(id, userId);
 }
 
   @Put('/:id')
   @UseInterceptors(FileInterceptor('logo'))
   update(
-    @Param('id') id: string,
-    @Body() accountProjectData: RecruiterProjectRequestDto,
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema)) accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
   ): Promise<ProjectResponseDto> {
     const user_id: number = req['user_id'];
+    const {id}= param;
     let imageType: string | null=null;
     if(image){
       const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
@@ -231,17 +236,20 @@ async unpublishProject(
   }
 
   @Delete('/:id')
-  remove(@Param('id') id: number, @Req() req: Request): Promise<ProjectResponseDto> {
+  remove(@Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto, @Req() req: Request): Promise<ProjectResponseDto> {
     const user_id: number = req['user_id'];
+    const {id}= param;
     return this.recruiterProjectService.remove(+id, user_id);
   }
 
  
-
+  
   @Get('project_ranking/:id')
-  async getRanking(@Param('id') project_id: number, @Req() req: Request,   @Query('min_experience') min_experience?: string): Promise<ApplicationRankingListResponseDto> {
+  async getRanking(@Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto, @Req() req: Request,   @Query(new ZodValidationPipe(projectRankingQuerySchema)) query: ProjectRankingQueryDto): Promise<ApplicationRankingListResponseDto> {
     const user_id: number = req['user_id'];
-    return await this.recruiterProjectService.getRanking(project_id, user_id, min_experience);
+    const {id}= param;
+    const {min_experience}= query;
+    return await this.recruiterProjectService.getRanking(id, user_id, min_experience);
   }
 
   getImageTypeFromMimetype(mimetype: string): string | null {
