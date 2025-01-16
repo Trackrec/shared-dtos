@@ -47,17 +47,11 @@ export const verifyPositionRequestSchema = z.object({
 });
 
 export const resendPositionVerificationEmailRequestSchema = z.object({
-  requestId: z
-    .number()
-    .int('Request ID must be an integer.')
-    .positive('Request ID must be a positive number.'),
+  requestId: z.union([z.string(), z.number()]),
 });
 
 export const changeVerificationRequestSchema = z.object({
-  request_id: z
-    .number()
-    .int('Request ID must be an integer.')
-    .positive('Request ID must be a positive number.'),
+  request_id: z.union([z.string(), z.number()]),
   status: z.string().min(1, 'Status is required.').max(50, 'Status must not exceed 50 characters.'),
 });
 
@@ -69,8 +63,5 @@ export const updateUserIdRequestSchema = z.object({
 });
 
 export const deleteVerificationSchema = z.object({
-  request_id: z
-    .number()
-    .int('Request ID must be an integer.')
-    .positive('Request ID must be a positive number.'),
+  request_id: z.union([z.string(), z.number()]),
 });
