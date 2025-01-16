@@ -32,7 +32,6 @@ import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 
 import { ThrottlerGuard } from '@nestjs/throttler';
 
-import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe'
 import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
 import { Response } from 'express';
 
