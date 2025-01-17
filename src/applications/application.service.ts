@@ -46,7 +46,7 @@ export class ApplicationService {
         custom_current_role: customCurrentRole,
       } = body;
 
-      if (!projectId || !ote || !available || !positionId || !city || !customCurrentRole) {
+      if (!projectId || !ote || !positionId || !city || !customCurrentRole) {
         this.logger.warn(
           `Missing required fields in the application payload for user ID: ${userId}`,
         );
