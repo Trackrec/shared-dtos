@@ -21,7 +21,7 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
   ) {
     super({
       clientID: linkedin.primaryClientId,
-      clientSecret:linkedin.primaryClientSecret,
+      clientSecret: linkedin.primaryClientSecret,
       callbackURL: linkedin.primaryCallbackUrl,
       scope: ['r_basicprofile', 'r_liteprofile', 'r_emailaddress'],
       passReqToCallback: true, // This is important to get the req in the validate method

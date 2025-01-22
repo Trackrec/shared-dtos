@@ -20,7 +20,7 @@ import {
 import { CompanyDto } from 'src/shared-dtos/src/company.dto';
 import { configurations } from '../config/env.config';
 
-const { mailgun, reactAppUrl, nobellaAccessToken } =configurations;
+const { mailgun, reactAppUrl, nobellaAccessToken } = configurations;
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);

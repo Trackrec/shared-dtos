@@ -18,7 +18,9 @@ import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-comp
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 import { configurations } from '../config/env.config';
 
-const { db: { host, port, username, password, database } } = configurations;
+const {
+  db: { host, port, username, password, database },
+} = configurations;
 
 export const databaseConfig: TypeOrmModuleOptions = {
   type: 'mysql',

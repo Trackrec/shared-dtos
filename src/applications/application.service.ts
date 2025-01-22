@@ -13,7 +13,7 @@ import {
 } from 'src/shared-dtos/src/project_application.dto';
 import { configurations } from '../config/env.config';
 
-const { mailgun } =configurations;
+const { mailgun } = configurations;
 @Injectable()
 export class ApplicationService {
   private readonly logger = new Logger(ApplicationService.name);

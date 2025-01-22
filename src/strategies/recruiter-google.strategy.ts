@@ -14,8 +14,8 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
   constructor(private readonly recruiterAuthService: RecruiterAuthService) {
     super({
       clientID: google.clientId,
-      clientSecret: google.clientSecret, 
-      callbackURL: google.recruiterCallbackUrl, 
+      clientSecret: google.clientSecret,
+      callbackURL: google.recruiterCallbackUrl,
       scope: ['email', 'profile'],
     });
   }

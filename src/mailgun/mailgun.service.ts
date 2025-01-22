@@ -3,7 +3,9 @@ import Mailgun from 'mailgun.js';
 import FormData from 'form-data';
 import { configurations } from '../config/env.config';
 
-const { mailgun: {key, domain} } = configurations;
+const {
+  mailgun: { key, domain },
+} = configurations;
 @Injectable()
 export class MailgunService {
   constructor() {}

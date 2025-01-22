@@ -6,7 +6,7 @@ import { Cron } from '@nestjs/schedule';
 import { MailgunService } from 'src/mailgun/mailgun.service';
 import { configurations } from './config/env.config';
 
-const { mailgun, reactAppUrl } =configurations;
+const { mailgun, reactAppUrl } = configurations;
 
 @Injectable()
 export class CronService {

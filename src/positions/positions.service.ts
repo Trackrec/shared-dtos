@@ -15,7 +15,10 @@ import {
 
 import { configurations } from '../config/env.config';
 
-const { reactAppUrl, mailgun: {domain} } = configurations;
+const {
+  reactAppUrl,
+  mailgun: { domain },
+} = configurations;
 @Injectable()
 export class PositionService {
   private readonly logger = new Logger(PositionService.name);

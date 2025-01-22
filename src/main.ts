@@ -11,7 +11,7 @@ import { loggerConfig } from './config/logger.config';
 import { configurations } from './config/env.config';
 import { AppLoggerService } from './logger.service';
 
-const { sentryDns, port, jwtSecret } =configurations;
+const { sentryDns, port, jwtSecret } = configurations;
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
