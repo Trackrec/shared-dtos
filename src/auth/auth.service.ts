@@ -18,6 +18,9 @@ import {
   UserDto,
 } from 'src/shared-dtos/src/user.dto';
 import { CompanyDto } from 'src/shared-dtos/src/company.dto';
+import { configurations } from '../config/env.config';
+
+const { mailgun, reactAppUrl, nobellaAccessToken } = configurations;
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -110,7 +113,7 @@ export class AuthService {
       this.logger.log(`New user created with ID: ${user.id}`);
 
       const messageData = {
-        from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `TrackRec <no-reply@${mailgun.domain}>`,
         to: user.email,
         subject: `Welcome to TrackRec`,
         html: `
@@ -145,7 +148,7 @@ export class AuthService {
                 <div class="container">
                    <div class="content">
                       <p>Hello ${user?.full_name}, and welcome to TrackRec.</p>
-                      <p>I'm absolutely thrilled to have you here. At any given time, go to <a href="${process.env.REACT_APP_URL}">${process.env.REACT_APP_URL}</a> to access and update your track record.</p>
+                      <p>I'm absolutely thrilled to have you here. At any given time, go to <a href="${reactAppUrl}">${reactAppUrl}</a> to access and update your track record.</p>
                       <p>Here’s what you can expect from using TrackRec:</p>
                       <ul>
                          <li>Showcase your sales achievements and track record (and ditch the resume once and for all).</li>
@@ -156,11 +159,11 @@ export class AuthService {
                       </ul>
                       <p>Let's grow your sales career,</p>
                       <p>Victor @ TrackRec<br>Founder</p>
-                      <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
+                      <p><a href="${reactAppUrl}" class="button">Go to TrackRec</a></p>
                    </div>
                       <p>Best,<br>
                          Team TrackRec<br>
-                         <a href="${process.env.REACT_APP_URL}">app.trackrec.co</a>
+                         <a href="${reactAppUrl}">app.trackrec.co</a>
                       </p>
                 </div>
              </body>
@@ -536,7 +539,7 @@ export class AuthService {
     this.logger.debug(`importExperiences called for user ID: ${userId}, username: ${username}`);
 
     const headers = {
-      Authorization: `Bearer ${process.env.nobellaAccessToken}`,
+      Authorization: `Bearer ${nobellaAccessToken}`,
     };
     const url = `https://nubela.co/proxycurl/api/v2/linkedin?linkedin_profile_url=https://www.linkedin.com/in/${username}&use_cache=if-recent`;
 

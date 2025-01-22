@@ -4,7 +4,9 @@ import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { UserAccounts } from 'src/auth/User.entity';
 import { Repository } from 'typeorm';
+import { configurations } from '../config/env.config';
 
+const { jwtSecret } = configurations;
 @Injectable()
 export class TokenMiddleware implements NestMiddleware {
   constructor(
@@ -24,7 +26,7 @@ export class TokenMiddleware implements NestMiddleware {
 
     if (token != 'null' && token) {
       try {
-        const decodedToken: { id: number } = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedToken: { id: number } = jwt.verify(token, jwtSecret);
         req['user_id'] = decodedToken.id;
         this.updateLastAccessed(decodedToken.id);
         next();

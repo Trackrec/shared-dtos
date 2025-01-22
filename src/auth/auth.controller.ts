@@ -34,7 +34,9 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
 import { Response } from 'express';
+import { configurations } from '../config/env.config';
 
+const { reactAppUrl } = configurations;
 // Custom Exception Filter to catch all errors globally for LinkedIn login
 @Injectable()
 @Catch()
@@ -46,10 +48,9 @@ export class LinkedInAuthExceptionFilter implements ExceptionFilter {
     console.error('LinkedIn Auth Error:', exception);
 
     // Redirect to a custom error page with a meaningful message
-    return response.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+    return response.redirect(`${reactAppUrl}/linkedin`);
   }
 }
-
 
 @Injectable()
 export class LinkedInAuthGuard extends AuthGuard('linkedin') {
@@ -71,8 +72,6 @@ export class LinkedInSecondaryAuthGuard extends AuthGuard('linkedinSecondary') {
   }
 }
 
-
-
 @Controller()
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -91,21 +90,21 @@ export class AuthController {
   }
 
   @Get('linkedin/set-session')
-  @UseGuards(LinkedInAuthGuard) 
+  @UseGuards(LinkedInAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   linkedinLogin(@Req() req) {
     this.logger.log('LinkedIn login initiated');
   }
 
   @Get('secondary-linkedin/set-session')
-  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @UseGuards(LinkedInSecondaryAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   secondaryLinkedinLogin(@Req() req) {
     this.logger.log('Secondary LinkedIn login initiated');
   }
 
   @Get('linkedin/callback')
-  @UseGuards(LinkedInAuthGuard) 
+  @UseGuards(LinkedInAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   async linkedinLoginCallback(@Req() req, @Res() res) {
     try {
@@ -116,28 +115,25 @@ export class AuthController {
       if (topBarJobId) {
         this.logger.log(`Redirecting LinkedIn user with job ID: ${topBarJobId}`);
         return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+          `${reactAppUrl}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
         );
       }
 
       if (user && user.token) {
         this.logger.log(`Redirecting LinkedIn user with token: ${user.token}`);
-        return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
-        );
+        return res.redirect(`${reactAppUrl}/?token=${user.token}&${savedQueryParams}`);
       } else {
         this.logger.warn('User token missing during LinkedIn callback');
-        return res.redirect(`${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`);
+        return res.redirect(`${reactAppUrl}/linkedin?${savedQueryParams}`);
       }
     } catch (error) {
       this.logger.error(`Error in linkedinLoginCallback: ${error.message}`, error.stack);
-      return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+      return res.redirect(`${reactAppUrl}/linkedin`);
     }
   }
 
-
   @Get('secondar-_linkedin/callback')
-  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @UseGuards(LinkedInSecondaryAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
@@ -148,22 +144,20 @@ export class AuthController {
       if (topBarJobId) {
         this.logger.log(`Redirecting secondary LinkedIn user with job ID: ${topBarJobId}`);
         return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+          `${reactAppUrl}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
         );
       }
 
       if (user && user.token) {
         this.logger.log(`Redirecting secondary LinkedIn user with token: ${user.token}`);
-        return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
-        );
+        return res.redirect(`${reactAppUrl}/?token=${user.token}&${savedQueryParams}`);
       } else {
         this.logger.warn('User token missing during secondary LinkedIn callback');
-        return res.redirect(`${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`);
+        return res.redirect(`${reactAppUrl}/linkedin?${savedQueryParams}`);
       }
     } catch (error) {
       this.logger.error(`Error in secondaryLinkedinLoginCallback: ${error.message}`, error.stack);
-      return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+      return res.redirect(`${reactAppUrl}/linkedin`);
     }
   }
 

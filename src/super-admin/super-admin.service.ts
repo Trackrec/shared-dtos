@@ -17,7 +17,9 @@ import {
   UserDto,
 } from 'src/shared-dtos/src/user.dto';
 import { CompanyDto } from 'src/shared-dtos/src/company.dto';
+import { configurations } from '../config/env.config';
 
+const { jwtSecret } = configurations;
 @Injectable()
 export class SuperAdminService {
   private readonly logger = new Logger(SuperAdminService.name);
@@ -156,7 +158,7 @@ export class SuperAdminService {
         username,
       };
 
-      const token: string = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
+      const token: string = jwt.sign(payload, jwtSecret, { expiresIn: '30d' });
 
       this.logger.log(`Impersonation successful for user ID: ${userId}`);
 

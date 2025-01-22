@@ -11,7 +11,9 @@ import {
   ProjectApplicationDto,
   ProjectApplicationRequestDto,
 } from 'src/shared-dtos/src/project_application.dto';
+import { configurations } from '../config/env.config';
 
+const { mailgun } = configurations;
 @Injectable()
 export class ApplicationService {
   private readonly logger = new Logger(ApplicationService.name);
@@ -92,7 +94,7 @@ export class ApplicationService {
         );
 
         const messageData = {
-          from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+          from: `Trackrec <no-reply@${mailgun.domain}>`,
           to: user?.email,
           subject: `Application for ${application.project.title}`,
           html: `

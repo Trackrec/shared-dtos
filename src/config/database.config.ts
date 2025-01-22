@@ -16,18 +16,19 @@ import { VerifyPosition } from 'src/verify-position/verify-position.entity';
 import { RecruiterCompanyUser } from 'src/recruiter/recruiter-company/recruiter-company-user.entity';
 import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
-dotenv.config();
+import { configurations } from '../config/env.config';
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE } = process.env;
+const {
+  db: { host, port, username, password, database },
+} = configurations;
 
 export const databaseConfig: TypeOrmModuleOptions = {
   type: 'mysql',
-  host: DB_HOST,
-  port: parseInt(DB_PORT),
-  username: DB_USERNAME,
-  password: DB_PASSWORD,
-  database: DB_DATABASE,
+  host,
+  port,
+  username,
+  password,
+  database,
   connectTimeout: 60000,
   entities: [
     UserAccounts,

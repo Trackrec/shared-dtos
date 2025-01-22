@@ -7,7 +7,9 @@ import {
 } from '@aws-sdk/client-s3';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { configurations } from '../config/env.config';
 
+const { digitalOcean } = configurations;
 @Injectable()
 export class S3UploadService {
   private s3: S3Client;
@@ -16,10 +18,10 @@ export class S3UploadService {
   constructor() {
     this.s3 = new S3Client({
       region: 'us-east-1',
-      endpoint: process.env.DIGITAL_OCEAN_ENDPOINT,
+      endpoint: digitalOcean.endpoint,
       credentials: {
-        accessKeyId: process.env.DIGITAL_OCEAN_ACCESS_KEY_ID,
-        secretAccessKey: process.env.DIGITAL_OCEAN_SECRET_ACCESS_KEY,
+        accessKeyId: digitalOcean.accessKeyId,
+        secretAccessKey: digitalOcean.secretAccessKey,
       },
     });
   }

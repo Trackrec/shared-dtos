@@ -18,6 +18,9 @@ import {
   UserDto,
 } from 'src/shared-dtos/src/user.dto';
 import { PositionDto, VerifyPositionDto } from 'src/shared-dtos/src/position.dto';
+import { configurations } from '../config/env.config';
+
+const { reactAppUrl, mailgun } = configurations;
 @Injectable()
 export class PublishProfileService {
   private readonly logger = new Logger(PublishProfileService.name);
@@ -70,7 +73,7 @@ export class PublishProfileService {
       }
 
       const messageData = {
-        from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `TrackRec <no-reply@${mailgun.domain}>`,
         to: user.email,
         subject: `Get in Touch - Inquiry from ${emailData.name}`,
         html: `
@@ -119,7 +122,7 @@ export class PublishProfileService {
                 
                 Best, <br/>
                 Team TrackRec <br/> 
-                <a href="${process.env.REACT_APP_URL}">app.trackrec.co</a> <br/>
+                <a href="${reactAppUrl}">app.trackrec.co</a> <br/>
               </div>
             </div>
           </body>
