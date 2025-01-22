@@ -12,6 +12,10 @@ import {
   PositionRequestDto,
   PositionWithCompany,
 } from 'src/shared-dtos/src/position.dto';
+
+import { configurations } from '../config/env.config';
+
+const { reactAppUrl, mailgun: {domain} } = configurations;
 @Injectable()
 export class PositionService {
   private readonly logger = new Logger(PositionService.name);
@@ -132,7 +136,7 @@ export class PositionService {
       this.logger.log(`Preparing welcome email for user: ${user.email}`);
 
       const messageData = {
-        from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `TrackRec <no-reply@${domain}>`,
         to: user.email,
         subject: `Congrats on Completing Your First Experience`,
         html: `
@@ -175,7 +179,7 @@ export class PositionService {
                       <p>You'll receive an email once this person verifies this experience, and their name & LinkedIn profile will be displayed in the Verified section of your profile.</p>
                       <p>Let's grow your sales career,</p>
                       <p>Victor @ TrackRec<br>Founder</p>
-                      <p><a href="${process.env.REACT_APP_URL}" class="button">Go to TrackRec</a></p>
+                      <p><a href="${reactAppUrl}" class="button">Go to TrackRec</a></p>
                    </div>
                 </div>
              </body>

@@ -23,9 +23,13 @@ import { changePasswordRequestSchema, forgotPasswordRequestSchema, inviteUserReq
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
-  import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
-  import { Response } from 'express';
+import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
+import { Response } from 'express';
 
+
+import { configurations } from '../../config/env.config';
+
+const { reactAppUrl } = configurations;
 // Custom Exception Filter to catch all errors globally for LinkedIn login
 @Injectable()
 @Catch()
@@ -37,7 +41,7 @@ export class LinkedInAuthExceptionFilter implements ExceptionFilter {
     console.error('LinkedIn Auth Error:', exception);
 
     // Redirect to a custom error page with a meaningful message
-    return response.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
+    return response.redirect(`${reactAppUrl}/recruiter/login`);
   }
 }
 
@@ -148,10 +152,10 @@ export class GoogleAuthGuard extends AuthGuard('google') {
           
           if (user && user.token) {
             return res.redirect(
-              `${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`,
+              `${reactAppUrl}/recruiter/login?token=${user.token}`,
             );
           } else {
-            let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
+            let redirectUrl = `${reactAppUrl}/recruiter/login`;
 
             if (user && user.error) {
              redirectUrl += `?error=${user.error}`;
@@ -161,7 +165,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
           }
         } catch (error) {
           this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-          return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
+          return res.redirect(`${reactAppUrl}/recruiter/login`);
         }
        
   }
@@ -187,9 +191,9 @@ export class GoogleAuthGuard extends AuthGuard('google') {
   
       if (user && user.token) {
         this.logger.log(`LinkedIn login successful. Redirecting with token for user: ${user?.email}`);
-        return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login?token=${user.token}`);
+        return res.redirect(`${reactAppUrl}/recruiter/login?token=${user.token}`);
       } else {
-        let redirectUrl = `${process.env.REACT_APP_URL}/recruiter/login`;
+        let redirectUrl = `${reactAppUrl}/recruiter/login`;
   
         if (user && user.error) {
           this.logger.warn(`LinkedIn login failed for user. Error: ${user.error}`);
@@ -202,7 +206,7 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       }
     } catch (error) {
       this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-      return res.redirect(`${process.env.REACT_APP_URL}/recruiter/login`);
+      return res.redirect(`${reactAppUrl}/recruiter/login`);
     }
   }
 

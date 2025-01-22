@@ -16,7 +16,9 @@ import {
   VerifyPositionRequestDto,
   VerifyRequestsResponseDto,
 } from 'src/shared-dtos/src/position.dto';
+import { configurations } from '../config/env.config';
 
+const { mailgun, reactAppUrl, jwtSecret } = configurations;
 @Injectable()
 export class VerifyPositionService {
   private readonly logger = new Logger(VerifyPositionService.name);
@@ -54,7 +56,7 @@ export class VerifyPositionService {
       );
 
       const messageData = {
-        from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `Trackrec <no-reply@${mailgun.domain}>`,
         to: existingRequest?.email,
         subject: `Requesting verification of experience`,
         html: `
@@ -64,9 +66,9 @@ export class VerifyPositionService {
         Now, they listed you as someone who can attest to their professional accomplishments during their time at ${existingRequest.position?.company?.name}.<br/>
         ${existingRequest.requestBy.full_name.split(' ')[0]} needs 1 minute of your time to verify their experience with ${existingRequest.position?.company?.name} to solidify their sales achievements and help them land their next big role.<br/>
         Here's the link to help ${existingRequest.requestBy.full_name.split(' ')[0]}.<br/><br/>
-        <a href="${process.env.REACT_APP_URL}/?approval_request=true&request_token=${existingRequest.unique_token}">Click here</a> <br/><br/>
+        <a href="${reactAppUrl}/?approval_request=true&request_token=${existingRequest.unique_token}">Click here</a> <br/><br/>
   
-        And then, if you want to checkout the platform:  <a href="${process.env.REACT_APP_URL}">app.trackrec.co</a>
+        And then, if you want to checkout the platform:  <a href="${reactAppUrl}">app.trackrec.co</a>
         `,
       };
 
@@ -87,7 +89,7 @@ export class VerifyPositionService {
   }
 
   generateUniqueToken(payload: { id: number }): string {
-    return jwt.sign(payload, process.env.JWT_SECRET);
+    return jwt.sign(payload, jwtSecret);
   }
 
   async requestVerification(
@@ -163,7 +165,7 @@ export class VerifyPositionService {
       this.positionRepository.save(position);
 
       const messageData = {
-        from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `Trackrec <no-reply@${mailgun.domain}>`,
         to: requestBody.email,
         subject: `Requesting verification of experience`,
         html: `
@@ -173,9 +175,9 @@ export class VerifyPositionService {
         Now, they listed you as someone who can attest to their professional accomplishments during their time at ${position?.company?.name}.<br/>
         ${requestBy.full_name.split(' ')[0]} needs 1 minute of your time to verify their experience with ${position?.company?.name} to solidify their sales achievements and help them land their next big role.<br/>
         Here's the link to help ${requestBy.full_name.split(' ')[0]}.<br/><br/>
-        <a href="${process.env.REACT_APP_URL}/?approval_request=true&request_token=${verifyPosition.unique_token}">Click here</a> <br/><br/>
+        <a href="${reactAppUrl}/?approval_request=true&request_token=${verifyPosition.unique_token}">Click here</a> <br/><br/>
 
-        And then, if you want to checkout the platform:  <a href="${process.env.REACT_APP_URL}">app.trackrec.co</a>
+        And then, if you want to checkout the platform:  <a href="${reactAppUrl}">app.trackrec.co</a>
         `,
       };
 
@@ -229,7 +231,7 @@ export class VerifyPositionService {
       if (status === 'Approved') {
         this.logger.log(`Sending approval email to ${verifyPosition?.requestBy?.email}`);
         messageData = {
-          from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+          from: `Trackrec <no-reply@${mailgun.domain}>`,
           to: verifyPosition?.requestBy?.email,
           subject: `Your Experience Verification Update`,
           html: `
@@ -243,7 +245,7 @@ export class VerifyPositionService {
       } else {
         this.logger.log(`Sending rejection email to ${verifyPosition?.requestBy?.email}`);
         messageData = {
-          from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+          from: `Trackrec <no-reply@${mailgun.domain}>`,
           to: verifyPosition?.requestBy?.email,
           subject: `Your Experience Verification Update`,
           html: `

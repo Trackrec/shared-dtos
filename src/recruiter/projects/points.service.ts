@@ -3,7 +3,9 @@ import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { PositionDto } from 'src/shared-dtos/src/position.dto';
 import { RecruiterProjectDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { configurations } from '../../config/env.config';
 
+const { openAiApiKey } = configurations;
 @Injectable()
 export class RecruiterPointsService {
   private readonly logger = new Logger(RecruiterPointsService.name);
@@ -15,7 +17,7 @@ export class RecruiterPointsService {
     dotenv.config();
     // Initialize the OpenAI client as a class-level property
     this.openAIClient = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY, // Ensure the API key is loaded from environment variables
+      apiKey: openAiApiKey, // Ensure the API key is loaded from environment variables
     });
   }
 

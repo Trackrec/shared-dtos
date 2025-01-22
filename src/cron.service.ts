@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
 import { Cron } from '@nestjs/schedule';
 import { MailgunService } from 'src/mailgun/mailgun.service';
+import { configurations } from './config/env.config';
+
+const { mailgun, reactAppUrl } =configurations;
 
 @Injectable()
 export class CronService {
@@ -29,7 +32,7 @@ export class CronService {
     for (const user of usersToNudge) {
       try {
         const messageData = {
-          from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+          from: `TrackRec <no-reply@${mailgun.domain}>`,
           to: user.email,
           subject: `Complete Your TrackRec Profile`,
           html: `
@@ -66,16 +69,16 @@ export class CronService {
                 <p>Hello ${user.full_name},</p>
                 <p>You recently created a TrackRec but haven't updated any experiences.</p>
                 <p>In order to match you with a job opportunity, we need to understand what you've achieved for the past 2 years at least.</p>
-                <p>Go to <a href="${process.env.REACT_APP_URL}">${process.env.REACT_APP_URL}</a> so you can tell us more and also set your own terms for your next role (Title, Compensation, Location, Work environment etc).</p>
+                <p>Go to <a href="${reactAppUrl}">${reactAppUrl}</a> so you can tell us more and also set your own terms for your next role (Title, Compensation, Location, Work environment etc).</p>
                 <p>Any questions, just answer to this email!</p>
                 <p>Let's grow your sales career,</p>
                 <p>Victor @ TrackRec<br>Founder</p>
-                <p><a href="${process.env.REACT_APP_URL}">Go to TrackRec</a></p>
+                <p><a href="${reactAppUrl}">Go to TrackRec</a></p>
               </div>
 
                 <p>Best,<br>
                   Team TrackRec<br> 
-                  <a href="${process.env.REACT_APP_URL}" style="color: #fff;">app.trackrec.co</a>
+                  <a href="${reactAppUrl}" style="color: #fff;">app.trackrec.co</a>
                 </p>
             </div>
           </body>

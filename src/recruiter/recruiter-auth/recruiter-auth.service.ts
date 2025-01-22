@@ -26,7 +26,9 @@ import {
   RecruiterCompanyUserDto,
 } from 'src/shared-dtos/src/recruiter_company';
 import { RecruiterProjectDto } from 'src/shared-dtos/src/recruiter_project.dto';
+import { configurations } from '../../config/env.config';
 
+const { jwtSecret, nobellaAccessToken, mailgun, reactAppUrl } = configurations;
 @Injectable()
 export class RecruiterAuthService {
   private readonly logger = new Logger(RecruiterAuthService.name);
@@ -85,7 +87,7 @@ export class RecruiterAuthService {
       this.logger.log(`New user registered and saved to the database with email: ${email}`);
 
       // Generate JWT token
-      const token: string = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+      const token: string = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
         expiresIn: '30d',
       });
 
@@ -127,7 +129,7 @@ export class RecruiterAuthService {
       this.logger.log(`Password validated successfully for email: ${email}`);
 
       // Generate JWT token upon successful authentication
-      const token: string = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+      const token: string = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
         expiresIn: '30d',
       });
 
@@ -526,7 +528,7 @@ export class RecruiterAuthService {
 
   async importExperiences(user, userId, username) {
     const headers = {
-      Authorization: `Bearer ${process.env.nobellaAccessToken}`,
+      Authorization: `Bearer ${nobellaAccessToken}`,
     };
     const url: string = `https://nubela.co/proxycurl/api/v2/linkedin?linkedin_profile_url=https://www.linkedin.com/in/${username}&use_cache=if-recent`;
 
@@ -662,7 +664,7 @@ export class RecruiterAuthService {
 
       // Send login credentials via email
       const messageData = {
-        from: `Trackrec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `Trackrec <no-reply@${mailgun.domain}>`,
         to: email,
         subject: `${fullName}, Account Credentials`,
         html: `
@@ -862,9 +864,9 @@ export class RecruiterAuthService {
       this.logger.log(`Password reset token generated and saved for user (ID: ${user.id}).`);
 
       // Sending password reset email
-      const resetLink = `${process.env.REACT_APP_URL}/recruiter/reset-password/${token}`;
+      const resetLink = `${reactAppUrl}/recruiter/reset-password/${token}`;
       const messageData = {
-        from: `TrackRec <no-reply@${process.env.MAILGUN_DOMAIN}>`,
+        from: `TrackRec <no-reply@${mailgun.domain}>`,
         to: user.email,
         subject: 'Password Reset Request',
         html: `

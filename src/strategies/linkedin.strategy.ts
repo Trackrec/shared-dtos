@@ -7,7 +7,9 @@ import { Request } from 'express';
 import { VerifyPosition } from 'src/verify-position/verify-position.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { configurations } from '../config/env.config';
 
+const { linkedin, jwtSecret } = configurations;
 @Injectable()
 export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
   private readonly logger = new Logger(LinkedinStrategy.name);
@@ -18,9 +20,9 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
     private readonly verifyPostionRepository: Repository<VerifyPosition>,
   ) {
     super({
-      clientID: process.env.PRIMARY_LINKEDIN_CLIENT_ID,
-      clientSecret: process.env.PRIMARY_LINKEDIN_CLIENT_SECRET,
-      callbackURL: process.env.PRIMARY_LINKEDIN_CALLBACK_URL,
+      clientID: linkedin.primaryClientId,
+      clientSecret:linkedin.primaryClientSecret,
+      callbackURL: linkedin.primaryCallbackUrl,
       scope: ['r_basicprofile', 'r_liteprofile', 'r_emailaddress'],
       passReqToCallback: true, // This is important to get the req in the validate method
     });
@@ -80,6 +82,6 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
       username: user.username,
     };
 
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
+    return jwt.sign(payload, jwtSecret, { expiresIn: '30d' });
   }
 }

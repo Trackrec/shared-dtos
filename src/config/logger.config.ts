@@ -2,8 +2,9 @@ import * as winston from 'winston';
 import * as path from 'path';
 import { mkdirSync } from 'fs';
 import { ClsServiceManager } from 'nestjs-cls';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { configurations } from '../config/env.config';
+
+const { nodeEnv } = configurations;
 const logDir = path.join(__dirname, '../../logs');
 
 const createLogDir = (dirName: string) => mkdirSync(`${logDir}/${dirName}`, { recursive: true });
@@ -40,9 +41,8 @@ const requestIdFormat = winston.format((info) => {
 
 const transports: winston.transport[] = [];
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const NODE_ENV = process.env.NODE_ENV || 'development';
 
-if (NODE_ENV === 'development') {
+if (nodeEnv === 'development') {
   // In development, log to the console
   transports.push(
     new winston.transports.Console({

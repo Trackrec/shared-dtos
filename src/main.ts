@@ -8,15 +8,17 @@ import session from 'express-session';
 import { ResponseInterceptor } from './interceptors/response.intercepter';
 import { LoggingInterceptor } from './interceptors/logging.intercepter';
 import { loggerConfig } from './config/logger.config';
-
+import { configurations } from './config/env.config';
 import { AppLoggerService } from './logger.service';
+
+const { sentryDns, port, jwtSecret } =configurations;
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   app.enableCors();
 
   Sentry.init({
-    dsn: process.env.SENTRY_DNS,
+    dsn: sentryDns,
   });
 
   // Import the filter globally, capturing all exceptions on all routes
@@ -34,11 +36,11 @@ const bootstrap = async () => {
   app.useGlobalInterceptors(new LoggingInterceptor(appLogger));
   app.use(
     session({
-      secret: process.env.JWT_SECRET,
+      secret: jwtSecret,
       resave: false,
       saveUninitialized: false,
     }),
   );
-  await app.listen(process.env.PORT);
+  await app.listen(port);
 };
 bootstrap();
