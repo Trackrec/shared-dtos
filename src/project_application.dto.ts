@@ -19,7 +19,6 @@ export interface ProjectApplicationRequestDto {
   available: boolean;
   position_id: number;
   city: string;
-  custom_current_role: string;
 }
 
 export interface ProjectApplicationWithPostions extends ProjectApplicationDto {

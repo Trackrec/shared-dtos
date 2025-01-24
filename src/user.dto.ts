@@ -136,6 +136,10 @@ export interface ImpersonateUserRequestDto {
   username: string;
 }
 
+export interface DeleteUserRequestDto {
+  user_id: number;
+}
+
 export interface GetInTouchMailRequestDto {
   email: string;
   email_to: string;

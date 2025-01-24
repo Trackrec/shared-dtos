@@ -5,6 +5,7 @@ import { UserDto } from './user.dto';
 export interface RecruiterProjectDto {
   id: number;
   title: string;
+  project_title: string;
   company_name: string | null;
   logo: string | null;
   logo_type: string | null;
@@ -118,6 +119,7 @@ export interface ProjectVisitorsCountResponseDto {
 export interface RecruiterProjectRequestDto {
   id: string;
   title: string;
+  project_title: string;
   company_name: string | null;
   logo: string | null;
   logo_type: string | null;
@@ -173,10 +175,12 @@ export interface RecruiterProjectRequestDto {
   company: string | null;
   logo_url: string | null;
   website_url: string | null;
+  linkedin_url: string | null;
   domain: string | null;
   company_logo_url: string | null;
   company_website_url: string | null;
   company_domain: string | null;
+
 }
 
 export interface ProjectVisitorParamDto {

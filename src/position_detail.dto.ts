@@ -51,6 +51,12 @@ export interface PositionDetailsDto {
   position: PositionDto;
 }
 
+interface NotableClient {
+  id: string | null;
+  logo_url: string | null;
+  label: string | null;
+  value: string | null;
+}
 export interface PositionDetailsRequestDto {
   id: string;
   position_id: string | null;
@@ -72,7 +78,7 @@ export interface PositionDetailsRequestDto {
   average_sales_cycle_duration: string | null;
   long_sales_cycle_duration: string | null;
   disable_prospecting: boolean | null;
-  notable_clients: object[] | null;
+  notable_clients: NotableClient[] | null;
   management: string[] | null;
   persona: string[] | null;
   achievements: string[] | null;

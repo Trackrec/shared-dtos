@@ -8,6 +8,7 @@ export interface CompanyDto {
   domain: string | null;
   logo_url: string | null;
   website_url: string | null;
+  linkedin_url: string | null;
   created_at: Date;
   updated_at: Date;
   positions: PositionDto[];
@@ -18,6 +19,7 @@ export interface CompanyDataDto {
   company_name: string;
   logo_url?: string | null;
   website_url?: string | null;
+  linkedin_url?: string | null;
   domain?: string | null;
   company_logo_url?: string | null;
   company_website_url?: string | null;
