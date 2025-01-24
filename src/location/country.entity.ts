@@ -76,9 +76,9 @@ export class Country {
   @Column({ name: 'emojiU' })
   emojiU: string;
 
-  @OneToMany(() => State, (state) => state.country)
+  @OneToMany(() => State, (state) => state.country, { onDelete: 'CASCADE' })
   states: State[];
 
-  @OneToMany(() => City, (city) => city.country)
+  @OneToMany(() => City, (city) => city.country, { onDelete: 'CASCADE' })
   cities: City[];
 }

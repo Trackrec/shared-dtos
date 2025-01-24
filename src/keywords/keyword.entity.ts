@@ -16,7 +16,7 @@ export class Keywords {
   @Column({ type: 'simple-array', nullable: true })
   keywords: string[];
 
-  @OneToOne(() => UserAccounts)
+  @OneToOne(() => UserAccounts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   userAccount: UserAccounts;
 

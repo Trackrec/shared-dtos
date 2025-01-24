@@ -29,7 +29,7 @@ export class ProjectApplication {
   @Column({ type: 'int', nullable: true })
   position_id: number;
 
-  @ManyToOne(() => RecruiterProject, (project) => project.applications)
+  @ManyToOne(() => RecruiterProject, (project) => project.applications, { onDelete: 'CASCADE' })
   @JoinColumn()
   project: RecruiterProject;
 

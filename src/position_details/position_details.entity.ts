@@ -149,7 +149,7 @@ export class PositionDetails {
   })
   updated_at: Date;
 
-  @OneToOne(() => Position, (position) => position.details)
+  @OneToOne(() => Position, (position) => position.details, { onDelete: 'CASCADE' })
   @JoinColumn()
   position: Position;
 }

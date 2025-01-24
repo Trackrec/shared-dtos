@@ -120,9 +120,8 @@ export class PublishProfileService {
                 </ul>   
                 <br/>
                 
-                Best, <br/>
-                Team TrackRec <br/> 
-                <a href="${reactAppUrl}">app.trackrec.co</a> <br/>
+                <p>Victor @ TrackRec<br>Founder</p>
+                <p><a href="${reactAppUrl}" class="button">Go to TrackRec</a></p>
               </div>
             </div>
           </body>

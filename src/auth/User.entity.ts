@@ -153,23 +153,25 @@ export class UserAccounts {
   @Column({ nullable: true })
   login_method: string;
 
-  @OneToMany(() => Position, (position) => position.user)
+  @OneToMany(() => Position, (position) => position.user, { onDelete: 'CASCADE' })
   positions: Position[];
 
-  @OneToOne(() => Keywords, { cascade: true, eager: true })
+  @OneToOne(() => Keywords, { cascade: true, eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'keyword_id' })
   keywords: Keywords;
 
-  @OneToMany(() => AnalyticsAccess, (analyticsAccess) => analyticsAccess.user)
+  @OneToMany(() => AnalyticsAccess, (analyticsAccess) => analyticsAccess.user, {
+    onDelete: 'CASCADE',
+  })
   analyticsAccess: AnalyticsAccess[];
 
-  @OneToMany(() => RecruiterProject, (project) => project.user)
+  @OneToMany(() => RecruiterProject, (project) => project.user, { onDelete: 'CASCADE' })
   projects: RecruiterProject[];
 
-  @OneToMany(() => ProjectApplication, (application) => application.user)
+  @OneToMany(() => ProjectApplication, (application) => application.user, { onDelete: 'CASCADE' })
   applications: ProjectApplication[];
 
-  @OneToOne(() => RecruiterCompany, (company) => company.created_by)
+  @OneToOne(() => RecruiterCompany, (company) => company.created_by, { onDelete: 'CASCADE' })
   companyCreated: RecruiterCompany;
 
   @Column({ nullable: true })

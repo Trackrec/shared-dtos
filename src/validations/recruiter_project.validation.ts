@@ -75,6 +75,7 @@ export const projectByIdParamSchema = z.object({
 
 export const recruiterProjectRequestSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
+  project_title: z.string().min(1, 'Project title is required.'),
   company_name: z.string().nullable().optional(),
   logo: z.string().nullable().optional(),
   logo_type: z.string().nullable().optional(),
@@ -124,6 +125,7 @@ export const recruiterProjectRequestSchema = z.object({
   company: z.string().nullable().optional(),
   logo_url: z.string().nullable().optional(),
   website_url: z.string().nullable().optional(),
+  linkedin_url: z.string().nullable().optional(),
   domain: z.string().nullable().optional(),
   company_logo_url: z.string().nullable().optional(),
   company_website_url: z.string().nullable().optional(),

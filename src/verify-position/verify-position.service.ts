@@ -239,7 +239,8 @@ export class VerifyPositionService {
             Great news. ${verifyPosition?.first_name} ${verifyPosition?.last_name} verified your ${verifyPosition?.position?.company?.name} experience as a ${verifyPosition?.role} of yours.<br/>
             Their name now appears on the Verification section of this experience on your profile. You can always edit these in your settings.<br/><br/>
             Great stuff! <br/>
-            Team TrackRec <br/> 
+            <p>Victor @ TrackRec<br>Founder</p>
+            <p><a href="${reactAppUrl}" class="button">Go to TrackRec</a></p> 
           `,
         };
       } else {
@@ -253,7 +254,8 @@ export class VerifyPositionService {
             We regret to inform you that  ${verifyPosition?.first_name} ${verifyPosition?.last_name} was unable to verify your experience at ${verifyPosition?.position?.company?.name} as a ${verifyPosition?.role}.<br/>
             Their feedback has been noted, and this experience will not be listed as verified on your profile. You can review and update your experiences at any time in your settings.<br/><br/>
             Great stuff! <br/>
-            Team TrackRec <br/> 
+            <p>Victor @ TrackRec<br>Founder</p>
+            <p><a href="${reactAppUrl}" class="button">Go to TrackRec</a></p> 
           `,
         };
       }

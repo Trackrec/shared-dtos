@@ -24,7 +24,6 @@ export class PositionDetailsController {
     this.logger.log(
       `Received request to create or update position details for position ID: ${data.position_id}`,
     );
-
     try {
       if (!data.position_id) {
         this.logger.warn(`Position ID is missing in the request payload.`);

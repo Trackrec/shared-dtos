@@ -21,6 +21,10 @@ export class RecruiterProject {
   @IsNotEmpty()
   title: string;
 
+  @Column({ type: 'varchar', length: 255 })
+  @IsNotEmpty()
+  project_title: string;
+
   @Column({ length: 255, nullable: true })
   company_name: string;
 
@@ -29,6 +33,12 @@ export class RecruiterProject {
 
   @Column({ length: 10, nullable: true })
   logo_type: string;
+
+  @Column({ length: 255, nullable: true })
+  website_url: string;
+
+  @Column({ length: 255, nullable: true })
+  linkedin_url: string;
 
   @Column({ type: 'int', nullable: true })
   @ValidateIf((o) => o.published) // Only validate if published is true
@@ -216,7 +226,7 @@ export class RecruiterProject {
   @Column({ type: 'text', nullable: true })
   main_problem: string;
 
-  @ManyToOne(() => UserAccounts, (user) => user.projects)
+  @ManyToOne(() => UserAccounts, (user) => user.projects, { onDelete: 'CASCADE' })
   user: UserAccounts;
 
   @CreateDateColumn()
@@ -225,9 +235,12 @@ export class RecruiterProject {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() => ProjectApplication, (application) => application.user)
+  @OneToMany(() => ProjectApplication, (application) => application.user, { onDelete: 'CASCADE' })
   applications: ProjectApplication[];
 
-  @ManyToOne(() => RecruiterCompany, (company) => company.projects, { nullable: true })
+  @ManyToOne(() => RecruiterCompany, (company) => company.projects, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   company: RecruiterCompany;
 }
