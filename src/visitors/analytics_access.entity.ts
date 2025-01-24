@@ -17,10 +17,12 @@ export class AnalyticsAccess {
   @Column()
   type: string;
 
-  @ManyToOne(() => AccountsVisitors, (accountVisitor) => accountVisitor.analyticsAccess)
+  @ManyToOne(() => AccountsVisitors, (accountVisitor) => accountVisitor.analyticsAccess, {
+    onDelete: 'CASCADE',
+  })
   accountVisitor: AccountsVisitors;
 
-  @ManyToOne(() => UserAccounts, (user) => user.analyticsAccess)
+  @ManyToOne(() => UserAccounts, (user) => user.analyticsAccess, { onDelete: 'CASCADE' })
   user: UserAccounts;
 
   @CreateDateColumn()

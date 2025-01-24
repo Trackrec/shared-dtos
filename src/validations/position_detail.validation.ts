@@ -23,6 +23,17 @@ const companyDtoSchema = z.object({
   company_id: z.string().nullable(),
 });
 
+const notableClientsSchema = z
+  .array(
+    z.object({
+      id: z.string().nullable(),
+      logo_url: z.string().nullable(),
+      label: z.string().nullable(),
+      value: z.string().nullable(),
+    }),
+  )
+  .nullable();
+
 export const createPositionDetailsSchema = z
   .object({
     id: z.string(),
@@ -41,11 +52,11 @@ export const createPositionDetailsSchema = z
     short_sales_cycle: z.string().or(z.number()).nullable(),
     average_sales_cycle: z.string().or(z.number()).nullable(),
     long_sales_cycle: z.string().or(z.number()).nullable(),
-    short_sales_cycle_duration:z.string().or(z.number()).nullable(),
+    short_sales_cycle_duration: z.string().or(z.number()).nullable(),
     average_sales_cycle_duration: z.string().or(z.number()).nullable(),
     long_sales_cycle_duration: z.string().or(z.number()).nullable(),
     disable_prospecting: z.boolean().nullable(),
-    notable_clients: z.array(z.object({})).nullable(),
+    notable_clients: notableClientsSchema,
     management: z.array(z.string()).nullable(),
     persona: z.array(z.string()).nullable(),
     achievements: z.array(z.string()).nullable(),
@@ -98,7 +109,6 @@ export const createPositionDetailsSchema = z
       .optional(),
   })
   .partial();
-
 
 export const positionDetailsByIdSchema = z.object({
   position_id: z

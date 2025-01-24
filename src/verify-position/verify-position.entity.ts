@@ -19,15 +19,15 @@ export class VerifyPosition {
   @Column({ nullable: true })
   last_name: string;
 
-  @ManyToOne(() => UserAccounts)
+  @ManyToOne(() => UserAccounts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'request_by' })
   requestBy: UserAccounts;
 
-  @ManyToOne(() => Position, (position) => position.verify_request)
+  @ManyToOne(() => Position, (position) => position.verify_request, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'position_id' })
   position: Position;
 
-  @ManyToOne(() => UserAccounts, { nullable: true })
+  @ManyToOne(() => UserAccounts, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: UserAccounts;
 

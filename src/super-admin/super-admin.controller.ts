@@ -5,6 +5,7 @@ import {
   AdminBlockRequestDto,
   AllUsersDto,
   CompaniesListDto,
+  DeleteUserRequestDto,
   GetUserDetailsParamDto,
   GetUserDetailsResponseDto,
   ImpersonateUserRequestDto,
@@ -13,6 +14,7 @@ import {
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 import {
   adminBlockRequestSchema,
+  deleteUserRequestSchema,
   getUserDetailsParamSchema,
   impersonateUserRequestSchema,
 } from 'src/validations/user.validation';
@@ -60,5 +62,14 @@ export class SuperAdminController {
   ): Promise<RecruiterUserAuthResponseDto> {
     this.logger.log(`Impersonating user`);
     return this.superAdminService.impersonateUser(body);
+  }
+
+  @Post('delete-user')
+  deleteUser(
+    @Req() req: Request,
+    @Body(new ZodValidationPipe(deleteUserRequestSchema)) body: DeleteUserRequestDto,
+  ): Promise<RecruiterUserAuthResponseDto> {
+    this.logger.log(`deleting user`);
+    return this.superAdminService.deleteUser(body);
   }
 }

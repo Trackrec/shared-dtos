@@ -326,6 +326,7 @@ export class RecruiterProjectService {
     logo_url?: string;
     domain?: string;
     website_url?: string;
+    linkedin_url?: string;
   }) {
     this.logger.log(`Fetching company information for company ID: ${companyData?.company_id}`);
 
@@ -351,6 +352,7 @@ export class RecruiterProjectService {
             logo_url: companyData.logo_url || null,
             domain: companyData.domain || null,
             website_url: companyData.website_url || null,
+            linkedin_url: companyData.linkedin_url || null,
           });
 
           if (newCompany && !newCompany.error) {
@@ -458,6 +460,7 @@ export class RecruiterProjectService {
         accountProjectData.logo = await this.getCompanyInfo(companyData);
         accountProjectData.logo_type = 'url';
         accountProjectData.company_id = companyData.company_id;
+        accountProjectData.website_url = companyData.website_url;
       }
 
       // Set associated company
@@ -599,6 +602,7 @@ export class RecruiterProjectService {
         accountProjectData.logo = await this.getCompanyInfo(companyData);
         accountProjectData.logo_type = 'url';
         accountProjectData.company_id = companyData.company_id;
+        accountProjectData.website_url = companyData.website_url;
       }
 
       // Set the associated company in the project data
@@ -731,6 +735,7 @@ export class RecruiterProjectService {
         accountProjectData.logo = await this.getCompanyInfo(companyData);
         accountProjectData.logo_type = 'url';
         accountProjectData.company_id = companyData.company_id;
+        accountProjectData.website_url = companyData.website_url;
       }
 
       // Set the company in project data
@@ -864,6 +869,7 @@ export class RecruiterProjectService {
   private hasRequiredFields(project: RecruiterProject | RecruiterProjectDto): boolean {
     return !!(
       project.title &&
+      project.project_title &&
       project.company_name &&
       project.logo &&
       project.experience !== null &&
@@ -967,6 +973,7 @@ export class RecruiterProjectService {
         accountProjectData.logo = await this.getCompanyInfo(companyData);
         accountProjectData.logo_type = 'url';
         accountProjectData.company_id = companyData.company_id;
+        accountProjectData.website_url = companyData.website_url;
       }
 
       // Check if published project has all required fields
@@ -1183,15 +1190,15 @@ export class RecruiterProjectService {
 
       Object.assign(points, {
         ote_points: otepoints,
-        workedInPoints,
-        soldToPoints,
-        segmentPoints,
-        salescyclePoints,
-        dealsizePoints,
-        newbusinessPoints,
-        outboundPoints,
-        pointsForPersona,
-        pointsForExperience,
+        worked_in_points: workedInPoints,
+        sold_to_points: soldToPoints,
+        segment_points: segmentPoints,
+        salescycle_points: salescyclePoints,
+        dealsize_points: dealsizePoints,
+        newbusiness_points: newbusinessPoints,
+        outbound_points: outboundPoints,
+        points_for_persona: pointsForPersona,
+        points_for_experience: pointsForExperience,
       });
 
       const sum: number = this.sumObjectValues(points);
@@ -1466,7 +1473,10 @@ export class RecruiterProjectService {
 
     // Parse string fields
     parsedData.title = data.title || null;
+    parsedData.project_title = data.project_title || null;
     parsedData.company_name = data.company_name || null;
+    parsedData.website_url = data.website_url || null;
+    parsedData.linkedin_url = data.linkedin_url || null;
     parsedData.company_id = data.company_id || null;
     parsedData.logo = data.logo || null;
     parsedData.location_type = data.location_type || null;

@@ -5,7 +5,11 @@ import { ExtendedPositionDto } from 'src/shared-dtos/src/user.dto';
 export class SharedService {
   private readonly logger = new Logger(SharedService.name);
 
-  calculateExperience(positions: ExtendedPositionDto[], type: string = 'all') {
+  calculateExperience(
+    positions: ExtendedPositionDto[],
+    type: string = 'all',
+    findCompleted: boolean = true,
+  ) {
     this.logger.log(`Calculating experience for ${positions.length} positions with type: ${type}`);
 
     if (positions.length === 0) {
@@ -21,12 +25,14 @@ export class SharedService {
       return dateA - dateB;
     });
 
-    let completedPositions: ExtendedPositionDto[] = positions.filter((position) => {
-      const completionPercentage = position.details
-        ? this.calculateCompletionPercentage(position)
-        : 0.0;
-      return completionPercentage == 100.0;
-    });
+    let completedPositions: ExtendedPositionDto[] = findCompleted
+      ? positions.filter((position) => {
+          const completionPercentage = position.details
+            ? this.calculateCompletionPercentage(position)
+            : 0.0;
+          return completionPercentage == 100.0;
+        })
+      : positions;
 
     this.logger.log(`Found ${completedPositions.length} completed positions`);
 
@@ -536,7 +542,7 @@ export class SharedService {
 
     return {
       outbound_average: outboundAverage,
-      inboundAverage,
+      inbound_average: inboundAverage,
     };
   }
 
@@ -645,6 +651,7 @@ export class SharedService {
 
     // Step 2: Sort positions within each company by start date (descending)
     for (const group of groupedByCompany.values()) {
+      group.totalExperience = this.calculateExperience(group.positions, 'all', false);
       this.logger.log(`Sorting positions for company: ${group.company.name}`);
       group.positions.sort((a, b) => {
         const isACurrent = a.end_year === null || a.end_month === null;

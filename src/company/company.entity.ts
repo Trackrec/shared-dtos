@@ -22,12 +22,15 @@ export class Company {
   @Column({ type: 'longtext', nullable: true })
   website_url: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  linkedin_url: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 
-  @OneToMany(() => Position, (position) => position.company)
+  @OneToMany(() => Position, (position) => position.company, { onDelete: 'CASCADE' })
   positions: Position[];
 }

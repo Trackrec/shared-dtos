@@ -138,6 +138,13 @@ export const impersonateUserRequestSchema = z.object({
     .max(50, 'Username must not exceed 50 characters.'),
 });
 
+export const deleteUserRequestSchema = z.object({
+  user_id: z
+    .number()
+    .int('User ID must be an integer.')
+    .positive('User ID must be a positive number.'),
+});
+
 export const createUpdateKeywordRequestSchema = z.object({
   keywords: z
     .array(z.string().min(1, 'Each keyword must not be empty.'))
@@ -206,6 +213,4 @@ export const updatePreferencesRequestSchema = z.object({
   preference_step: z.number().nullable().optional(),
   is_preferences_save: z.boolean().optional(),
   is_welcome: z.boolean().optional(),
-
 });
-

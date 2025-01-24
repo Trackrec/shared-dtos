@@ -202,6 +202,7 @@ export class RecruiterProjectController {
       logo_url: logoUrl,
       website_url: websiteUrl,
       domain,
+      linkedin_url: linkedinUrl,
     } = accountProjectData;
 
     this.logger.log(`Creating project for company: ${companyName} (ID: ${companyId})`);
@@ -212,6 +213,7 @@ export class RecruiterProjectController {
       logo_url: logoUrl,
       website_url: websiteUrl,
       domain,
+      linkedin_url: linkedinUrl,
     };
 
     try {
@@ -260,6 +262,7 @@ export class RecruiterProjectController {
       logo_url: logoUrl,
       website_url: websiteUrl,
       domain,
+      linkedin_url: linkedinUrl,
     } = accountProjectData;
 
     this.logger.log(`Saving and publishing project for company: ${companyName} (ID: ${companyId})`);
@@ -270,6 +273,7 @@ export class RecruiterProjectController {
       logo_url: logoUrl,
       website_url: websiteUrl,
       domain,
+      linkedin_url: linkedinUrl,
     };
 
     try {
@@ -322,6 +326,7 @@ export class RecruiterProjectController {
       company_logo_url: companyLogoUrl,
       company_website_url: companyWebsiteUrl,
       company_domain: companyDomain,
+      linkedin_url: linkedinUrl,
     } = accountProjectData;
 
     this.logger.log(
@@ -334,6 +339,8 @@ export class RecruiterProjectController {
       company_logo_url: companyLogoUrl,
       company_website_url: companyWebsiteUrl,
       company_domain: companyDomain,
+      linkedin_url: linkedinUrl,
+      website_url: companyWebsiteUrl,
     };
 
     try {
@@ -427,6 +434,7 @@ export class RecruiterProjectController {
       logo_url: logoUrl,
       website_url: websiteUrl,
       domain,
+      linkedin_url: linkedinUrl,
     } = accountProjectData;
 
     const companyData: CompanyDataDto = {
@@ -435,7 +443,9 @@ export class RecruiterProjectController {
       logo_url: logoUrl,
       website_url: websiteUrl,
       domain,
+      linkedin_url: linkedinUrl,
     };
+    console.log(websiteUrl);
 
     try {
       const result = await this.recruiterProjectService.update(

@@ -75,11 +75,6 @@ export class CronService {
                 <p>Victor @ TrackRec<br>Founder</p>
                 <p><a href="${reactAppUrl}">Go to TrackRec</a></p>
               </div>
-
-                <p>Best,<br>
-                  Team TrackRec<br> 
-                  <a href="${reactAppUrl}" style="color: #fff;">app.trackrec.co</a>
-                </p>
             </div>
           </body>
           </html>`,

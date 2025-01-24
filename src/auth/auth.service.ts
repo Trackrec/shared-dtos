@@ -161,10 +161,6 @@ export class AuthService {
                       <p>Victor @ TrackRec<br>Founder</p>
                       <p><a href="${reactAppUrl}" class="button">Go to TrackRec</a></p>
                    </div>
-                      <p>Best,<br>
-                         Team TrackRec<br>
-                         <a href="${reactAppUrl}">app.trackrec.co</a>
-                      </p>
                 </div>
              </body>
           </html>

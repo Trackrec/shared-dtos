@@ -17,13 +17,15 @@ export class RecruiterCompany {
   @Column({ length: 10, default: 'jpg' })
   logo_type: string;
 
-  @OneToMany(() => RecruiterCompanyUser, (recruiterCompanyUser) => recruiterCompanyUser.company)
+  @OneToMany(() => RecruiterCompanyUser, (recruiterCompanyUser) => recruiterCompanyUser.company, {
+    onDelete: 'CASCADE',
+  })
   recruiters: RecruiterCompanyUser[];
 
-  @OneToMany(() => RecruiterProject, (project) => project.company)
+  @OneToMany(() => RecruiterProject, (project) => project.company, { onDelete: 'CASCADE' })
   projects: RecruiterProject[];
 
-  @OneToOne(() => UserAccounts, (user) => user.companyCreated)
+  @OneToOne(() => UserAccounts, (user) => user.companyCreated, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'created_by' })
   created_by: UserAccounts;
 }

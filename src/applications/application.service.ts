@@ -13,7 +13,7 @@ import {
 } from 'src/shared-dtos/src/project_application.dto';
 import { configurations } from '../config/env.config';
 
-const { mailgun } = configurations;
+const { mailgun, reactAppUrl } = configurations;
 @Injectable()
 export class ApplicationService {
   private readonly logger = new Logger(ApplicationService.name);
@@ -39,16 +39,9 @@ export class ApplicationService {
     );
 
     try {
-      const {
-        project_id: projectId,
-        ote,
-        available,
-        position_id: positionId,
-        city,
-        custom_current_role: customCurrentRole,
-      } = body;
+      const { project_id: projectId, ote, available, position_id: positionId, city } = body;
 
-      if (!projectId || !ote || !positionId || !city || !customCurrentRole) {
+      if (!projectId || !ote || !positionId || !city) {
         this.logger.warn(
           `Missing required fields in the application payload for user ID: ${userId}`,
         );
@@ -74,9 +67,8 @@ export class ApplicationService {
       });
 
       if (!applicationExists) {
-        if (city && customCurrentRole) {
+        if (city) {
           user.city = city;
-          user.custom_current_role = customCurrentRole;
           await this.userRepository.update(user.id, user);
           this.logger.log(`Updated user profile with city and role for user ID: ${userId}`);
         }
@@ -96,13 +88,14 @@ export class ApplicationService {
         const messageData = {
           from: `Trackrec <no-reply@${mailgun.domain}>`,
           to: user?.email,
-          subject: `Application for ${application.project.title}`,
+          subject: `Application for ${application.project.title} @ ${application.project.company_name}`,
           html: `
             Hello ${user?.full_name.split(' ')[0]}, <br/><br/>
             Thank you for applying to the ${application.project.title} with ${application.project.company_name}.
             We sent your TrackRec and Sales Fit Score to their Hiring Manager, they'll be in touch regarding next steps.<br/><br/>
             All the best!<br/>
-            Team TrackRec
+            <p>Victor @ TrackRec<br>Founder</p>
+            <p><a href="${reactAppUrl}" class="button">Go to TrackRec</a></p>
           `,
         };
 

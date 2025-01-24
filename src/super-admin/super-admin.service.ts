@@ -10,6 +10,7 @@ import {
   AdminBlockRequestDto,
   AllUsersDto,
   CompaniesListDto,
+  DeleteUserRequestDto,
   ExtendedUserDto,
   GetUserDetailsResponseDto,
   ImpersonateUserRequestDto,
@@ -166,6 +167,32 @@ export class SuperAdminService {
     } catch (e) {
       this.logger.error(`Error during impersonation process: ${e.message}`);
       return { error: true, message: 'Not able to impersonate.' };
+    }
+  }
+
+  async deleteUser(body: DeleteUserRequestDto): Promise<RecruiterUserAuthResponseDto> {
+    try {
+      const { user_id: userId }: DeleteUserRequestDto = body;
+
+      this.logger.log(`Attempting to delete a user with ID: ${userId}`);
+
+      const user: UserDto = await this.userRepository.findOne({ where: { id: userId } });
+
+      if (!user) {
+        this.logger.warn(`User not found with ID: ${userId}`);
+        return { error: true, message: 'User not found.' };
+      }
+
+      this.logger.log(`User found with ID: ${userId}, proceeding with deletion`);
+
+      await this.userRepository.delete(userId);
+
+      this.logger.log(`Deletion successful for user ID: ${userId}`);
+
+      return { error: false, message: 'User delete successfully.' };
+    } catch (e) {
+      this.logger.error(`Error during deletion process: ${e.message}`);
+      return { error: true, message: 'Not able to delete user, try again.' };
     }
   }
 
