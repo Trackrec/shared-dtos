@@ -22,7 +22,7 @@ export class ProjectApplication {
   @Column({ default: true })
   available: boolean;
 
-  @ManyToOne(() => UserAccounts)
+  @ManyToOne(() => UserAccounts, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: UserAccounts;
 
