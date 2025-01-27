@@ -109,6 +109,7 @@ export const recruiterProjectRequestSchema = z.object({
   benefits: z.string().nullable().optional(),
   elevator_pitch: z.string().nullable().optional(),
   office_address: z.string().nullable().optional(),
+  office_address_id: z.string().nullable().optional(),
   travel_requirement_percentage: z.string().nullable().optional(),
   start_date: z.string().nullable().optional(),
   currency: z.string().nullable().optional(),
