@@ -566,7 +566,7 @@ export class AuthService {
               website_url:website_url
             });
 
-            this.logger.log(`Created new company "${experience.company}" with ID: ${newCompany.createdCompany.id}`);
+
             const positionData = {
               start_month: experience.starts_at
                 ? experience.starts_at.month
@@ -576,8 +576,7 @@ export class AuthService {
               end_year: experience.ends_at ? experience.ends_at.year : null,
               role: experience.title,
             };
-            
-
+  
             const position = this.positionRepository.create({
               ...positionData,
               company: newCompany?.createdCompany?.id
@@ -585,11 +584,11 @@ export class AuthService {
                 : null,
               user: user,
             });
-            this.logger.debug(`Prepared position for role: ${experience.title} at company: ${company.name}`);
   
             return position;
           }
-          else{
+  
+         else{
           const positionData = {
             start_month: experience.starts_at
               ? experience.starts_at.month
