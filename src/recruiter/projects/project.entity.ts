@@ -1,225 +1,249 @@
 import { UserAccounts } from 'src/auth/User.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { IsNotEmpty, MaxLength, ValidateIf } from 'class-validator';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import { IsNotEmpty, ValidateIf } from 'class-validator';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 
 @Entity()
 export class RecruiterProject {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ type: 'varchar', length: 255 })
-    @IsNotEmpty()
-    title: string;
+  @Column({ type: 'varchar', length: 255 })
+  @IsNotEmpty()
+  title: string;
 
-    @Column({ length: 255, nullable: true })
-    company_name: string;
+  @Column({ type: 'varchar', length: 255 })
+  @IsNotEmpty()
+  project_title: string;
 
-    @Column({  length: 255, nullable: true })
-    logo: string; 
+  @Column({ length: 255, nullable: true })
+  company_name: string;
 
-    @Column({ length: 10, nullable: true }) 
-    logo_type: string;
+  @Column({ length: 255, nullable: true })
+  logo: string;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)  // Only validate if published is true
-    @IsNotEmpty()
-    experience: number;
+  @Column({ length: 10, nullable: true })
+  logo_type: string;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    ote_start: number;
+  @Column({ length: 255, nullable: true })
+  website_url: string;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    ote_end: number;
+  @Column({ length: 255, nullable: true })
+  linkedin_url: string;
 
-    @Column({ type: 'boolean', default: true })
-    is_ote_visible: boolean;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published) // Only validate if published is true
+  @IsNotEmpty()
+  experience: number;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    location_type: string;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  ote_start: number;
 
-    @Column({ type: 'text', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    description: string;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  ote_end: number;
 
-    @Column({ type: 'text', nullable: true,  })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    experience_type: string;
+  @Column({ type: 'boolean', default: true })
+  is_ote_visible: boolean;
 
-    @Column({ type: 'simple-array', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    location: string[];
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  location_type: string;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    existing_business_range: number;
+  @Column({ type: 'text', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  description: string;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    business_range: number;
+  @Column({ type: 'text', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  experience_type: string;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    partnership_range: number;
+  @Column({ type: 'simple-array', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  location: string[];
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    inbound_range: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  existing_business_range: number;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    outbound_range: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  business_range: number;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    smb: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  partnership_range: number;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    midmarket: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  inbound_range: number;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    enterprise: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  outbound_range: number;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    minimum_deal_size: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  smb: number;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    minimum_sale_cycle: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  midmarket: number;
 
-    @Column({ type: 'int', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    hybrid_days: number;
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  enterprise: number;
 
-    @Column({ type: 'simple-array', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    Industry_Works_IN: string[];
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  minimum_deal_size: number;
 
-    @Column({ type: 'simple-array', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    Industry_Sold_To: string[];
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  minimum_sale_cycle: number;
 
-    @Column({ type: 'simple-array', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    selectedPersona: string[];
+  @Column({ type: 'int', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  hybrid_days: number;
 
-    @Column({ type: 'simple-array', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    territory: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  Industry_Works_IN: string[];
 
-    @Column({ type: 'simple-array', nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    languages: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  Industry_Sold_To: string[];
 
-    @Column({ length: 255, nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    linkedin_profile: string;
+  @Column({ type: 'simple-array', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  selectedPersona: string[];
 
-    @Column({ length: 255, nullable: true })
-    @ValidateIf(o => o.published)
-    @IsNotEmpty()
-    minimum_salecycle_type: string;
+  @Column({ type: 'simple-array', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  territory: string[];
 
-    @Column({ type: 'longtext', nullable: true })
-    timeline: string;
+  @Column({ type: 'simple-array', nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  languages: string[];
 
-    @Column({ type: 'longtext', nullable: true })
-    benefits: string;
+  @Column({ length: 255, nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  linkedin_profile: string;
 
-    @Column({ type: 'longtext', nullable: true })
-    elevator_pitch: string;
+  @Column({ length: 255, nullable: true })
+  @ValidateIf((o) => o.published)
+  @IsNotEmpty()
+  minimum_salecycle_type: string;
 
-    @Column({ nullable: true })
-    office_address: string;
+  @Column({ type: 'longtext', nullable: true })
+  timeline: string;
 
-    @Column({ type: 'longtext', nullable: true })
-    travel_requirement_percentage: string;
+  @Column({ type: 'longtext', nullable: true })
+  benefits: string;
 
-    @Column({nullable: true})
-    start_date: Date;
+  @Column({ type: 'longtext', nullable: true })
+  elevator_pitch: string;
 
-    @Column({ default: '$', nullable: true })
-    currency: string;
+  @Column({ nullable: true })
+  office_address: string;
 
-    @Column({ default: 'United States Dollar (USD)', nullable: true })
-    currency_country: string;
+  @Column({ nullable: true })
+  office_address_id: string;
 
-    @Column({ nullable: true })
-    is_travel_requirements: boolean;
+  @Column({ type: 'longtext', nullable: true })
+  travel_requirement_percentage: string;
 
-    @Column({ type: 'longtext', nullable: true })
-    report_to: string;
+  @Column({ nullable: true })
+  start_date: Date;
 
-    @Column({ type: 'longtext', nullable: true })
-    hiring_process: string;
+  @Column({ default: '$', nullable: true })
+  currency: string;
 
-    @Column({ type: 'longtext', nullable: true })
-    growth_opportunities: string;
+  @Column({ default: 'United States Dollar (USD)', nullable: true })
+  currency_country: string;
 
-    @Column({ type: 'int', default: 0 })
-    visits_count: number;
+  @Column({ nullable: true })
+  is_travel_requirements: boolean;
 
-    @Column({ default: null })
-    project_custom_url: string;
+  @Column({ type: 'longtext', nullable: true })
+  report_to: string;
 
-    @Column({ default: null })
-    company_id: string;
+  @Column({ type: 'longtext', nullable: true })
+  hiring_process: string;
 
-    // New fields for draft and publish status
-    @Column({ type: 'boolean', default: true })
-    draft: boolean;
+  @Column({ type: 'longtext', nullable: true })
+  growth_opportunities: string;
 
-    @Column({ type: 'boolean', default: false })
-    published: boolean;
+  @Column({ type: 'int', default: 0 })
+  visits_count: number;
 
-    @Column({ type: 'text',  nullable: true,  })
-    company_elevator_pitch: string;
+  @Column({ default: null })
+  project_custom_url: string;
 
-    @Column({ type: 'text', nullable: true,  })
-    main_problem: string ;
+  @Column({ default: null })
+  company_id: string;
 
-    @ManyToOne(() => UserAccounts, user => user.projects)
-    user: UserAccounts;
+  // New fields for draft and publish status
+  @Column({ type: 'boolean', default: true })
+  draft: boolean;
 
-    @CreateDateColumn()
-    created_at: Date;
+  @Column({ type: 'boolean', default: false })
+  published: boolean;
 
-    @UpdateDateColumn()
-    updated_at: Date;
+  @Column({ type: 'text', nullable: true })
+  company_elevator_pitch: string;
 
-    @OneToMany(() => ProjectApplication, application => application.user)
-    applications: ProjectApplication[];
+  @Column({ type: 'text', nullable: true })
+  main_problem: string;
 
-    @ManyToOne(() => RecruiterCompany, company => company.projects, { nullable: true })
+  @ManyToOne(() => UserAccounts, (user) => user.projects, { onDelete: 'CASCADE' })
+  user: UserAccounts;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @OneToMany(() => ProjectApplication, (application) => application.user, { onDelete: 'CASCADE' })
+  applications: ProjectApplication[];
+
+  @ManyToOne(() => RecruiterCompany, (company) => company.projects, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   company: RecruiterCompany;
 }

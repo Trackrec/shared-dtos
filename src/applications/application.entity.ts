@@ -1,8 +1,15 @@
 // application.entity.ts
 
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+} from 'typeorm';
 import { UserAccounts } from 'src/auth/User.entity';
-import { AccountProject } from 'src/admin/projects/project.entity';
 import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 @Entity()
 export class ProjectApplication {
@@ -15,21 +22,20 @@ export class ProjectApplication {
   @Column({ default: true })
   available: boolean;
 
-  @ManyToOne(() => UserAccounts)
+  @ManyToOne(() => UserAccounts, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: UserAccounts;
 
   @Column({ type: 'int', nullable: true })
   position_id: number;
 
-  @ManyToOne(() => RecruiterProject, project => project.applications)
+  @ManyToOne(() => RecruiterProject, (project) => project.applications, { onDelete: 'CASCADE' })
   @JoinColumn()
   project: RecruiterProject;
 
   @CreateDateColumn()
-    created_at: Date;
-  
+  created_at: Date;
 
-    @UpdateDateColumn()
-    updated_at: Date;
+  @UpdateDateColumn()
+  updated_at: Date;
 }

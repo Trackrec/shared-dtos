@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  PutObjectCommandInput,
+} from '@aws-sdk/client-s3';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { configurations } from '../config/env.config';
 
+const { digitalOcean } = configurations;
 @Injectable()
 export class S3UploadService {
   private s3: S3Client;
@@ -10,16 +17,20 @@ export class S3UploadService {
 
   constructor() {
     this.s3 = new S3Client({
-      region: "us-east-1",
-      endpoint: process.env.DIGITAL_OCEAN_ENDPOINT,
+      region: 'us-east-1',
+      endpoint: digitalOcean.endpoint,
       credentials: {
-        accessKeyId: process.env.DIGITAL_OCEAN_ACCESS_KEY_ID,
-        secretAccessKey: process.env.DIGITAL_OCEAN_SECRET_ACCESS_KEY
+        accessKeyId: digitalOcean.accessKeyId,
+        secretAccessKey: digitalOcean.secretAccessKey,
       },
     });
   }
 
-  async uploadNewImage(imageBuffer: Buffer, folderName: string, imageFormat='jpg'): Promise<string> {
+  async uploadNewImage(
+    imageBuffer: Buffer,
+    folderName: string,
+    imageFormat = 'jpg',
+  ): Promise<string> {
     const randomImageName = `${Date.now()}-${uuidv4()}.${imageFormat}`;
 
     const uploadParams: PutObjectCommandInput = {
@@ -38,13 +49,18 @@ export class S3UploadService {
     }
   }
 
-  async deleteImage(previousImageName: string, folderName: string): Promise<{ error: boolean; message: string }> {
+  async deleteImage(
+    previousImageName: string,
+    folderName: string,
+  ): Promise<{ error: boolean; message: string }> {
     try {
       // Delete previous image
-      await this.s3.send(new DeleteObjectCommand({
-        Bucket: this.bucketName,
-        Key: `${folderName}/${previousImageName}`,
-      }));
+      await this.s3.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucketName,
+          Key: `${folderName}/${previousImageName}`,
+        }),
+      );
 
       return { error: false, message: 'Image deleted successfully.' };
     } catch (error) {
@@ -59,7 +75,7 @@ export class S3UploadService {
       const imageBuffer = await this.downloadImageFromURL(imageUrl);
 
       // Upload image to S3 with the random image name
-      const imageName = await this.uploadNewImage(imageBuffer, "profile_images");
+      const imageName = await this.uploadNewImage(imageBuffer, 'profile_images');
 
       return imageName;
     } catch (error) {

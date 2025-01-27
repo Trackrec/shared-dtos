@@ -2,25 +2,17 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  Length,
-  IsIn,
-  ArrayNotEmpty,
-} from 'class-validator';
+import { IsEmail, IsIn, ArrayNotEmpty } from 'class-validator';
 import { Position } from 'src/positions/positions.entity';
 import { Keywords } from 'src/keywords/keyword.entity';
 import { AnalyticsAccess } from 'src/visitors/analytics_access.entity';
-import { AccountProject } from 'src/admin/projects/project.entity';
+import { RecruiterProject } from 'src/recruiter/projects/project.entity';
 import { ProjectApplication } from 'src/applications/application.entity';
 import { RecruiterCompany } from 'src/recruiter/recruiter-company/recruiter-company.entity';
 export enum LocationPreference {
@@ -97,14 +89,9 @@ export class UserAccounts {
 
   @Column('simple-array')
   @ArrayNotEmpty()
-  @IsIn(
-    [
-      LocationPreference.ONSITE,
-      LocationPreference.REMOTE,
-      LocationPreference.HYBRID,
-    ],
-    { each: true },
-  )
+  @IsIn([LocationPreference.ONSITE, LocationPreference.REMOTE, LocationPreference.HYBRID], {
+    each: true,
+  })
   location_preferences: LocationPreference[];
   constructor() {
     this.location_preferences = [LocationPreference.HYBRID];
@@ -163,31 +150,33 @@ export class UserAccounts {
   @CreateDateColumn({ default: null })
   last_accessed_at: Date;
 
-  @Column({  nullable: true })
+  @Column({ nullable: true })
   login_method: string;
 
-  @OneToMany(() => Position, (position) => position.user)
+  @OneToMany(() => Position, (position) => position.user, { onDelete: 'CASCADE' })
   positions: Position[];
 
-  @OneToOne(() => Keywords, { cascade: true, eager: true })
+  @OneToOne(() => Keywords, { cascade: true, eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'keyword_id' })
   keywords: Keywords;
 
-  @OneToMany(() => AnalyticsAccess, (analyticsAccess) => analyticsAccess.user)
+  @OneToMany(() => AnalyticsAccess, (analyticsAccess) => analyticsAccess.user, {
+    onDelete: 'CASCADE',
+  })
   analyticsAccess: AnalyticsAccess[];
 
-  @OneToMany(() => AccountProject, (project) => project.user)
-  projects: AccountProject[];
+  @OneToMany(() => RecruiterProject, (project) => project.user, { onDelete: 'CASCADE' })
+  projects: RecruiterProject[];
 
-  @OneToMany(() => ProjectApplication, (application) => application.user)
+  @OneToMany(() => ProjectApplication, (application) => application.user, { onDelete: 'CASCADE' })
   applications: ProjectApplication[];
 
-  @OneToOne(() => RecruiterCompany, (company) => company.created_by)
+  @OneToOne(() => RecruiterCompany, (company) => company.created_by, { onDelete: 'CASCADE' })
   companyCreated: RecruiterCompany;
 
-   @Column({ nullable: true })
-   reset_password_token: string;
- 
-   @Column({  nullable: true })
-   reset_password_expires: Date;
+  @Column({ nullable: true })
+  reset_password_token: string;
+
+  @Column({ nullable: true })
+  reset_password_expires: Date;
 }

@@ -1,13 +1,26 @@
 // city.service.ts
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Like, Repository, getRepository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { City } from './city.entity';
 import { Country } from './country.entity';
 import { State } from './state.entity';
+import { CountryDto } from 'src/shared-dtos/src/country.dto';
+import { StateDto } from 'src/shared-dtos/src/state.dto';
+import {
+  CityDto,
+  FilteredPlacesDto,
+  SearchCountryStatesDto,
+  SearchCountryStatesResponseDto,
+  SearchLocationCountriesResponseDto,
+  SearchLocationsResponseDto,
+  SearchPlacesDto,
+} from 'src/shared-dtos/src/city.dto';
 
 @Injectable()
 export class CityService {
+  private readonly logger = new Logger(CityService.name);
+
   constructor(
     @InjectRepository(City)
     private readonly cityRepository: Repository<City>,
@@ -17,9 +30,9 @@ export class CityService {
     private readonly countryRepository: Repository<Country>,
   ) {}
 
-  async searchCountries(searchTerm: string): Promise<Country[]> {
+  async searchCountries(searchTerm: string): Promise<CountryDto[]> {
     const like = `${searchTerm.toLowerCase()}`;
-    const countries = await this.countryRepository
+    const countries: CountryDto[] = await this.countryRepository
       .createQueryBuilder('country')
       .select(['country.id', 'country.name'])
       .where('LOWER(country.name) LIKE :like', { like: `%${like}%` })
@@ -29,10 +42,10 @@ export class CityService {
     return countries;
   }
 
-  async searchStates(searchTerm: string): Promise<State[]> {
+  async searchStates(searchTerm: string): Promise<StateDto[]> {
     const like = `%${searchTerm.toLowerCase()}%`;
 
-    const states = await this.stateRepository
+    const states: StateDto[] = await this.stateRepository
       .createQueryBuilder('state')
       .leftJoinAndSelect('state.country', 'country')
       .where('LOWER(state.name) LIKE :like', { like: `%${like}%` }) // Adjusted LIKE operator for case-insensitive search
@@ -43,9 +56,9 @@ export class CityService {
     return states;
   }
 
-  async searchCities(searchTerm: string): Promise<City[]> {
+  async searchCities(searchTerm: string): Promise<CityDto[]> {
     const like = `${searchTerm}%`;
-    const cities = await this.cityRepository
+    const cities: CityDto[] = await this.cityRepository
       .createQueryBuilder('city')
       .leftJoinAndSelect('city.country', 'country')
       .leftJoinAndSelect('city.state', 'state')
@@ -55,42 +68,39 @@ export class CityService {
       .getMany();
     return cities;
   }
-  async searchPlaces(searchTerm) {
-    const countries = await this.searchCountries(searchTerm);
-    const states = await this.searchStates(searchTerm);
-    const cities = await this.searchCities(searchTerm);
-  
+  async searchPlaces(searchTerm): Promise<FilteredPlacesDto[]> {
+    const countries: CountryDto[] = await this.searchCountries(searchTerm);
+    const states: StateDto[] = await this.searchStates(searchTerm);
+    const cities: CityDto[] = await this.searchCities(searchTerm);
+
     let places = [states, cities].flat();
-  
+
     // If a country is found, retrieve its associated cities
     if (countries.length > 0) {
-      const countryIds = countries.map(country => country.id);
-      const countryCities = await this.searchCitiesByCountryIds(countryIds);
-      places = [ ...countryCities,...places];
+      const countryIds: number[] = countries.map((country) => country.id);
+      const countryCities: CityDto[] = await this.searchCitiesByCountryIds(countryIds);
+      places = [...countryCities, ...places];
     }
-  
-    const filteredPlaces = places
+
+    const filteredPlaces: FilteredPlacesDto[] = places
       .map((item) => this.buildPlace(item))
       .map((place) => this.buildName(place))
       .map((place) => this.buildId(place))
-      .filter(
-        (value, index, self) =>
-          self.findIndex((p) => p.name === value.name) === index,
-      );
-  
+      .filter((value, index, self) => self.findIndex((p) => p.name === value.name) === index);
+
     return filteredPlaces;
   }
-  
+
   // New method to fetch cities by country IDs
-  async searchCitiesByCountryIds(countryIds) {
+  async searchCitiesByCountryIds(countryIds: number[]): Promise<CityDto[]> {
     // Implement logic to fetch cities based on country IDs
     // This could be a database query or another API call
-    return await this.cityRepository.find({ where: { countryId: In(countryIds) }, take:20 });
+    return await this.cityRepository.find({ where: { countryId: In(countryIds) }, take: 20 });
   }
-  
+
   buildPlace(obj) {
     let place = {};
-  
+
     if (obj instanceof State) {
       place = {
         label: 'State',
@@ -110,33 +120,32 @@ export class CityService {
         country_name: obj.countryName,
       };
     }
-  
+
     return place;
   }
-  
+
   buildName(place) {
     const name = [place.country_name, place.state_name, place.city_name]
       .filter((i) => i !== null && i !== undefined)
       .join(' > ');
-  
+
     return { ...place, name };
   }
-  
+
   buildId(place) {
-    const { country_id, state_id, city_id } = place;
-    return { ...place, id: `${country_id}-${state_id}-${city_id}` };
+    const { country_id: countryId, state_id: stateId, city_id: cityId } = place;
+    return { ...place, id: `${countryId}-${stateId}-${cityId}` };
   }
-  
 
   async searchCities2(
     searchTerm: string,
-  ): Promise<{ error: boolean; cities?: any; message?: string }> {
+  ): Promise<{ error: boolean; cities?: FilteredPlacesDto[]; message?: string }> {
     try {
       if (!searchTerm) {
         throw new BadRequestException('Search term is required');
       }
 
-      const cities = await this.searchPlaces(searchTerm);
+      const cities: FilteredPlacesDto[] = await this.searchPlaces(searchTerm);
       return { error: false, cities };
     } catch (error) {
       console.log(error);
@@ -144,44 +153,40 @@ export class CityService {
     }
   }
 
-  async searchLocationCountries(searchTerm) {
-    try { 
+  async searchLocationCountries(searchTerm: string): Promise<SearchLocationCountriesResponseDto> {
+    try {
       const like = `${searchTerm.toLowerCase()}`;
-      const countries =  await this.countryRepository
-      .createQueryBuilder('country')
-      .select(['country.id', 'country.name'])
-      .where('LOWER(country.name) LIKE :like', { like: `%${like}%` })
-      .orderBy('country.name')
-      .limit(30)
-      .getMany();
-  
+      const countries: CountryDto[] = await this.countryRepository
+        .createQueryBuilder('country')
+        .select(['country.id', 'country.name'])
+        .where('LOWER(country.name) LIKE :like', { like: `%${like}%` })
+        .orderBy('country.name')
+        .limit(30)
+        .getMany();
+
       return { error: false, countries };
     } catch (e) {
-      console.log(e)
-      return { error: true, message: "Something went wrong, please try again." };
+      console.log(e);
+      return { error: true, message: 'Something went wrong, please try again.' };
     }
   }
 
-
   async searchPlaces2(searchTerm) {
-    const countries = await this.searchCountries(searchTerm);
-    const states = await this.searchStates(searchTerm);
-    const cities = await this.searchCities(searchTerm);
+    const countries: CountryDto[] = await this.searchCountries(searchTerm);
+    const states: StateDto[] = await this.searchStates(searchTerm);
+    const cities: CityDto[] = await this.searchCities(searchTerm);
 
-    const places = [countries, states, cities]
+    const places: SearchPlacesDto[] = [countries, states, cities]
       .flat()
       .map((item) => this.buildPlace2(item))
       .map((place) => this.buildName(place))
       .map((place) => this.buildId(place))
-      .filter(
-        (value, index, self) =>
-          self.findIndex((p) => p.name === value.name) === index,
-      );
+      .filter((value, index, self) => self.findIndex((p) => p.name === value.name) === index);
 
     return places;
   }
 
-  buildPlace2(obj) {
+  buildPlace2(obj: Country | State | City) {
     let place = {};
 
     if (obj instanceof Country) {
@@ -226,15 +231,13 @@ export class CityService {
   //   return { ...place, id: `${country_id}-${state_id}-${city_id}` };
   // }
 
-  async searchLocations(
-    searchTerm: string,
-  ): Promise<{ error: boolean; locations?: any; message?: string }> {
+  async searchLocations(searchTerm: string): Promise<SearchLocationsResponseDto> {
     try {
       if (!searchTerm) {
         throw new BadRequestException('Search term is required');
       }
 
-      const locations = await this.searchPlaces2(searchTerm);
+      const locations: SearchPlacesDto[] = await this.searchPlaces2(searchTerm);
       return { error: false, locations };
     } catch (error) {
       console.log(error);
@@ -242,39 +245,31 @@ export class CityService {
     }
   }
 
-  async searchPlaces3(searchTerm) {
-    const countries = await this.searchCountries(searchTerm);
-    const states = await this.searchStates(searchTerm);
+  async searchPlaces3(searchTerm): Promise<SearchCountryStatesDto[]> {
+    const countries: CountryDto[] = await this.searchCountries(searchTerm);
+    const states: StateDto[] = await this.searchStates(searchTerm);
 
-    const places = [countries, states]
+    const places: SearchCountryStatesDto[] = [countries, states]
       .flat()
       .map((item) => this.buildPlace2(item))
       .map((place) => this.buildName(place))
       .map((place) => this.buildId(place))
-      .filter(
-        (value, index, self) =>
-          self.findIndex((p) => p.name === value.name) === index,
-      );
+      .filter((value, index, self) => self.findIndex((p) => p.name === value.name) === index);
 
     return places;
   }
 
-
-  async searchCountriesStates(
-    searchTerm: string,
-  ): Promise<{ error: boolean; locations?: any; message?: string }> {
+  async searchCountriesStates(searchTerm: string): Promise<SearchCountryStatesResponseDto> {
     try {
       if (!searchTerm) {
         throw new BadRequestException('Search term is required');
       }
 
-      const locations = await this.searchPlaces3(searchTerm);
+      const locations: SearchCountryStatesDto[] = await this.searchPlaces3(searchTerm);
       return { error: false, locations };
     } catch (error) {
       console.log(error);
       return { error: true, message: error.message };
     }
   }
-  
-  
 }

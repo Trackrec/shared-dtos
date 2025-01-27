@@ -1,10 +1,5 @@
 import { ProjectVisitors } from './project_visits/project_visits.entity';
-import {
-  Module,
-  MiddlewareConsumer,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { loggerConfig } from './config/logger.config';
 import { AppController } from './app.controller';
@@ -12,7 +7,6 @@ import { AppService } from './app.service';
 import { databaseConfig } from './config/database.config';
 import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
-import { SessionModule } from 'nestjs-session';
 import { TokenMiddleware } from './middlewares/token.middleware';
 import { PositionController } from './positions/positions.controller';
 import { PositionDetailsController } from './position_details/position-details.controller';
@@ -39,19 +33,13 @@ import { AccountsVisitors } from './visitors/accounts_visitor.entity';
 import { AnalyticsAccess } from './visitors/analytics_access.entity';
 import { SuperAdminController } from './super-admin/super-admin.controller';
 import { SuperAdminService } from './super-admin/super-admin.service';
-import { AdminAuthController } from './admin/auth/auth.controller';
-import { AdminAuthService } from './admin/auth/auth.service';
-import { AccountProjectController } from './admin/projects/project.controller';
 import { VerifyPositionController } from './verify-position/verify-position.controller';
 import { VerifyPositionService } from './verify-position/verify-position.service';
-import { AccountProjectService } from './admin/projects/project.service';
-import { AccountProject } from './admin/projects/project.entity';
 import { SharedService } from './shared/shared.service';
 import { MailgunService } from './mailgun/mailgun.service';
 import { ProjectApplication } from './applications/application.entity';
 import { ProjectApplicationController } from './applications/application.controller';
 import { ApplicationService } from './applications/application.service';
-import { PointsService } from './admin/projects/points.service';
 import { ProjectVisitorsController } from './project_visits/project_visits.controller';
 import { ProjectVisitorsService } from './project_visits/project_visits.service';
 import { VerifyPosition } from './verify-position/verify-position.entity';
@@ -69,11 +57,24 @@ import { RecruiterCompany } from './recruiter/recruiter-company/recruiter-compan
 import { RecruiterCompanyUser } from './recruiter/recruiter-company/recruiter-company-user.entity';
 import { RecruiterProjectModule } from './recruiter/projects/project.module';
 import { RecruiterProject } from './recruiter/projects/project.entity';
+import { AppLoggerService } from './logger.service';
+import winston from 'winston';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ClsModule } from 'nestjs-cls';
 @Module({
   imports: [
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     TypeOrmModule.forRoot(databaseConfig),
     ScheduleModule.forRoot(),
-    loggerConfig,
     AuthModule,
     PassportModule,
     RecruiterProjectModule,
@@ -91,14 +92,12 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     TypeOrmModule.forFeature([Keywords]),
     TypeOrmModule.forFeature([AccountsVisitors]),
     TypeOrmModule.forFeature([AnalyticsAccess]),
-    TypeOrmModule.forFeature([AccountProject]),
     TypeOrmModule.forFeature([ProjectApplication]),
     TypeOrmModule.forFeature([ProjectVisitors]),
     TypeOrmModule.forFeature([VerifyPosition]),
     TypeOrmModule.forFeature([RecruiterProject]),
 
     TypeOrmModule.forFeature([RecruiterCompany, RecruiterCompanyUser]),
-
   ],
   controllers: [
     AuthController,
@@ -111,14 +110,21 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     PublishProfileController,
     KeywordsController,
     SuperAdminController,
-    AdminAuthController,
-    AccountProjectController,
     ProjectApplicationController,
     ProjectVisitorsController,
     VerifyPositionController,
-    RecruiterCompanyController
+    RecruiterCompanyController,
   ],
   providers: [
+    {
+      provide: 'WINSTON_LOGGER',
+      useValue: loggerConfig,
+    },
+    {
+      provide: AppLoggerService,
+      useFactory: (logger: winston.Logger) => new AppLoggerService(logger),
+      inject: ['WINSTON_LOGGER'],
+    },
     AuthService,
     RecruiterAuthService,
     RecruiterLinkedinStrategy,
@@ -132,49 +138,44 @@ import { RecruiterProject } from './recruiter/projects/project.entity';
     PublishProfileService,
     KeywordsService,
     SuperAdminService,
-    AdminAuthService,
-    AccountProjectService,
     SharedService,
     MailgunService,
     ApplicationService,
-    PointsService,
     ProjectVisitorsService,
     VerifyPositionService,
     CronService,
-    RecruiterCompanyService
+    RecruiterCompanyService,
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(TokenMiddleware)
-      .exclude(
-        'recruiter/projects/project-view/(.*)' 
-      )
+      .exclude('recruiter/projects/project-view/(.*)')
       .forRoutes(
         'me',
         'positions',
         'profile',
-        'update_profile_picture',
+        'update-profile-picture',
         'companies',
-        'position_details',
+        'position-details',
         'positions',
         'p',
-        'my/profile_views',
+        'my/profile-views',
         'keywords',
-        'get_all_users',
-        'get_user_details',
-        'get_user_companies',
-        'update_block_user_status',
+        'get-all-users',
+        'get-user-details',
+        'get-user-companies',
+        'update-block-user-status',
         'account-projects',
-        'impersonate_user',
+        'impersonate-user',
         'create-user',
         'remove-user',
         'get-my-details',
-        'get_users',
-        'update_project_picture',
+        'get-users',
+        'update-project-picture',
         'applications',
-        'project_ranking',
+        'project-ranking',
         'verify',
         'preference',
         'recruiter/company',
@@ -182,10 +183,9 @@ export class AppModule implements NestModule {
         'recruiter/projects',
         'recruiter/invite-user',
         'recruiter/update-user',
-        'project_visitor',
+        'project-visitor',
         'recruiter/change-password',
-        'recruiter/delete-user'
-
+        'recruiter/delete-user',
       );
   }
 }

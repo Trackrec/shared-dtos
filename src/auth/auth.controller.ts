@@ -19,9 +19,24 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import {
+  ApplicantUserParamDto,
+  GetMeResponseDto,
+  UpdatePreferencesRequestDto,
+} from 'src/shared-dtos/src/user.dto';
+import {
+  applicantUserParamSchema,
+  updatePreferencesRequestSchema,
+} from 'src/validations/user.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
+
+import { ThrottlerGuard } from '@nestjs/throttler';
+
 import { Catch, ExceptionFilter, ArgumentsHost, Injectable } from '@nestjs/common';
 import { Response } from 'express';
+import { configurations } from '../config/env.config';
 
+const { reactAppUrl } = configurations;
 // Custom Exception Filter to catch all errors globally for LinkedIn login
 @Injectable()
 @Catch()
@@ -33,10 +48,9 @@ export class LinkedInAuthExceptionFilter implements ExceptionFilter {
     console.error('LinkedIn Auth Error:', exception);
 
     // Redirect to a custom error page with a meaningful message
-    return response.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+    return response.redirect(`${reactAppUrl}/linkedin`);
   }
 }
-
 
 @Injectable()
 export class LinkedInAuthGuard extends AuthGuard('linkedin') {
@@ -63,136 +77,141 @@ export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
   constructor(private readonly authService: AuthService) {}
+
+  @UseGuards(ThrottlerGuard)
   @Get('linkedin')
-  setLinkedinSession(
-    @Query() queryParams: Record<string, string>,
-    @Req() req,
-    @Res() res,
-  ) {
+  setLinkedinSession(@Query() queryParams: Record<string, string>, @Req() req, @Res() res) {
     req.session.savedQueryParams = new URLSearchParams(queryParams).toString();
-    console.log(queryParams);
-    this.logger.log('LinkedIn session value set');
-    const redirectPath = queryParams?.request_token
-      ? '/secondary_linkedin/set-session'
+    this.logger.log(`LinkedIn session value set with query params: ${JSON.stringify(queryParams)}`);
+    const redirectPath = queryParams.request_token
+      ? '/secondary-linkedin/set-session'
       : '/linkedin/set-session';
     return res.redirect(redirectPath);
   }
+
   @Get('linkedin/set-session')
-  @UseGuards(LinkedInAuthGuard) 
+  @UseGuards(LinkedInAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   linkedinLogin(@Req() req) {
     this.logger.log('LinkedIn login initiated');
   }
 
-  @Get('secondary_linkedin/set-session')
-  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @Get('secondary-linkedin/set-session')
+  @UseGuards(LinkedInSecondaryAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   secondaryLinkedinLogin(@Req() req) {
-    this.logger.log('LinkedIn login initiated');
+    this.logger.log('Secondary LinkedIn login initiated');
   }
 
   @Get('linkedin/callback')
-  @UseGuards(LinkedInAuthGuard) 
+  @UseGuards(LinkedInAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   async linkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
-
-      // Retrieve saved query parameters from session
       const savedQueryParams = req.session.savedQueryParams || '';
       const topBarJobId = this.authService.getTopBarJobId(savedQueryParams);
+
       if (topBarJobId) {
+        this.logger.log(`Redirecting LinkedIn user with job ID: ${topBarJobId}`);
         return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+          `${reactAppUrl}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
         );
       }
 
       if (user && user.token) {
-        return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
-        );
+        this.logger.log(`Redirecting LinkedIn user with token: ${user.token}`);
+        return res.redirect(`${reactAppUrl}/?token=${user.token}&${savedQueryParams}`);
       } else {
-        return res.redirect(
-          `${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`,
-        );
+        this.logger.warn('User token missing during LinkedIn callback');
+        return res.redirect(`${reactAppUrl}/linkedin?${savedQueryParams}`);
       }
     } catch (error) {
-      this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-      return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+      this.logger.error(`Error in linkedinLoginCallback: ${error.message}`, error.stack);
+      return res.redirect(`${reactAppUrl}/linkedin`);
     }
   }
 
-  @Get('secondary_linkedin/callback')
-  @UseGuards(LinkedInSecondaryAuthGuard) 
+  @Get('secondar-_linkedin/callback')
+  @UseGuards(LinkedInSecondaryAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {
     try {
       const user = req.user;
       const savedQueryParams = req.session.savedQueryParams || '';
       const topBarJobId = this.authService.getTopBarJobId(savedQueryParams);
+
       if (topBarJobId) {
+        this.logger.log(`Redirecting secondary LinkedIn user with job ID: ${topBarJobId}`);
         return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
+          `${reactAppUrl}/?token=${user.token}&job_apply_redirect_url=${topBarJobId}&${savedQueryParams}`,
         );
       }
 
       if (user && user.token) {
-        return res.redirect(
-          `${process.env.REACT_APP_URL}/?token=${user.token}&${savedQueryParams}`,
-        );
+        this.logger.log(`Redirecting secondary LinkedIn user with token: ${user.token}`);
+        return res.redirect(`${reactAppUrl}/?token=${user.token}&${savedQueryParams}`);
       } else {
-        return res.redirect(
-          `${process.env.REACT_APP_URL}/linkedin?${savedQueryParams}`,
-        );
+        this.logger.warn('User token missing during secondary LinkedIn callback');
+        return res.redirect(`${reactAppUrl}/linkedin?${savedQueryParams}`);
       }
     } catch (error) {
-      this.logger.error(`Error in linkedinLoginCallback: ${error.message}`);
-      return res.redirect(`${process.env.REACT_APP_URL}/linkedin`);
+      this.logger.error(`Error in secondaryLinkedinLoginCallback: ${error.message}`, error.stack);
+      return res.redirect(`${reactAppUrl}/linkedin`);
     }
   }
 
   @Get('me')
-  async getMe(@Req() req) {
-    const user_id = req['user_id'];
+  async getMe(@Req() req: Request): Promise<GetMeResponseDto> {
+    const userId: number = req['user_id'];
+    this.logger.debug(`getMe called for user ID: ${userId}`);
+
     try {
-      const result = await this.authService.getMe(user_id);
+      const result: GetMeResponseDto = await this.authService.getMe(userId);
 
       if (result.error) {
+        this.logger.warn(`Failed to fetch user data for user ID: ${userId}`);
         return { error: true, message: result.message };
       } else {
+        this.logger.log(`Fetched user data successfully for user ID: ${userId}`);
         return { error: false, userDetails: result.user };
       }
     } catch (error) {
-      this.logger.error(`Error in getMe: ${error.message}`);
-      return {
-        error: true,
-        message: `Error processing user details: ${error.message}`,
-      };
+      this.logger.error(`Error in getMe for user ID: ${userId} - ${error.message}`, error.stack);
+      return { error: true, message: `Error processing user details: ${error.message}` };
     }
   }
+
   @Put('profile/:id')
-  async updateUser(@Param('id') id: number, @Body() updateUserPayload: any) {
-    // Pass image along with other payload data to service for update
+  async updateUser(
+    @Param(new ZodValidationPipe(applicantUserParamSchema)) param: ApplicantUserParamDto,
+    @Body(new ZodValidationPipe(updatePreferencesRequestSchema))
+    updateUserPayload: UpdatePreferencesRequestDto,
+  ): Promise<{ error: boolean; message: string }> {
+    const { id } = param;
+    this.logger.log(`Updating user with ID: ${id}`);
     return this.authService.updateUser(id, updateUserPayload);
   }
 
-  @Post('update_profile_picture/:id')
+  @Post('update-profile-picture/:id')
   @UseInterceptors(FileInterceptor('image'))
   async updateProfilePicture(
-    @Param('id') id: number,
+    @Param(new ZodValidationPipe(applicantUserParamSchema)) param: ApplicantUserParamDto,
     @UploadedFile() image: Multer.File,
-  ) {
-    // Pass image along with other payload data to service for update
+  ): Promise<{ error: boolean; message: string }> {
+    const { id } = param;
+    this.logger.log(`Updating profile picture for user ID: ${id}`);
     return this.authService.updateProfilePciture(id, image.buffer);
   }
 
   @Put('preference/update')
-  async updatePreference(@Body() updateUserPreferencePayload: any, @Req() req) {
-    const user_id = req['user_id'];
-    console.log(updateUserPreferencePayload);
-    return this.authService.updatepreference(
-      user_id,
-      updateUserPreferencePayload,
-    );
+  async updatePreference(
+    @Body(new ZodValidationPipe(updatePreferencesRequestSchema))
+    updateUserPreferencePayload: UpdatePreferencesRequestDto,
+    @Req() req: Request,
+  ): Promise<{ error: boolean; message: string }> {
+    const userId = req['user_id'];
+    this.logger.log(`Updating preferences for user ID: ${userId}`);
+    return this.authService.updatepreference(userId, updateUserPreferencePayload);
   }
 }

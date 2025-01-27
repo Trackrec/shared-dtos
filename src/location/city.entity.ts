@@ -13,7 +13,7 @@ export class City {
   @Column({ name: 'state_id' })
   stateId: number;
 
-  @ManyToOne(() => State, state => state.cities)
+  @ManyToOne(() => State, (state) => state.cities)
   state: State;
 
   @Column({ name: 'state_code' })
@@ -25,7 +25,7 @@ export class City {
   @Column({ name: 'country_id' })
   countryId: number;
 
-  @ManyToOne(() => Country, country => country.cities)
+  @ManyToOne(() => Country, (country) => country.cities)
   country: Country;
 
   @Column({ name: 'country_code' })

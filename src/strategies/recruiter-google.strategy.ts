@@ -4,32 +4,40 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { RecruiterAuthService } from 'src/recruiter/recruiter-auth/recruiter-auth.service';
 import * as jwt from 'jsonwebtoken';
 
+import { configurations } from '../config/env.config';
+
+const { google, jwtSecret } = configurations;
 @Injectable()
 export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google') {
-    private readonly logger = new Logger(RecruiterGoogleStrategy.name);
+  private readonly logger = new Logger(RecruiterGoogleStrategy.name);
 
-    constructor(
-        private readonly recruiterAuthService: RecruiterAuthService
-    ) {
+  constructor(private readonly recruiterAuthService: RecruiterAuthService) {
     super({
-      clientID: process.env.GOOGLE_CLIENT_ID, // Replace with your Google client ID
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Replace with your Google client secret
-      callbackURL: process.env.PRIMARY_RECRUITER_GOOGLE_CALLBACK_URL, // Adjust callback URL as needed
+      clientID: google.clientId,
+      clientSecret: google.clientSecret,
+      callbackURL: google.recruiterCallbackUrl,
       scope: ['email', 'profile'],
     });
-    
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: {
+      name: { givenName: string; familyName: string };
+      emails: { value: string }[];
+      photos: { value: string }[];
+    },
+    done: VerifyCallback,
+  ): Promise<void> {
     const { name, emails, photos } = profile;
-
 
     const user = {
       email: emails[0].value,
       displayName: `${name.givenName} ${name.familyName}`,
       picture: photos[0].value,
       accessToken,
-      loginMethod: "google"
+      loginMethod: 'google',
     };
 
     const createdUser = await this.recruiterAuthService.findOrCreate(user);
@@ -43,13 +51,13 @@ export class RecruiterGoogleStrategy extends PassportStrategy(Strategy, 'google'
     }
   }
 
-  private generateToken(user: any): string {
+  private generateToken(user: { id: number; email: string; username: string }): string {
     const payload = {
       id: user.id,
       email: user.email,
       username: user.username,
     };
 
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
+    return jwt.sign(payload, jwtSecret, { expiresIn: '30d' });
   }
 }

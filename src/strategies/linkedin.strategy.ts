@@ -1,5 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, Logger, Req } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Strategy, VerifyCallback } from 'passport-linkedin-oauth2';
 import { AuthService } from '../auth/auth.service';
 import * as jwt from 'jsonwebtoken';
@@ -7,7 +7,9 @@ import { Request } from 'express';
 import { VerifyPosition } from 'src/verify-position/verify-position.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { configurations } from '../config/env.config';
 
+const { linkedin, jwtSecret } = configurations;
 @Injectable()
 export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
   private readonly logger = new Logger(LinkedinStrategy.name);
@@ -18,9 +20,9 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
     private readonly verifyPostionRepository: Repository<VerifyPosition>,
   ) {
     super({
-      clientID: process.env.PRIMARY_LINKEDIN_CLIENT_ID,
-      clientSecret: process.env.PRIMARY_LINKEDIN_CLIENT_SECRET,
-      callbackURL: process.env.PRIMARY_LINKEDIN_CALLBACK_URL,
+      clientID: linkedin.primaryClientId,
+      clientSecret: linkedin.primaryClientSecret,
+      callbackURL: linkedin.primaryCallbackUrl,
       scope: ['r_basicprofile', 'r_liteprofile', 'r_emailaddress'],
       passReqToCallback: true, // This is important to get the req in the validate method
     });
@@ -30,13 +32,21 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
     req: Request,
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: {
+      id: string;
+      displayName: string;
+      emails: { value: string }[];
+      photos: { value: string }[];
+      _json: {
+        vanityName: string;
+      };
+    },
     done: VerifyCallback,
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       this.logger.debug(`LinkedIn profile: ${JSON.stringify(profile)}`);
-      const { id, displayName, emails, photos, _json } = profile;
-      const vanityName = _json.vanityName;
+      const { id, displayName, emails, photos, _json: jsonData } = profile;
+      const vanityName = jsonData.vanityName;
 
       // Create user object
       const user = {
@@ -60,21 +70,18 @@ export class LinkedinStrategy extends PassportStrategy(Strategy, 'linkedin') {
         return done(null, { token: null });
       }
     } catch (error) {
-      this.logger.error(
-        `Error during LinkedIn authentication: ${error.message}`,
-        error,
-      );
+      this.logger.error(`Error during LinkedIn authentication: ${error.message}`, error);
       return done(done, { token: null });
     }
   }
 
-  private generateToken(user: any): string {
+  private generateToken(user: { id: number; email: string; username: string }): string {
     const payload = {
       id: user.id,
       email: user.email,
       username: user.username,
     };
 
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
+    return jwt.sign(payload, jwtSecret, { expiresIn: '30d' });
   }
 }

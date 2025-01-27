@@ -11,252 +11,514 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
-  ParseIntPipe,
+  Logger,
+  UseGuards,
 } from '@nestjs/common';
-import { RecruiterProject } from './project.entity';
 import { RecruiterProjectService } from './project.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
+import {
+  AllUsersProjectsResponseDto,
+  CheckAppliedResponseDto,
+  ProjectResponseDto,
+  GetCandidatesResponseDto,
+  ProjectListResponseDto,
+  RecruiterProjectRequestDto,
+  ProjectIdQueryDto,
+  CandidatesListQueryDto,
+  ProjectListQueryDto,
+  ProjectViewByUrlParamDto,
+  ProjectByIdParamDto,
+  ProjectRankingQueryDto,
+} from 'src/shared-dtos/src/recruiter_project.dto';
+import { CompanyDataDto } from 'src/shared-dtos/src/company.dto';
+import { ApplicationRankingListResponseDto } from 'src/shared-dtos/src/project_application.dto';
+import {
+  candidatesListQuerySchema,
+  projectByIdParamSchema,
+  projectIdQuerySchema,
+  projectListQuerySchema,
+  projectRankingQuerySchema,
+  projectViewByUrlParamSchema,
+  recruiterProjectRequestSchema,
+} from 'src/validations/recruiter_project.validation';
+import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
+import { ThrottlerGuard } from '@nestjs/throttler';
 @Controller('recruiter/projects')
 export class RecruiterProjectController {
+  private readonly logger = new Logger(RecruiterProjectController.name);
+
   constructor(private readonly recruiterProjectService: RecruiterProjectService) {}
 
-  @Get('check_applied')
+  @Get('check-applied')
   async checkApplied(
     @Req() req: Request,
-    @Query('project_id', ParseIntPipe) projectId: number,
+    @Query(new ZodValidationPipe(projectIdQuerySchema)) query: ProjectIdQueryDto,
+  ): Promise<CheckAppliedResponseDto> {
+    const userId: number = req['user_id'];
+    const { project_id: projectId } = query;
 
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    return this.recruiterProjectService.checkApplied(+projectId, +user_id);
+    this.logger.log(`Checking if user ID ${userId} has applied for project ID ${projectId}`);
+
+    try {
+      const result = await this.recruiterProjectService.checkApplied(+projectId, +userId);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error checking application status for user ID ${userId} and project ID ${projectId}: ${error.message}`,
+      );
+      throw error;
+    }
   }
-  
+
   @Get('candidates')
   async getCandidates(
     @Req() req: Request,
-    @Query('page') page: number = 1, // Default to page 1
-    @Query('limit') limit: number = 10 // Default to 10 items per page
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    return this.recruiterProjectService.getCandidates(+user_id, +page, +limit);
+    @Query(new ZodValidationPipe(candidatesListQuerySchema)) query: CandidatesListQueryDto,
+  ): Promise<GetCandidatesResponseDto> {
+    const userId: number = req['user_id'];
+    const { page = 1, limit = 10 } = query;
+
+    this.logger.log(`Fetching candidates for user ID ${userId} | Page: ${page}, Limit: ${limit}`);
+
+    try {
+      const result = await this.recruiterProjectService.getCandidates(+userId, +page, +limit);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error fetching candidates for user ID ${userId}: ${error.message}`);
+      throw error;
+    }
   }
-  
 
   @Get()
   async findAll(
     @Req() req: Request,
-    @Query('page') page = 1, 
-    @Query('limit') limit = 10,
-    @Query('role') title?: string, // Project title
-    @Query('startDate') startDate?: string,
-    @Query('status') status?: 'published' | 'draft',
-    @Query('ref') ref?: number // Project ID
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    const parsedStartDate = startDate ? new Date(startDate) : undefined;
+    @Query(new ZodValidationPipe(projectListQuerySchema)) query: ProjectListQueryDto,
+  ): Promise<ProjectListResponseDto> {
+    const userId: number = req['user_id'];
+    const { page = 1, limit = 10, title, startDate, status, ref } = query;
+    const parsedStartDate: Date = startDate ? new Date(startDate) : undefined;
 
-    return this.recruiterProjectService.findAll(user_id, +page, +limit, title, parsedStartDate, status, ref);
+    this.logger.log(
+      `Fetching all projects for user ID ${userId} | Page: ${page}, Limit: ${limit}, Title: ${title}, Status: ${status}`,
+    );
+
+    try {
+      const result = await this.recruiterProjectService.findAll(
+        userId,
+        +page,
+        +limit,
+        title,
+        parsedStartDate,
+        status,
+        ref,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error(`Error fetching projects for user ID ${userId}: ${error.message}`);
+      throw error;
+    }
   }
 
   @Get('/all-users')
-  findAllUsersProjects(@Req() req: any): Promise<any> {
-    const user_id=req['user_id']
-    return this.recruiterProjectService.findAllUsersProjects(user_id);
+  async findAllUsersProjects(@Req() req: Request): Promise<AllUsersProjectsResponseDto> {
+    const userId: number = req['user_id'];
+
+    this.logger.log(`Fetching all projects across users for user ID ${userId}`);
+
+    try {
+      const result = await this.recruiterProjectService.findAllUsersProjects(userId);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching all users' projects for user ID ${userId}: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
+  @UseGuards(ThrottlerGuard)
   @Get('project-view/:project_url')
-  findOne(
-    @Param('project_url') project_url: string,
-    @Req() req: Request,
-  ): Promise<RecruiterProject> {
-    return this.recruiterProjectService.findOneByUrl(project_url);
+  async findOne(
+    @Param(new ZodValidationPipe(projectViewByUrlParamSchema)) param: ProjectViewByUrlParamDto,
+  ): Promise<ProjectResponseDto> {
+    const { project_url: projectUrl } = param;
+
+    this.logger.log(`Fetching project by URL: ${projectUrl}`);
+
+    try {
+      const result = await this.recruiterProjectService.findOneByUrl(projectUrl);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error fetching project by URL ${projectUrl}: ${error.message}`);
+      throw error;
+    }
   }
 
   @Get(':id')
-  findOneProject(
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<RecruiterProject> {
-    return this.recruiterProjectService.findOne(+id);
+  async findOneProject(
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
+  ): Promise<ProjectResponseDto> {
+    const { id } = param;
+
+    this.logger.log(`Fetching project by ID: ${id}`);
+
+    try {
+      const result = await this.recruiterProjectService.findOne(+id);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error fetching project by ID ${id}: ${error.message}`);
+      throw error;
+    }
   }
 
   @Post()
   @UseInterceptors(FileInterceptor('logo'))
-  create(
-    @Body() accountProjectData,
+  async create(
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
+    accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
-    if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
-      // List of allowed image types
-      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
-  
-      // Validate image type
-      if (imgType || allowedImageTypes.includes(imgType)) {
-        imageType=imgType;
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
+    this.logger.log(`User ID ${userId} initiated project creation`);
+
+    let imageType: string | null = null;
+    if (image) {
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
+      const allowedImageTypes: string[] = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+
+      if (imgType && allowedImageTypes.includes(imgType)) {
+        imageType = imgType;
+        this.logger.log(`Uploaded image type validated: ${imageType}`);
+      } else {
+        this.logger.warn(`Invalid image type uploaded: ${imgType}`);
       }
     }
-    
-    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
-    const companyData = {
-      company_id,
-      company_name,
-      logo_url,
-      website_url,
-      domain
+    const {
+      company_id: companyId,
+      company_name: companyName,
+      logo_url: logoUrl,
+      website_url: websiteUrl,
+      domain,
+      linkedin_url: linkedinUrl,
+    } = accountProjectData;
+
+    this.logger.log(`Creating project for company: ${companyName} (ID: ${companyId})`);
+
+    const companyData: CompanyDataDto = {
+      company_id: companyId,
+      company_name: companyName,
+      logo_url: logoUrl,
+      website_url: websiteUrl,
+      domain,
+      linkedin_url: linkedinUrl,
     };
-    return this.recruiterProjectService.create(accountProjectData, user_id, image?.buffer, imageType, companyData);
+
+    try {
+      const result = await this.recruiterProjectService.create(
+        accountProjectData,
+        userId,
+        image?.buffer,
+        imageType,
+        companyData,
+      );
+      this.logger.log(`Project created successfully for user ID ${userId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error creating project for user ID ${userId}: ${error.message}`);
+      throw error;
+    }
   }
 
-  @Post('save_and_publish')
+  @Post('save-and-publish')
   @UseInterceptors(FileInterceptor('logo'))
-  saveAndPublish(
-    @Body() accountProjectData,
+  async saveAndPublish(
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
+    accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
-    if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
-      // List of allowed image types
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
+    this.logger.log(`User ID ${userId} initiated save and publish project process`);
+
+    let imageType: string | null = null;
+    if (image) {
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
       const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
-  
-      // Validate image type
-      if (imgType || allowedImageTypes.includes(imgType)) {
-        imageType=imgType;
+
+      if (imgType && allowedImageTypes.includes(imgType)) {
+        imageType = imgType;
+        this.logger.log(`Uploaded image type validated: ${imageType}`);
+      } else {
+        this.logger.warn(`Invalid image type uploaded: ${imgType}`);
       }
     }
-    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
 
-    const companyData = {
-      company_id,
-      company_name,
-      logo_url,
-      website_url,
-      domain
+    const {
+      company_id: companyId,
+      company_name: companyName,
+      logo_url: logoUrl,
+      website_url: websiteUrl,
+      domain,
+      linkedin_url: linkedinUrl,
+    } = accountProjectData;
+
+    this.logger.log(`Saving and publishing project for company: ${companyName} (ID: ${companyId})`);
+
+    const companyData: CompanyDataDto = {
+      company_id: companyId,
+      company_name: companyId,
+      logo_url: logoUrl,
+      website_url: websiteUrl,
+      domain,
+      linkedin_url: linkedinUrl,
     };
-    return this.recruiterProjectService.createAndPublish(accountProjectData, user_id,  image?.buffer, imageType, companyData);
+
+    try {
+      const result = await this.recruiterProjectService.createAndPublish(
+        accountProjectData,
+        userId,
+        image?.buffer,
+        imageType,
+        companyData,
+      );
+      this.logger.log(`Project saved and published successfully for user ID ${userId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error saving and publishing project for user ID ${userId}: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
-  @Post('update_and_publish/:id')
+  @Post('update-and-publish/:id')
   @UseInterceptors(FileInterceptor('logo'))
-  updateAndPublish(
-    @Body() accountProjectData,
+  async updateAndPublish(
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
+    accountProjectData: RecruiterProjectRequestDto,
     @Req() req: Request,
     @UploadedFile() image: Multer.File,
-    @Param('id') id: string,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
-    if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
-      // List of allowed image types
-      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
-  
-      // Validate image type
-      if (imgType || allowedImageTypes.includes(imgType)) {
-        imageType=imgType;
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
+    const { id } = param;
+    this.logger.log(`User ID ${userId} initiated update and publish for project ID ${id}`);
+
+    let imageType: string | null = null;
+    if (image) {
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
+      const allowedImageTypes: string[] = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+
+      if (imgType && allowedImageTypes.includes(imgType)) {
+        imageType = imgType;
+        this.logger.log(`Uploaded image type validated: ${imageType}`);
+      } else {
+        this.logger.warn(`Invalid image type uploaded: ${imgType}`);
       }
     }
 
-    const {company_id, company_name, company_logo_url, company_website_url, company_domain} = accountProjectData;
+    const {
+      company_id: companyId,
+      company_name: companyName,
+      company_logo_url: companyLogoUrl,
+      company_website_url: companyWebsiteUrl,
+      company_domain: companyDomain,
+      linkedin_url: linkedinUrl,
+    } = accountProjectData;
 
-    const companyData = {
-      company_id,
-      company_name,
-      company_logo_url,
-      company_website_url,
-      company_domain
+    this.logger.log(
+      `Updating and publishing project for company: ${companyName} (ID: ${companyId})`,
+    );
+
+    const companyData: CompanyDataDto = {
+      company_id: companyId,
+      company_name: companyName,
+      company_logo_url: companyLogoUrl,
+      company_website_url: companyWebsiteUrl,
+      company_domain: companyDomain,
+      linkedin_url: linkedinUrl,
+      website_url: companyWebsiteUrl,
     };
-    return this.recruiterProjectService.updateAndPublish(accountProjectData, user_id, id, image?.buffer, imageType, companyData);
+
+    try {
+      const result = await this.recruiterProjectService.updateAndPublish(
+        accountProjectData,
+        userId,
+        id,
+        image?.buffer,
+        imageType,
+        companyData,
+      );
+      this.logger.log(`Project updated and published successfully for project ID ${id}`);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error updating and publishing project for user ID ${userId}, project ID ${id}: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
   @Post('/:id/publish')
   async publishProject(
-    @Param('id') projectId: number,
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
     @Req() req: Request,
-  ): Promise<any> {
-    const userId = req['user_id'];
-    return this.recruiterProjectService.publishProject(projectId, userId);
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
+    const { id } = param;
+    this.logger.log(`User ID ${userId} initiated publish for project ID ${id}`);
+
+    try {
+      const result = await this.recruiterProjectService.publishProject(id, userId);
+      this.logger.log(`Project ID ${id} published successfully by user ID ${userId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error publishing project ID ${id} by user ID ${userId}: ${error.message}`);
+      throw error;
+    }
   }
 
   @Post('/:id/unpublish')
-async unpublishProject(
-  @Param('id') projectId: number,
-  @Req() req: Request,
-): Promise<any> {
-  const userId = req['user_id'];
-  return this.recruiterProjectService.unpublishProject(projectId, userId);
-}
+  async unpublishProject(
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
+    @Req() req: Request,
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
+    const { id } = param;
+    this.logger.log(`User ID ${userId} initiated unpublish for project ID ${id}`);
+
+    try {
+      const result = await this.recruiterProjectService.unpublishProject(id, userId);
+      this.logger.log(`Project ID ${id} unpublished successfully by user ID ${userId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error unpublishing project ID ${id} by user ID ${userId}: ${error.message}`,
+      );
+      throw error;
+    }
+  }
 
   @Put('/:id')
   @UseInterceptors(FileInterceptor('logo'))
-  update(
-    @Param('id') id: string,
-    @Body() accountProjectData,
+  async update(
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
+    @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
+    accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
-  ): Promise<any> {
-    const user_id = req['user_id'];
-    let imageType=null;
-    if(image){
-      const imgType = this.getImageTypeFromMimetype(image?.mimetype);
-      // List of allowed image types
-      const allowedImageTypes = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
-  
-      // Validate image type
-      if (imgType || allowedImageTypes.includes(imgType)) {
-        imageType=imgType;
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
+    const { id } = param;
+    this.logger.log(`User ID ${userId} initiated update for project ID ${id}`);
+
+    let imageType: string | null = null;
+    if (image) {
+      const imgType: string = this.getImageTypeFromMimetype(image?.mimetype);
+      const allowedImageTypes: string[] = ['svg', 'png', 'jpg', 'jpeg', 'gif'];
+
+      if (imgType && allowedImageTypes.includes(imgType)) {
+        imageType = imgType;
+        this.logger.log(`Uploaded image type validated: ${imageType}`);
+      } else {
+        this.logger.warn(`Invalid image type uploaded: ${imgType}`);
       }
     }
 
-    const {company_id, company_name, logo_url, website_url, domain} = accountProjectData;
+    const {
+      company_id: companyId,
+      company_name: companyName,
+      logo_url: logoUrl,
+      website_url: websiteUrl,
+      domain,
+      linkedin_url: linkedinUrl,
+    } = accountProjectData;
 
-    const companyData = {
-      company_id,
-      company_name,
-      logo_url,
-      website_url,
-      domain
+    const companyData: CompanyDataDto = {
+      company_id: companyId,
+      company_name: companyName,
+      logo_url: logoUrl,
+      website_url: websiteUrl,
+      domain,
+      linkedin_url: linkedinUrl,
     };
-    return this.recruiterProjectService.update(user_id, +id, accountProjectData, image?.buffer, imageType, companyData);
+    console.log(websiteUrl);
+
+    try {
+      const result = await this.recruiterProjectService.update(
+        userId,
+        +id,
+        accountProjectData,
+        image?.buffer,
+        imageType,
+        companyData,
+      );
+      this.logger.log(`Project ID ${id} updated successfully by user ID ${userId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error updating project ID ${id} by user ID ${userId}: ${error.message}`);
+      throw error;
+    }
   }
 
   @Delete('/:id')
-  remove(@Param('id') id: string, @Req() req: Request): Promise<void> {
-    const user_id = req['user_id'];
-    return this.recruiterProjectService.remove(+id, user_id);
-  }
+  async remove(
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
+    @Req() req: Request,
+  ): Promise<ProjectResponseDto> {
+    const userId: number = req['user_id'];
+    const { id } = param;
+    this.logger.log(`User ID ${userId} initiated deletion for project ID ${id}`);
 
- 
-
-  @Get('project_ranking/:id')
-  async getRanking(@Param('id') project_id: number, @Req() req: Request,   @Query('min_experience') min_experience?: string) {
-    const user_id = req['user_id'];
-    return await this.recruiterProjectService.getRanking(project_id, user_id, min_experience);
-  }
-
-  getImageTypeFromMimetype(mimetype: string): string | null {
-    // Split the mimetype string by '/'
-    const parts = mimetype.split('/');
-  
-    // Check if the first part is 'image'
-    if (parts[0] === 'image' && parts[1]) {
-      // Special case for 'svg+xml' which should be treated as 'svg'
-      if (parts[1] === 'svg+xml') {
-        return 'svg';
-      }
-      return parts[1]; // The second part is the image type
-    } else {
-      return null; // Not a valid image mimetype
+    try {
+      const result = await this.recruiterProjectService.remove(+id, userId);
+      this.logger.log(`Project ID ${id} deleted successfully by user ID ${userId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error deleting project ID ${id} by user ID ${userId}: ${error.message}`);
+      throw error;
     }
   }
 
-  
-  
+  @Get('project-ranking/:id')
+  async getRanking(
+    @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
+    @Req() req: Request,
+    @Query(new ZodValidationPipe(projectRankingQuerySchema)) query: ProjectRankingQueryDto,
+  ): Promise<ApplicationRankingListResponseDto> {
+    const userId: number = req['user_id'];
+    const { id } = param;
+    const { min_experience: minExperience } = query;
+
+    this.logger.log(
+      `User ID ${userId} requested ranking for project ID ${id} with min_experience: ${minExperience}`,
+    );
+
+    try {
+      const result = await this.recruiterProjectService.getRanking(id, userId, minExperience);
+      this.logger.log(
+        `Project ranking retrieved successfully for project ID ${id} by user ID ${userId}`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching ranking for project ID ${id} by user ID ${userId}: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
+  getImageTypeFromMimetype(mimetype: string): string | null {
+    const parts: string[] = mimetype.split('/');
+    if (parts[0] === 'image' && parts[1]) {
+      if (parts[1] === 'svg+xml') {
+        return 'svg';
+      }
+      return parts[1];
+    }
+    return null;
+  }
 }
