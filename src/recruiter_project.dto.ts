@@ -39,6 +39,7 @@ export interface RecruiterProjectDto {
   benefits: string | null;
   elevator_pitch: string | null;
   office_address: string | null;
+  office_address_id: string | null;
   travel_requirement_percentage: string | null;
   start_date: Date | null;
   currency: string | null;
@@ -153,6 +154,7 @@ export interface RecruiterProjectRequestDto {
   benefits: string | null;
   elevator_pitch: string | null;
   office_address: string | null;
+  office_address_id: string | null;
   travel_requirement_percentage: string | null;
   start_date: string | null;
   currency: string | null;
@@ -180,7 +182,6 @@ export interface RecruiterProjectRequestDto {
   company_logo_url: string | null;
   company_website_url: string | null;
   company_domain: string | null;
-
 }
 
 export interface ProjectVisitorParamDto {
