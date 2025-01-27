@@ -180,6 +180,9 @@ export class RecruiterProject {
   @Column({ nullable: true })
   office_address: string;
 
+  @Column({ nullable: true })
+  office_address_id: string;
+
   @Column({ type: 'longtext', nullable: true })
   travel_requirement_percentage: string;
 

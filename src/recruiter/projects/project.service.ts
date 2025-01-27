@@ -1497,6 +1497,7 @@ export class RecruiterProjectService {
     parsedData.timeline = data.timeline || null;
     parsedData.benefits = data.benefits || null;
     parsedData.office_address = data.office_address || null;
+    parsedData.office_address_id = data.office_address_id || null;
     parsedData.elevator_pitch = data.elevator_pitch || null;
     parsedData.travel_requirement_percentage = data.travel_requirement_percentage || null;
     parsedData.report_to = data.report_to || null;
@@ -1532,5 +1533,20 @@ export class RecruiterProjectService {
 
     this.logger.log(`Unique project URL generated: "${updateBaseProjectName}"`);
     return updateBaseProjectName;
+  }
+
+  async getProjectsWithApplicationsForUser(recruiterId: number, userId: number): Promise<boolean> {
+    // Fetch all projects for the given recruiter along with their applications
+    const projects = await this.recruiterProjectRepository.find({
+      where: { user: { id: recruiterId } },
+      relations: ['applications', 'applications.user'],
+    });
+
+    // Check if the user has applied to any application in the projects
+    const userApplied = projects.some((project) =>
+      project.applications.some((application) => application.user?.id === userId),
+    );
+
+    return userApplied;
   }
 }

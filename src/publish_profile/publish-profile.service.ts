@@ -19,6 +19,7 @@ import {
 } from 'src/shared-dtos/src/user.dto';
 import { PositionDto, VerifyPositionDto } from 'src/shared-dtos/src/position.dto';
 import { configurations } from '../config/env.config';
+import { RecruiterProjectService } from 'src/recruiter/projects/project.service';
 
 const { reactAppUrl, mailgun } = configurations;
 @Injectable()
@@ -34,6 +35,7 @@ export class PublishProfileService {
     private readonly analyticsRepository: Repository<AnalyticsAccess>,
     private readonly sharedService: SharedService,
     private readonly mailgunService: MailgunService,
+    private readonly projectService: RecruiterProjectService,
   ) {}
 
   async publishProfile(userId: number): Promise<{ error: boolean; message: string }> {
@@ -243,6 +245,7 @@ export class PublishProfileService {
   async findUserByIdAndName(
     userName: string,
     visitorId: number,
+    recruiterId: number,
   ): Promise<ExtendedUserDetailsDto | null> {
     this.logger.log(`Fetching user profile for username: ${userName}`);
 
@@ -263,7 +266,16 @@ export class PublishProfileService {
         return null;
       }
 
-      if (!user?.published_at) {
+      if (!user?.published_at && !recruiterId) {
+        this.logger.warn(`User profile for username: ${userName} is not published`);
+        return null;
+      }
+
+      if (
+        !user?.published_at &&
+        recruiterId &&
+        !this.projectService.getProjectsWithApplicationsForUser(recruiterId, user.id)
+      ) {
         this.logger.warn(`User profile for username: ${userName} is not published`);
         return null;
       }

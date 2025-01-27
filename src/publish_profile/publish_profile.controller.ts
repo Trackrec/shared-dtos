@@ -72,12 +72,17 @@ export class PublishProfileController {
     @Req() req: Request,
   ): Promise<{ error: boolean; user?: ExtendedUserDetailsDto; message?: string }> {
     const visitorId: number = req['user_id'];
+    const recruiterId: number = req['recruiter_id'];
     const { userName } = param;
     this.logger.log(
       `Fetching public profile for username: ${userName} by visitor ID: ${visitorId}`,
     );
     try {
-      const user = await this.publishProfileService.findUserByIdAndName(userName, visitorId);
+      const user = await this.publishProfileService.findUserByIdAndName(
+        userName,
+        visitorId,
+        recruiterId,
+      );
       return { error: false, user };
     } catch (error) {
       this.logger.error(`Error fetching public profile for username: ${userName}`, error.stack);
