@@ -466,7 +466,6 @@ export class AuthService {
           let company = await this.companyRepository.findOne({
             where: [{ name: experience.company }],
           });
-          let newCompany = null;
           if (!company){
             let appoloCompany= await this.companyService.searchCompany({company_name: experience.company})
             const website_url = 
@@ -476,13 +475,34 @@ export class AuthService {
                       ? appoloCompany.data.organizations[0]?.website_url : null
                      ) : null;
 
-            newCompany = await this.companyService.createCompany({
+            const newCompany = await this.companyService.createCompany({
               name: experience.company,
               logo_url: experience.logo_url ? experience.logo_url : null,
               domain: experience.domain ? experience.domain : null,
               website_url:website_url
             });
+
+            const positionData = {
+              start_month: experience.starts_at
+                ? experience.starts_at.month
+                : null,
+              start_year: experience.starts_at ? experience.starts_at.year : null,
+              end_month: experience.ends_at ? experience.ends_at.month : null,
+              end_year: experience.ends_at ? experience.ends_at.year : null,
+              role: experience.title,
+            };
+  
+            const position = this.positionRepository.create({
+              ...positionData,
+              company: newCompany?.createdCompany?.id
+                ? { id: newCompany.createdCompany.id }
+                : null,
+              user: user,
+            });
+  
+            return position;
           }
+          else{
 
           const positionData = {
             start_month: experience.starts_at
@@ -496,13 +516,12 @@ export class AuthService {
 
           const position = this.positionRepository.create({
             ...positionData,
-            company: newCompany
-              ? { id: newCompany.createdCompany.id }
-              : company,
+            company: company,
             user: user,
           });
 
           return position;
+        }
         });
 
         const positions = await Promise.all(positionsPromises);
