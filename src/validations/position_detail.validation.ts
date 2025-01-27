@@ -26,10 +26,11 @@ const companyDtoSchema = z.object({
 const notableClientsSchema = z
   .array(
     z.object({
-      id: z.string().nullable(),
-      logo_url: z.string().nullable(),
-      label: z.string().nullable(),
-      value: z.string().nullable(),
+      id: z.string().nullable().optional(),
+      logo_url: z.string().nullable().optional(),
+      label: z.string().nullable().optional(),
+      value: z.string().nullable().optional(),
+      website_url: z.string().nullable().optional()
     }),
   )
   .nullable();
