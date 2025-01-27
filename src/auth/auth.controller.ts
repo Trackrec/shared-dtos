@@ -132,7 +132,7 @@ export class AuthController {
     }
   }
 
-  @Get('secondar-_linkedin/callback')
+  @Get('secondary-linkedin/callback')
   @UseGuards(LinkedInSecondaryAuthGuard)
   @UseFilters(LinkedInAuthExceptionFilter)
   async secondaryLinkedinLoginCallback(@Req() req, @Res() res) {

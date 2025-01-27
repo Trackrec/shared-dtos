@@ -21,8 +21,7 @@ export class TokenMiddleware implements NestMiddleware {
 
     // Check if the current request path matches the /p/:username pattern
     const isProfileRoute = req.originalUrl.startsWith('/p/');
-
-    if (!token) {
+    if ((!token || token=='null') && (!recruiterToken || recruiterToken=='null')) {
       res.status(401).json({ authError: true, message: 'No Token Provided' });
       return;
     }
