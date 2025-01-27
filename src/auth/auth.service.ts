@@ -531,56 +531,69 @@ export class AuthService {
     }
   }
 
-  async importExperiences(user: UserDto, userId: number, username: string) {
-    this.logger.debug(`importExperiences called for user ID: ${userId}, username: ${username}`);
-
+ 
+  async importExperiences(user, userId, username) {
+    this.logger.debug(`Starting importExperiences for user ID: ${userId}, username: ${username}`);
     const headers = {
       Authorization: `Bearer ${nobellaAccessToken}`,
     };
-    const url = `https://nubela.co/proxycurl/api/v2/linkedin?linkedin_profile_url=https://www.linkedin.com/in/${username}&use_cache=if-recent`;
+    let url = `https://nubela.co/proxycurl/api/v2/linkedin?linkedin_profile_url=https://www.linkedin.com/in/${username}&use_cache=if-recent`;
 
     try {
       this.logger.log(`Fetching experiences from LinkedIn for username: ${username}`);
       const response = await axios.get(url, { headers });
-
       if (response && response.data && response.data.experiences.length > 0) {
         const { experiences } = response.data;
         this.logger.log(`Received ${experiences.length} experiences for user ID: ${userId}`);
-
         const positionsPromises = experiences.map(async (experience) => {
-          const company: CompanyDto = await this.companyRepository.findOne({
+          let company = await this.companyRepository.findOne({
             where: [{ name: experience.company }],
           });
+          if (!company){
+            this.logger.log(`Company "${experience.company}" not found. Searching for it via company service.`);
+            let appoloCompany= await this.companyService.searchCompany(experience.company)
+            const website_url = 
+                 appoloCompany && !appoloCompany.error 
+                    ? (
+                      Array.isArray(appoloCompany.data?.organizations) && appoloCompany.data.organizations.length > 0 
+                      ? appoloCompany.data.organizations[0]?.website_url : null
+                     ) : null;
 
-          let newCompany = null;
-          if (!company) {
-            this.logger.log(
-              `Company "${experience.company}" not found. Searching via company service...`,
-            );
-            const appoloCompany = await this.companyService.searchCompany(experience.company);
-
-            const websiteUrl =
-              appoloCompany && !appoloCompany.error
-                ? Array.isArray(appoloCompany.data?.organizations) &&
-                  appoloCompany.data.organizations.length > 0
-                  ? appoloCompany.data.organizations[0]?.website_url
-                  : null
-                : null;
-
-            newCompany = await this.companyService.createCompany({
+            const newCompany = await this.companyService.createCompany({
               name: experience.company,
               logo_url: experience.logo_url ? experience.logo_url : null,
               domain: experience.domain ? experience.domain : null,
-              website_url: websiteUrl,
+              website_url:website_url
             });
 
-            this.logger.log(
-              `Created new company "${experience.company}" with ID: ${newCompany.createdCompany.id}`,
-            );
-          }
+            this.logger.log(`Created new company "${experience.company}" with ID: ${newCompany.createdCompany.id}`);
+            const positionData = {
+              start_month: experience.starts_at
+                ? experience.starts_at.month
+                : null,
+              start_year: experience.starts_at ? experience.starts_at.year : null,
+              end_month: experience.ends_at ? experience.ends_at.month : null,
+              end_year: experience.ends_at ? experience.ends_at.year : null,
+              role: experience.title,
+            };
+            
 
+            const position = this.positionRepository.create({
+              ...positionData,
+              company: newCompany?.createdCompany?.id
+                ? { id: newCompany.createdCompany.id }
+                : null,
+              user: user,
+            });
+            this.logger.debug(`Prepared position for role: ${experience.title} at company: ${company.name}`);
+  
+            return position;
+          }
+          else{
           const positionData = {
-            start_month: experience.starts_at ? experience.starts_at.month : null,
+            start_month: experience.starts_at
+              ? experience.starts_at.month
+              : null,
             start_year: experience.starts_at ? experience.starts_at.year : null,
             end_month: experience.ends_at ? experience.ends_at.month : null,
             end_year: experience.ends_at ? experience.ends_at.year : null,
@@ -589,28 +602,31 @@ export class AuthService {
 
           const position = this.positionRepository.create({
             ...positionData,
-            company: newCompany ? { id: newCompany.createdCompany.id } : company,
+            company:company,
             user: user,
           });
 
-          this.logger.debug(
-            `Prepared position for role: ${experience.title} at company: ${experience.company}`,
-          );
+          this.logger.debug(`Prepared position for role: ${experience.title} at company: ${company.name}`);
           return position;
+        }
         });
 
         const positions = await Promise.all(positionsPromises);
 
-        await this.positionRepository.save(positions);
-        this.logger.log(`Saved ${positions.length} positions for user ID: ${userId}`);
-      } else {
+        // Now save all positions in one batch
+        this.positionRepository.save(positions);
+        this.logger.log(`Successfully saved ${positions.length} positions for user ID: ${userId}`);
+      }
+      else{
         this.logger.warn(`No experiences found for user ID: ${userId}`);
       }
+      // Handle the response here
+      // console.log('API Response:', response.data);
     } catch (error) {
-      this.logger.error(
-        `Error importing experiences for user ID: ${userId} - ${error.message}`,
-        error.stack,
-      );
+      // Handle errors
+      console.error('API Error:', error.message);
     }
   }
+  
+  
 }
