@@ -56,6 +56,7 @@ interface NotableClient {
   logo_url: string | null;
   label: string | null;
   value: string | null;
+  website_url: string | null;
 }
 export interface PositionDetailsRequestDto {
   id: string;
