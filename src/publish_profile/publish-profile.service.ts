@@ -326,7 +326,7 @@ export class PublishProfileService {
           });
 
           if (isCompleted) {
-            totalRevenue += position.details.revenue_generated || 0;
+            totalRevenue += +position.details.revenue_generated || 0;
           }
         }
 
