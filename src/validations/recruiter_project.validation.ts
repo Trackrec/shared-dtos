@@ -133,6 +133,9 @@ export const recruiterProjectRequestSchema = z.object({
   company_domain: z.string().nullable().optional(),
 });
 
+export const updateRecruiterProjectRequestSchema = recruiterProjectRequestSchema.partial();
+
+
 export const projectRankingQuerySchema = z.object({
   min_experience: z.string().optional(),
 });

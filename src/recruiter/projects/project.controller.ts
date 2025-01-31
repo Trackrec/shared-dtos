@@ -41,6 +41,7 @@ import {
   projectRankingQuerySchema,
   projectViewByUrlParamSchema,
   recruiterProjectRequestSchema,
+  updateRecruiterProjectRequestSchema,
 } from 'src/validations/recruiter_project.validation';
 import { ZodValidationPipe } from 'src/pipes/zod_validation.pipe';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -297,7 +298,7 @@ export class RecruiterProjectController {
   @Post('update-and-publish/:id')
   @UseInterceptors(FileInterceptor('logo'))
   async updateAndPublish(
-    @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
+    @Body(new ZodValidationPipe(updateRecruiterProjectRequestSchema))
     accountProjectData: RecruiterProjectRequestDto,
     @Req() req: Request,
     @UploadedFile() image: Multer.File,
@@ -406,7 +407,7 @@ export class RecruiterProjectController {
   @UseInterceptors(FileInterceptor('logo'))
   async update(
     @Param(new ZodValidationPipe(projectByIdParamSchema)) param: ProjectByIdParamDto,
-    @Body(new ZodValidationPipe(recruiterProjectRequestSchema))
+    @Body(new ZodValidationPipe(updateRecruiterProjectRequestSchema))
     accountProjectData: RecruiterProjectRequestDto,
     @UploadedFile() image: Multer.File,
     @Req() req: Request,
