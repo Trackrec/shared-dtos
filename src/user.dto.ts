@@ -216,6 +216,7 @@ export interface UsersInCompanyResponseDto {
 export interface UpdatePreferencesRequestDto {
   about: string | null;
   city: string;
+  city_place_id: string;
   currency: string;
   currency_country: string;
   current_ote: number | null;
