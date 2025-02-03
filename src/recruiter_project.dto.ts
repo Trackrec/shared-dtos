@@ -129,6 +129,7 @@ export interface RecruiterProjectRequestDto {
   ote_end: string | null;
   is_ote_visible: string;
   location_type: string | null;
+  location_category: string | null;
   description: string | null;
   experience_type: string | null;
   location: string | null;
