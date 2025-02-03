@@ -73,6 +73,7 @@ import { ClsModule } from 'nestjs-cls';
         limit: 10,
       },
     ]),
+    
     TypeOrmModule.forRoot(databaseConfig),
     ScheduleModule.forRoot(),
     AuthModule,
