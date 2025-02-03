@@ -1127,6 +1127,11 @@ export class RecruiterProjectService {
         outbound_points: 0,
         points_for_persona: 0,
         points_for_experience: 0,
+        points_for_territory: 0,
+        points_for_location: 0,
+        points_for_company_overlap: 0,
+
+
       };
 
       if (application.user.positions.length === 0) {
@@ -1149,6 +1154,11 @@ export class RecruiterProjectService {
         number, // outbound_points
         number, // points_for_persona
         number, // points_for_experience
+        number, // points for territory
+        number, // points for location
+        number, // points for company overlap
+
+
       ] = await Promise.all([
         this.pointsService.points_for_ote(application.user.ote_expectation, application.ote),
         this.pointsService.points_for_worked_in(
@@ -1164,11 +1174,11 @@ export class RecruiterProjectService {
         this.pointsService.points_for_dealsize(application.user.positions, application.project),
         this.pointsService.points_for_new_business(application.user.positions, application.project),
         this.pointsService.points_for_outbound(application.user.positions, application.project),
-        this.pointsService.points_for_persona(
-          application.user.positions,
-          application.project.selectedPersona,
-        ),
+        this.pointsService.points_for_persona(application.user.positions, application.project.selectedPersona, application.project),
         this.pointsService.points_for_years(application.user.positions, application.project),
+        this.pointsService.points_for_territory(application.user.positions, application.project),
+        this.pointsService.points_for_location(application.user.city, application.project.location), // New function call
+        this.pointsService.points_for_company_overlap(application.user.positions, application.project)
       ]);
 
       this.logger.log(
@@ -1186,6 +1196,9 @@ export class RecruiterProjectService {
         outboundPoints,
         pointsForPersona,
         pointsForExperience,
+        pointsForTerritory,
+        pointsForLocation,
+        pointsForCompanyOverlap
       ] = pointsArray;
 
       Object.assign(points, {
@@ -1199,10 +1212,14 @@ export class RecruiterProjectService {
         outbound_points: outboundPoints,
         points_for_persona: pointsForPersona,
         points_for_experience: pointsForExperience,
+        points_for_territory: pointsForTerritory,
+        points_for_location: pointsForLocation,
+        points_for_company_overlap: pointsForCompanyOverlap
+
       });
 
       const sum: number = this.sumObjectValues(points);
-      const maxpossiblesum: number = 10 * Object.keys(points).length;
+      const maxpossiblesum: number = 13 * Object.keys(points).length;
       let percentage: number = Math.round((sum / maxpossiblesum) * 100);
       percentage = Math.min(percentage, 100);
 
