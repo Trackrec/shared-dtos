@@ -46,6 +46,9 @@ export interface PointsDto {
   outbound_points?: number;
   points_for_persona?: number;
   points_for_experience?: number;
+  points_for_territory?: number;
+  points_for_location?: number;
+  points_for_company_overlap?: number,
 }
 
 export interface PointsCalculationDto {
@@ -59,6 +62,9 @@ export interface PointsCalculationDto {
   outbound_points: number;
   points_for_persona: number;
   points_for_experience: number;
+  points_for_territory: number;
+  points_for_location: number;
+  points_for_company_overlap: number,
 }
 
 export interface ProjectApplicationWithUserPointsDto extends ProjectApplicationWithPostions {
