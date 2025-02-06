@@ -18,8 +18,8 @@ export interface ProjectApplicationRequestDto {
   ote: number;
   available: boolean;
   position_id: number;
-  city: string;
-  city_place_id: string;
+  city?: string;
+  city_place_id?: string;
 }
 
 export interface ProjectApplicationWithPostions extends ProjectApplicationDto {
