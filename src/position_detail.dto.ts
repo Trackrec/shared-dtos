@@ -10,11 +10,9 @@ export interface PositionDetailsDto {
   revenue_generated: number | null;
   is_booking_meeting: boolean | null;
   meeting_booked: number | null;
-  sold_to_ids: string[] | null;
   segment_smb: number | null;
   segment_mid_market: number | null;
   segment_enterprise: number | null;
-  worked_in_ids: string[] | null;
   short_sales_cycle: string | null;
   average_sales_cycle: string | null;
   long_sales_cycle: string | null;
@@ -67,11 +65,9 @@ export interface PositionDetailsRequestDto {
   revenue_generated: number | null;
   is_booking_meeting: boolean | null;
   meeting_booked: number | null;
-  sold_to_ids: string[] | null;
   segment_smb: number | null;
   segment_mid_market: number | null;
   segment_enterprise: number | null;
-  worked_in_ids: string[] | null;
   short_sales_cycle: string | null;
   average_sales_cycle: string | null;
   long_sales_cycle: string | null;
