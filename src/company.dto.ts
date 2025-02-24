@@ -4,26 +4,26 @@ import { RecruiterCompanyDto } from './recruiter_company';
 export interface CompanyDto {
   id: string;
   name: string;
-  company_id: string | null;
+  companyId: string | null;
   domain: string | null;
-  logo_url: string | null;
-  website_url: string | null;
-  linkedin_url: string | null;
-  created_at: Date;
-  updated_at: Date;
+  logoUrl: string | null;
+  websiteUrl: string | null;
+  linkedinUrl: string | null;
+  createdAt: Date;
+  updatedAt: Date;
   positions: PositionDto[];
 }
 
 export interface CompanyDataDto {
-  company_id: string | null;
-  company_name: string;
-  logo_url?: string | null;
-  website_url?: string | null;
-  linkedin_url?: string | null;
+  companyId: string | null;
+  companyName: string;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
+  linkedinUrl?: string | null;
   domain?: string | null;
-  company_logo_url?: string | null;
-  company_website_url?: string | null;
-  company_domain?: string | null;
+  companyLogoUrl?: string | null;
+  companyWebsiteUrl?: string | null;
+  companyDomain?: string | null;
 }
 
 export interface CompanyCreateResponseDto {
@@ -79,5 +79,5 @@ export interface CompanyByIdParamDto {
 }
 
 export interface SearchCompanyParamDto {
-  company_name: string;
+  companyName: string;
 }

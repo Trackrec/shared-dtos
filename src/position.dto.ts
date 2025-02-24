@@ -4,50 +4,50 @@ import { UserDto } from './user.dto';
 
 export interface PositionDto {
   id: number;
-  start_month: number | null;
-  start_year: number | null;
-  end_month: number | null;
-  end_year: number | null;
+  startMonth: number | null;
+  startYear: number | null;
+  endMonth: number | null;
+  endYear: number | null;
   role: string;
   user: UserDto;
-  alternative_brand_icon_url: string | null;
+  alternativeBrandIconUrl: string | null;
   company: CompanyDto;
   details: PositionDetailsDto | null;
-  verify_request: VerifyPositionDto[];
+  verifyRequest: VerifyPositionDto[];
 }
 
 export interface PositionRequestDto {
-  company_id: string;
-  company_name: string;
-  end_month: number;
-  end_year: number;
-  start_month: number;
-  start_year: number;
-  logo_url: string | null;
+  companyId: string;
+  companyName: string;
+  endMonth: number;
+  endYear: number;
+  startMonth: number;
+  startYear: number;
+  logoUrl: string | null;
   role: string;
-  website_url: string | null;
-  working_here: boolean;
+  websiteUrl: string | null;
+  workingHere: boolean;
   domain: string | null;
 }
 
 export interface PositionWithCompany {
-  start_month: number;
-  start_year: number;
-  end_month: number;
-  end_year: number;
+  startMonth: number;
+  startYear: number;
+  endMonth: number;
+  endYear: number;
   role: string;
   user: {
-    location_preferences: string[];
+    locationPreferences: string[];
     id: number;
   };
   company: {
     name: string;
-    logo_url: string;
+    logoUrl: string;
     domain: string | null;
     id: string;
-    company_id: string;
+    companyId: string;
   };
-  alternative_brand_icon_url: string | null;
+  alternativeBrandIconUrl: string | null;
   id: number;
 }
 
@@ -57,28 +57,28 @@ export interface RecentYearPositionFilterDto {
   three: number;
   four: number;
   five: number;
-  five_plus: null;
+  fivePlus: null;
 }
 
 export interface VerifyPositionDto {
   id: number;
   email: string;
   role: string | null;
-  first_name: string | null;
-  last_name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   requestBy: UserDto;
   position: PositionDto;
   user: UserDto | null;
-  unique_token: string;
+  uniqueToken: string;
   status: string;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface VerifyPositionRequestDto {
   email: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   positionId: number;
   requestBy: number;
   role: string;
@@ -89,14 +89,14 @@ export interface ResendPositionVerificationEmailRequestDto {
 }
 
 export interface ChangeVerificationRequestDto {
-  request_id: number;
+  requestId: number;
   status: string;
 }
 
 export interface ExtendedVerifyPositionDto extends VerifyPositionDto {
   position: {
-    is_completed: boolean;
-    completion_percentage: number;
+    isCompleted: boolean;
+    completionPercentage: number;
   } & PositionDto;
 }
 
@@ -107,12 +107,13 @@ export interface VerifyRequestsResponseDto {
 }
 
 export interface UpdateUserIdRequestDto {
-  request_token: string;
+  requestToken: string;
 }
 
 export interface DeleteVerificationDto {
-  request_id: number;
+  requestId: number;
 }
+
 export interface PostionResponseDto {
   error: boolean;
   message?: string;

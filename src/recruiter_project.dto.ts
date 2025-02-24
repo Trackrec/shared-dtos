@@ -5,59 +5,59 @@ import { UserDto } from './user.dto';
 export interface RecruiterProjectDto {
   id: number;
   title: string;
-  project_title: string;
-  company_name: string | null;
+  projectTitle: string;
+  companyName: string | null;
   logo: string | null;
-  logo_type: string | null;
+  logoType: string | null;
   experience: number | null;
-  ote_start: number | null;
-  ote_end: number | null;
-  is_ote_visible: boolean;
-  location_type: string | null;
+  oteStart: number | null;
+  oteEnd: number | null;
+  isOteVisible: boolean;
+  locationType: string | null;
   description: string | null;
-  experience_type: string | null;
+  experienceType: string | null;
   location: string[] | null;
-  existing_business_range: number | null;
-  business_range: number | null;
-  partnership_range: number | null;
-  inbound_range: number | null;
-  outbound_range: number | null;
+  existingBusinessRange: number | null;
+  businessRange: number | null;
+  partnershipRange: number | null;
+  inboundRange: number | null;
+  outboundRange: number | null;
   smb: number | null;
   midmarket: number | null;
   enterprise: number | null;
-  minimum_deal_size: number | null;
-  minimum_sale_cycle: number | null;
-  hybrid_days: number | null;
-  Industry_Works_IN: string[] | null;
-  Industry_Sold_To: string[] | null;
+  minimumDealSize: number | null;
+  minimumSaleCycle: number | null;
+  hybridDays: number | null;
+  industryWorksIn: string[] | null;
+  industrySoldTo: string[] | null;
   selectedPersona: string[] | null;
   territory: string[] | null;
   languages: string[] | null;
-  linkedin_profile: string | null;
-  minimum_salecycle_type: string | null;
+  linkedinProfile: string | null;
+  minimumSalecycleType: string | null;
   timeline: string | null;
   benefits: string | null;
-  elevator_pitch: string | null;
-  office_address: string | null;
-  office_address_id: string | null;
-  travel_requirement_percentage: string | null;
-  start_date: Date | null;
+  elevatorPitch: string | null;
+  officeAddress: string | null;
+  officeAddressId: string | null;
+  travelRequirementPercentage: string | null;
+  startDate: Date | null;
   currency: string | null;
-  currency_country: string | null;
-  is_travel_requirements: boolean | null;
-  report_to: string | null;
-  hiring_process: string | null;
-  growth_opportunities: string | null;
-  visits_count: number;
-  project_custom_url: string | null;
-  company_id: string | null;
+  currencyCountry: string | null;
+  isTravelRequirements: boolean | null;
+  reportTo: string | null;
+  hiringProcess: string | null;
+  growthOpportunities: string | null;
+  visitsCount: number;
+  projectCustomUrl: string | null;
+  companyId: string | null;
   draft: boolean;
   published: boolean;
-  company_elevator_pitch: string | null;
-  main_problem: string | null;
+  companyElevatorPitch: string | null;
+  mainProblem: string | null;
   user: UserDto | null;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
   applications: ProjectApplicationDto[];
   company: RecruiterCompanyDto | null;
 }
@@ -65,7 +65,7 @@ export interface RecruiterProjectDto {
 export interface CheckAppliedResponseDto {
   error: boolean;
   message?: string;
-  Applied?: boolean;
+  applied?: boolean;
 }
 
 export interface GetCandidatesResponseDto {
@@ -102,7 +102,7 @@ export interface ProjectVisitorsDto {
 }
 
 export interface CreateProjectVisitorRequestDto {
-  project_id: number;
+  projectId: number;
 }
 
 export interface CreateProjectVisitorResponseDto {
@@ -117,72 +117,73 @@ export interface ProjectVisitorsCountResponseDto {
   data?: number;
 }
 
+
 export interface RecruiterProjectRequestDto {
   id: string;
   title: string;
-  project_title: string;
-  company_name: string | null;
+  projectTitle: string;
+  companyName: string | null;
   logo: string | null;
-  logo_type: string | null;
+  logoType: string | null;
   experience: string | null;
-  ote_start: string | null;
-  ote_end: string | null;
-  is_ote_visible: string;
-  location_type: string | null;
-  location_category: string | null;
+  oteStart: string | null;
+  oteEnd: string | null;
+  isOteVisible: string;
+  locationType: string | null;
+  locationCategory: string | null;
   description: string | null;
-  experience_type: string | null;
+  experienceType: string | null;
   location: string | null;
-  existing_business_range: string | null;
-  business_range: string | null;
-  partnership_range: string | null;
-  inbound_range: string | null;
-  outbound_range: string | null;
+  existingBusinessRange: string | null;
+  businessRange: string | null;
+  partnershipRange: string | null;
+  inboundRange: string | null;
+  outboundRange: string | null;
   smb: string | null;
   midmarket: string | null;
   enterprise: string | null;
-  minimum_deal_size: string | null;
-  minimum_sale_cycle: string | null;
-  hybrid_days: string | null;
-  Industry_Works_IN: string | null;
-  Industry_Sold_To: string | null;
+  minimumDealSize: string | null;
+  minimumSaleCycle: string | null;
+  hybridDays: string | null;
+  industryWorksIn: string | null;
+  industrySoldTo: string | null;
   selectedPersona: string | null;
   territory: string | null;
   languages: string | null;
-  linkedin_profile: string | null;
-  minimum_salecycle_type: string | null;
+  linkedinProfile: string | null;
+  minimumSalecycleType: string | null;
   timeline: string | null;
   benefits: string | null;
-  elevator_pitch: string | null;
-  office_address: string | null;
-  office_address_id: string | null;
-  travel_requirement_percentage: string | null;
-  start_date: string | null;
+  elevatorPitch: string | null;
+  officeAddress: string | null;
+  officeAddressId: string | null;
+  travelRequirementPercentage: string | null;
+  startDate: string | null;
   currency: string | null;
-  currency_country: string | null;
-  is_travel_requirements: string | null;
-  report_to: string | null;
-  hiring_process: string | null;
-  growth_opportunities: string | null;
-  visits_count: string;
-  project_custom_url: string | null;
-  company_id: string | null;
+  currencyCountry: string | null;
+  isTravelRequirements: string | null;
+  reportTo: string | null;
+  hiringProcess: string | null;
+  growthOpportunities: string | null;
+  visitsCount: string;
+  projectCustomUrl: string | null;
+  companyId: string | null;
   draft: string;
   published: string;
-  company_elevator_pitch: string | null;
-  main_problem: string | null;
+  companyElevatorPitch: string | null;
+  mainProblem: string | null;
   user: string | null;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
   applications: string;
   company: string | null;
-  logo_url: string | null;
-  website_url: string | null;
-  linkedin_url: string | null;
+  logoUrl: string | null;
+  websiteUrl: string | null;
+  linkedinUrl: string | null;
   domain: string | null;
-  company_logo_url: string | null;
-  company_website_url: string | null;
-  company_domain: string | null;
+  companyLogoUrl: string | null;
+  companyWebsiteUrl: string | null;
+  companyDomain: string | null;
 }
 
 export interface ProjectVisitorParamDto {
@@ -190,7 +191,7 @@ export interface ProjectVisitorParamDto {
 }
 
 export interface ProjectIdQueryDto {
-  project_id: number;
+  projectId: number;
 }
 
 export interface CandidatesListQueryDto {
@@ -208,7 +209,7 @@ export interface ProjectListQueryDto {
 }
 
 export interface ProjectViewByUrlParamDto {
-  project_url: string;
+  projectUrl: string;
 }
 
 export interface ProjectByIdParamDto {
@@ -216,5 +217,5 @@ export interface ProjectByIdParamDto {
 }
 
 export interface ProjectRankingQueryDto {
-  min_experience?: string;
+  minExperience?: string;
 }

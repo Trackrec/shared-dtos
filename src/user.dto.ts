@@ -11,58 +11,56 @@ export interface UserDto {
   id: number;
   email: string | null;
   phone: string | null;
-  full_name: string | null;
-  profile_image: string | null;
-  custom_current_role: string | null;
-  published_at: Date | null;
-  has_avatar: boolean | null;
+  fullName: string | null;
+  profileImage: string | null;
+  customCurrentRole: string | null;
+  publishedAt: Date | null;
+  hasAvatar: boolean | null;
   isFirstExperienceMailSent: boolean;
-  is_checklist_open: boolean;
+  isChecklistOpen: boolean;
   blocked: boolean;
-  open_to_work: boolean;
-  linkedin_access_token: string | null;
-  ote_expectation: number | null;
-  preference_step: number;
-  is_deleted: boolean;
-  current_ote: number | null;
-  next_role_location: string | null;
-  ote_min: number | null;
-  ote_max: number | null;
-  location_preferences: LocationPreference[];
+  openToWork: boolean;
+  oteExpectation: number | null;
+  preferenceStep: number;
+  isDeleted: boolean;
+  currentOte: number | null;
+  nextRoleLocation: string | null;
+  oteMin: number | null;
+  oteMax: number | null;
+  locationPreferences: LocationPreference[];
   password: string | null;
   otp: boolean;
-  is_preferences_save: boolean;
-  is_welcome: boolean;
+  isPreferencesSave: boolean;
+  isWelcome: boolean;
   role: string;
   username: string | null;
   city: string | null;
-  public_profile_username: string | null;
+  publicProfileUsername: string | null;
   languages: string[] | null;
   currency: string | null;
-  currency_country: string | null;
-  next_desired_titles: string[] | null;
+  currencyCountry: string | null;
+  nextDesiredTitles: string[] | null;
   isExperienceImported: boolean;
   about: string | null;
-  created_at: Date;
-  updated_at: Date;
-  last_accessed_at: Date | null;
-  login_method: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastAccessedAt: Date | null;
+  loginMethod: string | null;
   // positions: PositionDto[];
   // keywords: KeywordsDto | null;
   // analyticsAccess: AnalyticsAccessDto[];
   // projects: AccountProjectDto[];
   // applications: ProjectApplicationDto[];
   // companyCreated: RecruiterCompanyDto | null;
-  reset_password_token: string | null;
-  reset_password_expires: Date | null;
+  resetPasswordToken: string | null;
+  resetPasswordExpires: Date | null;
   positions: PositionDto[];
 }
-
 export interface RecruiterUserAuthRequestDto {
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface RecruiterUserAuthResponseDto {
@@ -81,8 +79,8 @@ export interface UserInfoResponseDto {
 }
 
 export interface ChangePasswordRequestDto {
-  current_password: string;
-  new_password: string;
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface VerifyTokenResponse {
@@ -104,13 +102,13 @@ export interface IndividualUserDetailsDto {
 }
 
 export interface ExtendedUserDto extends UserDto {
-  imported_positions: number;
+  importedPositions: number;
   npm: boolean;
-  total_revenue: number;
-  total_years_experience: string;
-  total_bdr_experience: string;
-  total_leadership_experience: string;
-  total_individual_contributor_experience: string;
+  totalRevenue: number;
+  totalYearsExperience: string;
+  totalBdrExperience: string;
+  totalLeadershipExperience: string;
+  totalIndividualContributorExperience: string;
 }
 
 export interface GetUserDetailsResponseDto {
@@ -126,67 +124,68 @@ export interface CompaniesListDto {
 }
 
 export interface AdminBlockRequestDto {
-  block_status: boolean | null;
-  user_id: number;
+  blockStatus: boolean | null;
+  userId: number;
 }
 
 export interface ImpersonateUserRequestDto {
   email: string;
-  user_id: number;
+  userId: number;
   username: string;
 }
 
 export interface DeleteUserRequestDto {
-  user_id: number;
+  userId: number;
 }
 
 export interface GetInTouchMailRequestDto {
   email: string;
-  email_to: string;
+  emailTo: string;
   inquiry: string;
   name: string;
   phone: string;
 }
+
+
 export interface AnalyticsAccessDto {
   id: number;
   type: string;
   accountVisitor: AccountsVisitorsDto;
   user: UserDto;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface AccountsVisitorsDto {
   id: number;
   email: string;
-  full_name: string;
+  fullName: string;
   username: string | null;
-  linkedin_access_token: string;
   analyticsAccess: AnalyticsAccessDto[];
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ExtendedPositionDto extends PositionDto {
-  is_completed?: boolean;
-  completion_percentage?: number;
-  verify_request: VerifyPositionDto[]; // Updated verify requests with enriched user details
+  isCompleted?: boolean;
+  completionPercentage?: number;
+  verifyRequest: VerifyPositionDto[]; // Updated verify requests with enriched user details
 }
 
 export interface ExtendedUserDetailsDto extends UserDto {
-  total_revenue?: number;
-  total_years_experience?: string;
-  total_bdr_experience?: string;
-  total_leadership_experience?: string;
-  total_individual_contributor_experience?: string;
+  totalRevenue?: number;
+  totalYearsExperience?: string;
+  totalBdrExperience?: string;
+  totalLeadershipExperience?: string;
+  totalIndividualContributorExperience?: string;
   weightedAverageExistingBusiness?: number;
   weightedAverageNewBusiness?: number;
   weightedAveragePartnershipBusiness?: number;
-  outbound_average?: number;
-  inbound_average?: number;
-  smb_average?: number;
-  midmarket_average?: number;
-  enterprise_average?: number;
+  outboundAverage?: number;
+  inboundAverage?: number;
+  smbAverage?: number;
+  midmarketAverage?: number;
+  enterpriseAverage?: number;
   groupPositions?: ExtendedPositionDto[];
   positions: ExtendedPositionDto[];
 }
@@ -216,26 +215,26 @@ export interface UsersInCompanyResponseDto {
 export interface UpdatePreferencesRequestDto {
   about: string | null;
   city: string;
-  city_place_id: string;
+  cityPlaceId: string;
   currency: string;
-  currency_country: string;
-  current_ote: number | null;
-  custom_current_role: string | null;
+  currencyCountry: string;
+  currentOte: number | null;
+  customCurrentRole: string | null;
   email: string;
-  full_name: string;
+  fullName: string;
   languages: string[];
-  location_preferences: string[];
-  next_desired_titles: string[];
-  open_to_work: boolean;
-  ote_expectation: number | null;
-  ote_max: number | null;
-  ote_min: number | null;
+  locationPreferences: string[];
+  nextDesiredTitles: string[];
+  openToWork: boolean;
+  oteExpectation: number | null;
+  oteMax: number | null;
+  oteMin: number | null;
   phone: string | null;
-  public_profile_username: string | null;
-  published_at: string | null;
-  is_preferences_save?: boolean;
-  preference_step?: number;
-  is_welcome?: boolean;
+  publicProfileUsername: string | null;
+  publishedAt: string | null;
+  isPreferencesSave?: boolean;
+  preferenceStep?: number;
+  isWelcome?: boolean;
 }
 
 export interface GetMeResponseDto {
