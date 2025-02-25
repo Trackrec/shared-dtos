@@ -238,7 +238,7 @@ export interface UpdatePreferencesRequestDto {
 }
 
 export interface GetMeResponseDto {
-  error: boolean;
+  error?: boolean;
   user?: ExtendedUserDetailsDto;
   message?: string;
   userDetails?: ExtendedUserDetailsDto;

@@ -106,13 +106,13 @@ export interface CreateProjectVisitorRequestDto {
 }
 
 export interface CreateProjectVisitorResponseDto {
-  error: boolean;
+  error?: boolean;
   message?: string;
   position?: ProjectVisitorsDto;
 }
 
 export interface ProjectVisitorsCountResponseDto {
-  error: boolean;
+  error?: boolean;
   message?: string;
   data?: number;
 }
