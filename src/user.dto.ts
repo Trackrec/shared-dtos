@@ -198,7 +198,7 @@ export interface ProfileViewsResponseDto {
 
 export interface InviteUserRequestDto {
   email: string;
-  full_name: string;
+  fullName: string;
   role: string;
 }
 
