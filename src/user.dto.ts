@@ -146,7 +146,6 @@ export interface GetInTouchMailRequestDto {
   phone: string;
 }
 
-
 export interface AnalyticsAccessDto {
   id: number;
   type: string;

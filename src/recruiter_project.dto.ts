@@ -117,7 +117,6 @@ export interface ProjectVisitorsCountResponseDto {
   data?: number;
 }
 
-
 export interface RecruiterProjectRequestDto {
   id: string;
   title: string;
