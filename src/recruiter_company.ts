@@ -3,12 +3,12 @@ import { UserDto } from './user.dto';
 
 export interface RecruiterCompanyDto {
   id: number;
-  company_name: string;
+  companyName: string;
   logo: string;
-  logo_type: string;
+  logoType: string;
   recruiters: RecruiterCompanyUserDto[];
   projects: RecruiterProjectDto[];
-  created_by: UserDto | null;
+  createdBy: UserDto | null;
 }
 
 export interface RecruiterCompanyUserDto {
@@ -18,11 +18,11 @@ export interface RecruiterCompanyUserDto {
 }
 
 export interface CreateRecruiterCompanyRequestDto {
-  company_name: string;
+  companyName: string;
 }
 
 export interface UpdateRecruiterCompanyRequestDto {
-  company_name?: string;
+  companyName?: string;
 }
 
 export interface RecruiterCompanyParamDto {

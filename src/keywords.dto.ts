@@ -4,6 +4,6 @@ export interface KeywordsDto {
   id: number;
   keywords: string[] | null;
   userAccount: UserDto | null;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
