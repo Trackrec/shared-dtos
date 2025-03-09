@@ -272,7 +272,7 @@ export interface VerifyTokenRequestDto {
 }
 
 export interface ResetPasswordRequestDto {
-  new_password: string;
+  newPassword: string;
 }
 
 export interface GetUserDetailsParamDto {
