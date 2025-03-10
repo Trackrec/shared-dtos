@@ -234,6 +234,8 @@ export interface UpdatePreferencesRequestDto {
   isPreferencesSave?: boolean;
   preferenceStep?: number;
   isWelcome?: boolean;
+  nextRoleLocation?: string | null,
+  nextRoleLocationPlaceId?: string | null
 }
 
 export interface GetMeResponseDto {
