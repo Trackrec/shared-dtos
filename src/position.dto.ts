@@ -69,7 +69,6 @@ export interface VerifyPositionDto {
   requestBy: UserDto;
   position: PositionDto;
   user: UserDto | null;
-  uniqueToken: string;
   status: string;
   createdAt: Date;
   updatedAt: Date;

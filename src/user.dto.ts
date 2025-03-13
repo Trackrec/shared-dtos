@@ -52,7 +52,6 @@ export interface UserDto {
   // projects: AccountProjectDto[];
   // applications: ProjectApplicationDto[];
   // companyCreated: RecruiterCompanyDto | null;
-  resetPasswordToken: string | null;
   resetPasswordExpires: Date | null;
   positions: PositionDto[];
 }
@@ -234,8 +233,8 @@ export interface UpdatePreferencesRequestDto {
   isPreferencesSave?: boolean;
   preferenceStep?: number;
   isWelcome?: boolean;
-  nextRoleLocation?: string | null,
-  nextRoleLocationPlaceId?: string | null
+  nextRoleLocation?: string | null;
+  nextRoleLocationPlaceId?: string | null;
 }
 
 export interface GetMeResponseDto {
