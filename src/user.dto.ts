@@ -52,6 +52,7 @@ export interface UserDto {
   // projects: AccountProjectDto[];
   // applications: ProjectApplicationDto[];
   // companyCreated: RecruiterCompanyDto | null;
+  resetPasswordToken: string | null;
   resetPasswordExpires: Date | null;
   positions: PositionDto[];
 }
