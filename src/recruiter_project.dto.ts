@@ -183,6 +183,7 @@ export interface RecruiterProjectRequestDto {
   companyLogoUrl: string | null;
   companyWebsiteUrl: string | null;
   companyDomain: string | null;
+  companyOverlapUrl: string | null;
 }
 
 export interface ProjectVisitorParamDto {
