@@ -60,6 +60,14 @@ export interface RecruiterProjectDto {
   updatedAt: Date;
   applications: ProjectApplicationDto[];
   company: RecruiterCompanyDto | null;
+  coefficients?: {
+    businnessMix: number;
+    salesCycle: number;
+    persona: number;
+    territory: number;
+    dealsize: number;
+    icpAlignment: number;
+  };
 }
 
 export interface CheckAppliedResponseDto {
@@ -184,6 +192,14 @@ export interface RecruiterProjectRequestDto {
   companyWebsiteUrl: string | null;
   companyDomain: string | null;
   companyOverlapUrl: string | null;
+  coefficients?: {
+    businnessMix: number;
+    salesCycle: number;
+    persona: number;
+    territory: number;
+    dealsize: number;
+    icpAlignment: number;
+  };
 }
 
 export interface ProjectVisitorParamDto {
