@@ -61,12 +61,19 @@ export interface RecruiterProjectDto {
   applications: ProjectApplicationDto[];
   company: RecruiterCompanyDto | null;
   coefficients?: {
-    businnessMix: number;
+    ote: number;
+    location: number;
+    experience: number;
+    businessMix: number;
+    leadSource: number;
+    dealSize: number;
     salesCycle: number;
-    persona: number;
+    segment: number;
     territory: number;
-    dealsize: number;
-    icpAlignment: number;
+    industryWorksIn: number;
+    industrySoldTo: number;
+    persona: number;
+    companyOverlap: number;
   };
 }
 
@@ -193,12 +200,19 @@ export interface RecruiterProjectRequestDto {
   companyDomain: string | null;
   companyOverlapUrl: string | null;
   coefficients?: {
-    businnessMix: number;
+    ote: number;
+    location: number;
+    experience: number;
+    businessMix: number;
+    leadSource: number;
+    dealSize: number;
     salesCycle: number;
-    persona: number;
+    segment: number;
     territory: number;
-    dealsize: number;
-    icpAlignment: number;
+    industryWorksIn: number;
+    industrySoldTo: number;
+    persona: number;
+    companyOverlap: number;
   };
 }
 
