@@ -83,6 +83,11 @@ export interface ApplicationRankingListResponseDto {
   above75Count?: number;
   visitorCount?: number;
   project?: RecruiterProjectDto;
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+  };
 }
 
 export interface MyApplicationsListDto {
