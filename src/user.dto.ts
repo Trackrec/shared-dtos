@@ -236,8 +236,60 @@ export interface UpdatePreferencesRequestDto {
   isWelcome?: boolean;
   nextRoleLocation?: string | null;
   nextRoleLocationPlaceId?: string | null;
+  resumeParsedData?: ParsedResume | null;
 }
 
+export interface ParsedResume {
+  currentRole: string;
+  workExperience: {
+    title: string;
+    company: string;
+    startDate: string;
+    endDate: string;
+    description?: string;
+    roleType: 'IC' | 'Leadership' | '';
+    dealSize?: {
+      low?: string;
+      average?: string;
+      high?: string;
+    };
+
+    salesCycle?: {
+      low?: { value: number; duration: string };
+      average?: { value: number; duration: string };
+      high?: { value: number; duration: string };
+    };
+
+    channelSplit?: {
+      inbound: number; // 0–100
+      outbound: number; // 0–100 (sum = 100)
+    };
+
+    segmentSplit?: {
+      smb: number; // 0–100
+      midMarket: number; // 0–100
+      enterprise: number; // 0–100 (sum = 100)
+    };
+
+    notableClients?: string[];
+    industry?: string;
+    soldToIndustry?: string;
+    personas?: string[];
+  }[];
+
+  skills: string[];
+  location: {
+    country: string;
+    region: {
+      state: string;
+      city: string;
+    };
+  };
+  languages: string[];
+  about: string;
+  desiredRoles: string[];
+  phone: string;
+}
 export interface GetMeResponseDto {
   error?: boolean;
   user?: ExtendedUserDetailsDto;
