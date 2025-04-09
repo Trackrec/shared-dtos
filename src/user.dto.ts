@@ -249,9 +249,9 @@ export interface ParsedResume {
     description?: string;
     roleType: 'IC' | 'Leadership' | '';
     dealSize?: {
-      low?: string;
-      average?: string;
-      high?: string;
+      low?: number;
+      average?: number;
+      high?: number;
     };
 
     salesCycle?: {
