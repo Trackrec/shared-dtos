@@ -247,7 +247,7 @@ export interface ParsedResume {
     startDate: string;
     endDate: string;
     description?: string;
-    roleType: 'IC' | 'Leadership' | '';
+    roleType: string;
     dealSize?: {
       low?: number;
       average?: number;
@@ -275,6 +275,7 @@ export interface ParsedResume {
     industry?: string;
     soldToIndustry?: string;
     personas?: string[];
+    quotaAchievements?: number;
   }[];
 
   skills: string[];
