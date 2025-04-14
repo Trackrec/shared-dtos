@@ -214,6 +214,7 @@ export interface RecruiterProjectRequestDto {
     persona: number;
     companyOverlap: number;
   };
+  experienceFilter: string | null;
 }
 
 export interface ProjectVisitorParamDto {
