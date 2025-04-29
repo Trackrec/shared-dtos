@@ -35,6 +35,13 @@ export interface ProjectApplicationWithPostions extends ProjectApplicationDto {
   };
 }
 
+export interface ProjectWithUserPostions {
+  project: RecruiterProjectDto;
+  user: UserDto & {
+    positions: PositionDto[];
+  };
+}
+
 export interface PointsDto {
   otePoints?: number;
   workedInPoints?: number;

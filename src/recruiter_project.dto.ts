@@ -1,4 +1,4 @@
-import { ProjectApplicationDto } from './project_application.dto';
+import { PointsDto, ProjectApplicationDto } from './project_application.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 import { UserDto } from './user.dto';
 
@@ -253,4 +253,27 @@ export interface ProjectRankingQueryDto {
   limit?: number;
   search?: string;
   status?: string;
+}
+
+export interface ProjectWithUser {
+  user: UserDto;
+  project: RecruiterProjectDto;
+}
+
+export interface SuggestedCandidateDto {
+  user: {
+    id: number;
+    fullName: string;
+    publicProfileUsername: string;
+    customCurrentRole: string;
+    points: { points: Partial<PointsDto>; percentage: number };
+  };
+}
+
+export interface SuggestedCandidatesResponseDto {
+  error: boolean;
+  candidates: SuggestedCandidateDto[];
+  total: number;
+  page: number;
+  limit: number;
 }
