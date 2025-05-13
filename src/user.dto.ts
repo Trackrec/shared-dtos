@@ -93,6 +93,10 @@ export interface AllUsersDto {
   error: boolean;
   message?: string;
   data?: UserDto[];
+  page: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
 }
 
 export interface IndividualUserDetailsDto {
@@ -121,6 +125,10 @@ export interface CompaniesListDto {
   error: boolean;
   message?: string;
   data?: CompanyDto[];
+  page: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
 }
 
 export interface AdminBlockRequestDto {
