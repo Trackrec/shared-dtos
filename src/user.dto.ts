@@ -188,6 +188,9 @@ export interface ExtendedUserDetailsDto extends UserDto {
   weightedAverageExistingBusiness?: number;
   weightedAverageNewBusiness?: number;
   weightedAveragePartnershipBusiness?: number;
+  softwareProductTypeAverage?: number;
+  hardwareProductTypeAverage?: number;
+  serviceProductTypeAverage?: number;
   outboundAverage?: number;
   inboundAverage?: number;
   smbAverage?: number;

@@ -38,6 +38,9 @@ export interface PositionDetailsDto {
   newBusiness: number | null;
   existingBusiness: number | null;
   partnership: number | null;
+  softwareProductType: number | null;
+  hardwareProductType: number | null;
+  serviceProductType: number | null;
   outbound: number | null;
   inbound: number | null;
   longDealSize: number | null;
@@ -94,6 +97,9 @@ export interface PositionDetailsRequestDto {
   newBusiness: number | null;
   existingBusiness: number | null;
   partnership: number | null;
+  softwareProductType: number | null;
+  hardwareProductType: number | null;
+  serviceProductType: number | null;
   outbound: number | null;
   inbound: number | null;
   longDealSize: number | null;
