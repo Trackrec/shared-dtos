@@ -20,6 +20,9 @@ export interface RecruiterProjectDto {
   existingBusinessRange: number | null;
   businessRange: number | null;
   partnershipRange: number | null;
+  softwareProductType: number | null;
+  hardwareProductType: number | null;
+  serviceProductType: number | null;
   inboundRange: number | null;
   outboundRange: number | null;
   smb: number | null;
@@ -151,6 +154,9 @@ export interface RecruiterProjectRequestDto {
   existingBusinessRange: string | null;
   businessRange: string | null;
   partnershipRange: string | null;
+  software: string |null;
+  hardware: string | null;
+  service: string | null;
   inboundRange: string | null;
   outboundRange: string | null;
   smb: string | null;
