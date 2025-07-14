@@ -198,6 +198,8 @@ export interface ExtendedUserDetailsDto extends UserDto {
   enterpriseAverage?: number;
   groupPositions?: ExtendedPositionDto[];
   positions: ExtendedPositionDto[];
+  pendingVerificationRequests?: number;
+  profileViewsCount?: number;
 }
 
 export interface ProfileViewsResponseDto {
