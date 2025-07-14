@@ -154,7 +154,7 @@ export interface RecruiterProjectRequestDto {
   existingBusinessRange: string | null;
   businessRange: string | null;
   partnershipRange: string | null;
-  software: string |null;
+  software: string | null;
   hardware: string | null;
   service: string | null;
   inboundRange: string | null;
