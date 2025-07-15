@@ -16,10 +16,13 @@ export interface ProjectApplicationDto {
 export interface ProjectApplicationRequestDto {
   projectId: number;
   ote: number;
+  oteFrom: number;
   available: boolean;
   positionId: number;
   city?: string;
   cityPlaceId?: string;
+  currency: string;
+  currencyCountry: string;
 }
 
 export interface ProjectApplicationWithPostions extends ProjectApplicationDto {
