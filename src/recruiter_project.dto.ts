@@ -12,6 +12,8 @@ export interface RecruiterProjectDto {
   experience: number | null;
   oteStart: number | null;
   oteEnd: number | null;
+  commissionSplit: number | null;
+  baseSplit: number | null;
   isOteVisible: boolean;
   locationType: string | null;
   description: string | null;
@@ -145,6 +147,8 @@ export interface RecruiterProjectRequestDto {
   experience: string | null;
   oteStart: string | null;
   oteEnd: string | null;
+  commissionSplit: string | null;
+  baseSplit: string | null;
   isOteVisible: string;
   locationType: string | null;
   locationCategory: string | null;
