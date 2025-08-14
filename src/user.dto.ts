@@ -35,6 +35,7 @@ export interface UserDto {
   role: string;
   username: string | null;
   city: string | null;
+  cityPlaceId: string | null;
   publicProfileUsername: string | null;
   languages: string[] | null;
   currency: string | null;
