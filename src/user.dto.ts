@@ -183,6 +183,7 @@ export interface ExtendedPositionDto extends PositionDto {
 export interface ExtendedUserDetailsDto extends UserDto {
   totalRevenue?: number;
   totalYearsExperience?: string;
+  totalOtherExperience?: string;
   totalBdrExperience?: string;
   totalLeadershipExperience?: string;
   totalIndividualContributorExperience?: string;
