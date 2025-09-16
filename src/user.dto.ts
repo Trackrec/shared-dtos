@@ -252,6 +252,7 @@ export interface UpdatePreferencesRequestDto {
   nextRoleLocation?: string | null;
   nextRoleLocationPlaceId?: string | null;
   resumeParsedData?: ParsedResume | null;
+  isImportIndustries?: boolean;
 }
 
 export interface ParsedResume {
