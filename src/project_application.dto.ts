@@ -31,6 +31,7 @@ export interface ProjectApplicationWithPostions extends ProjectApplicationDto {
   available: boolean;
   positionId: number | null;
   project: RecruiterProjectDto;
+  currency: string;
   createdAt: Date;
   updatedAt: Date;
   user: UserDto & {
