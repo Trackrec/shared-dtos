@@ -60,6 +60,7 @@ export interface PointsDto {
   pointsForTerritory?: number;
   pointsForLocation?: number;
   pointsForCompanyOverlap?: number;
+  pointsForProductType?: number;
 }
 
 export interface PointsCalculationDto {
