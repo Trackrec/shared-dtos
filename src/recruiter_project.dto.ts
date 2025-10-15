@@ -276,6 +276,7 @@ export interface SuggestedCandidateDto {
     fullName: string;
     publicProfileUsername: string;
     customCurrentRole: string;
+    profileImage: string;
     points: { points: Partial<PointsDto>; percentage: number };
   };
 }
