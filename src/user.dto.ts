@@ -56,6 +56,9 @@ export interface UserDto {
   resetPasswordToken: string | null;
   resetPasswordExpires: Date | null;
   positions: PositionDto[];
+  isCompensated: boolean;
+  growsurfParticipantId: string | null;
+  referredByCode: string | null;
 }
 export interface RecruiterUserAuthRequestDto {
   email: string;
