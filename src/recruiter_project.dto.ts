@@ -80,6 +80,8 @@ export interface RecruiterProjectDto {
     persona: number;
     companyOverlap: number;
   };
+  useInternalTitle: string;
+  useAnotherCompanyName: string;
 }
 
 export interface CheckAppliedResponseDto {
