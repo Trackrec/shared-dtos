@@ -225,6 +225,8 @@ export interface RecruiterProjectRequestDto {
     companyOverlap: number;
   };
   experienceFilter: string | null;
+  useInternalTitle: string;
+  useAnotherCompanyName: string;
 }
 
 export interface ProjectVisitorParamDto {
