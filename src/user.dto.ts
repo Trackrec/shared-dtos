@@ -27,6 +27,36 @@ export interface UserDto {
   nextRoleLocation: string | null;
   oteMin: number | null;
   oteMax: number | null;
+  estimatedOteLow: number | null;
+  estimatedOteMid: number | null;
+  estimatedOteHigh: number | null;
+  estimatedOteCurrency: string | null;
+  estimatedOteDetails: {
+    role?: string;
+    baseline?: {
+      amount?: number;
+      tier?: string;
+      multiplier?: number;
+      finalAmount?: number;
+    };
+    compensationSplit?: {
+      base?: number;
+      variable?: number;
+      total?: number;
+    };
+    modifiers?: Array<{
+      type?: string;
+      impact?: number;
+      description?: string;
+    }>;
+    finalOte?: {
+      amount?: number;
+      currency?: string;
+      confidence?: string;
+      band?: string;
+    };
+    calculationDate?: string;
+  } | null;
   locationPreferences: LocationPreference[];
   password: string | null;
   otp: boolean;
