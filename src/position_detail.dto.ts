@@ -5,6 +5,7 @@ export interface PositionDetailsDto {
   id: string;
   positionId: string | null;
   isLeadership: boolean | null;
+  isNonSales: boolean | null;
   isIndividualContributor: boolean | null;
   segmentId: number | null;
   revenueGenerated: number | null;
@@ -64,6 +65,7 @@ export interface PositionDetailsRequestDto {
   id: string;
   positionId: string | null;
   isLeadership: boolean | null;
+  isNonSales: boolean | null;
   isIndividualContributor: boolean | null;
   segmentId: number | null;
   revenueGenerated: number | null;

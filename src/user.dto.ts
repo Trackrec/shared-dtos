@@ -27,6 +27,36 @@ export interface UserDto {
   nextRoleLocation: string | null;
   oteMin: number | null;
   oteMax: number | null;
+  estimatedOteLow: number | null;
+  estimatedOteMid: number | null;
+  estimatedOteHigh: number | null;
+  estimatedOteCurrency: string | null;
+  estimatedOteDetails: {
+    role?: string;
+    baseline?: {
+      amount?: number;
+      tier?: string;
+      multiplier?: number;
+      finalAmount?: number;
+    };
+    compensationSplit?: {
+      base?: number;
+      variable?: number;
+      total?: number;
+    };
+    modifiers?: Array<{
+      type?: string;
+      impact?: number;
+      description?: string;
+    }>;
+    finalOte?: {
+      amount?: number;
+      currency?: string;
+      confidence?: string;
+      band?: string;
+    };
+    calculationDate?: string;
+  } | null;
   locationPreferences: LocationPreference[];
   password: string | null;
   otp: boolean;
@@ -59,6 +89,16 @@ export interface UserDto {
   isCompensated: boolean;
   growsurfParticipantId: string | null;
   referredByCode: string | null;
+  /**
+   * Total relevant work experience across all positions
+   * @example "5y, 3m" or "N/A"
+   */
+  totalYearsExperience?: string;
+  /**
+   * Total individual contributor experience (non-management roles only)
+   * @example "3y, 6m" or "N/A"
+   */
+  totalIndividualContributorExperience?: string;
 }
 export interface RecruiterUserAuthRequestDto {
   email: string;
@@ -71,6 +111,7 @@ export interface RecruiterUserAuthResponseDto {
   error: boolean;
   message?: string;
   token?: string;
+  email?: string;
 }
 
 export interface UserInfoResponseDto {
@@ -117,6 +158,12 @@ export interface ExtendedUserDto extends UserDto {
   totalBdrExperience: string;
   totalLeadershipExperience: string;
   totalIndividualContributorExperience: string;
+  oteEstimate?: {
+    ote_low: number;
+    ote_mid: number;
+    ote_high: number;
+    ote_currency: string;
+  };
 }
 
 export interface GetUserDetailsResponseDto {
