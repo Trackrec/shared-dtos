@@ -51,6 +51,8 @@ export interface PositionDetailsDto {
   createdAt: Date;
   updatedAt: Date;
   position: PositionDto;
+  location: string | null;
+  locationPlaceId: string | null
 }
 
 interface NotableClient {
@@ -135,6 +137,9 @@ export interface PositionDetailsRequestDto {
     websiteUrl?: string | null;
     companyId?: string | null;
   };
+
+  location: string | null;
+  locationPlaceId: string | null;
 }
 
 export interface PositionDetailsResponseDto {
