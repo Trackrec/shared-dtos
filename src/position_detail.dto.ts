@@ -27,6 +27,7 @@ export interface PositionDetailsDto {
   achievements: string[] | null;
   quotaAchievements: number | null;
   peopleRollingUp: number | null;
+  peopleReportingMe: number | null;
   averageBookedMeeting: number | null;
   linkedinPercentage: number | null;
   emailPercentage: number | null;
@@ -89,6 +90,7 @@ export interface PositionDetailsRequestDto {
   achievements: string[] | null;
   quotaAchievements: number | null;
   peopleRollingUp: number | null;
+  peopleReportingMe: number | null;
   averageBookedMeeting: number | null;
   linkedinPercentage: number | null;
   emailPercentage: number | null;
