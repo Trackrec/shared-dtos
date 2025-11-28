@@ -1,3 +1,4 @@
+import { CityDto } from './city.dto';
 import { CompanyDto } from './company.dto';
 import { PositionDto, VerifyPositionDto } from './position.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
@@ -24,7 +25,9 @@ export interface UserDto {
   preferenceStep: number;
   isDeleted: boolean;
   currentOte: number | null;
-  nextRoleLocation: string | null;
+  nextRoleLocation: string | null; //TODO: to be removed
+  nextRoleCity: CityDto | null;
+  nextRoleCityId: number | null;
   oteMin: number | null;
   oteMax: number | null;
   estimatedOteLow: number | null;
@@ -64,8 +67,10 @@ export interface UserDto {
   isWelcome: boolean;
   role: string;
   username: string | null;
-  city: string | null;
-  cityPlaceId: string | null;
+  city: string | null; //TODO: to be removed
+  cityPlaceId: string | null; //TODO: to be removed
+  locationCityId: number | null;
+  locationCity: CityDto | null;
   publicProfileUsername: string | null;
   languages: string[] | null;
   currency: string | null;
@@ -278,8 +283,10 @@ export interface UsersInCompanyResponseDto {
 
 export interface UpdatePreferencesRequestDto {
   about: string | null;
-  city: string;
-  cityPlaceId: string;
+  city: string; //TODO: to be removed
+  cityPlaceId: string; //TODO: to be removed
+  locationCityId: number | null;
+  locationCity: CityDto | null;
   currency: string;
   currencyCountry: string;
   currentOte: number | null;
@@ -299,8 +306,10 @@ export interface UpdatePreferencesRequestDto {
   isPreferencesSave?: boolean;
   preferenceStep?: number;
   isWelcome?: boolean;
-  nextRoleLocation?: string | null;
-  nextRoleLocationPlaceId?: string | null;
+  nextRoleLocation?: string | null; //TODO: to be removed
+  nextRoleLocationPlaceId?: string | null; //TODO: to be removed
+  nextRoleCity: CityDto | null;
+  nextRoleCityId: number | null;
   resumeParsedData?: ParsedResume | null;
   isImportIndustries?: boolean;
 }
