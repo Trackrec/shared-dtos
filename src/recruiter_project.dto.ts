@@ -151,6 +151,7 @@ export interface RecruiterProjectRequestDto {
   commissionSplit: string | null;
   baseSplit: string | null;
   isOteVisible: string;
+  isEquityAvailable: string;
   locationType: string | null;
   locationCategory: string | null;
   description: string | null;
