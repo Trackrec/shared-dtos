@@ -6,15 +6,16 @@ export interface CityDto {
   name: string;
   stateId: number;
   state: StateDto;
-  stateCode: string;
-  stateName: string;
+  stateCode: string | null;
+  stateName: string | null;
   countryId: number;
   country: CountryDto;
-  countryCode: string;
-  countryName: string;
-  latitude: number;
-  longitude: number;
-  wikiDataId: string;
+  countryCode: string | null;
+  countryName: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  wikiDataId: string | null;
+  googlePlaceId: string | null;
 }
 
 export interface FilteredPlacesDto {
@@ -72,5 +73,21 @@ export interface SearchLocationsResponseDto {
 export interface SearchCountryStatesResponseDto {
   error: boolean;
   locations?: SearchCountryStatesDto[];
+  message?: string;
+}
+
+// DTOs for Google Places integration
+export interface LocationByPlaceIdRequestDto {
+  placeId: string;
+}
+
+export interface StandardizedLocationDto {
+  cityId?: number;
+  formattedAddress: string;
+}
+
+export interface LocationByPlaceIdResponseDto {
+  error: boolean;
+  location?: StandardizedLocationDto;
   message?: string;
 }

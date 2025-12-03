@@ -21,6 +21,7 @@ export interface ProjectApplicationRequestDto {
   positionId: number;
   city?: string;
   cityPlaceId?: string;
+  locationCityId?: number;
   currency: string;
   currencyCountry: string;
 }
