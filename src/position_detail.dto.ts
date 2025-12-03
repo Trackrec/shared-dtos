@@ -70,6 +70,8 @@ export interface PositionDetailsRequestDto {
   isLeadership: boolean | null;
   isNonSales: boolean | null;
   isIndividualContributor: boolean | null;
+  currency: string | null;
+  currencyCountry: string | null;
   segmentId: number | null;
   revenueGenerated: number | null;
   isBookingMeeting: boolean | null;
