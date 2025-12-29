@@ -53,7 +53,8 @@ export interface PositionDetailsDto {
   updatedAt: Date;
   position: PositionDto;
   location: string | null;
-  locationPlaceId: string | null
+  locationPlaceId: string | null,
+  locationCityId: number | null
 }
 
 interface NotableClient {
