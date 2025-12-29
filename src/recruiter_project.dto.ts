@@ -229,6 +229,7 @@ export interface RecruiterProjectRequestDto {
   experienceFilter: string | null;
   useInternalTitle: string;
   useAnotherCompanyName: string;
+  locationCityId: string | null
 }
 
 export interface ProjectVisitorParamDto {
