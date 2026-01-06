@@ -265,6 +265,19 @@ export interface ProfileViewsResponseDto {
   views?: AnalyticsAccessDto[];
 }
 
+export interface RecruiterAnalyticsAccessDto {
+  id: number;
+  type: string;
+  user: Pick<UserDto, 'id' | 'username' | 'publicProfileUsername' | 'profileImage' | 'fullName'>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface RecruiterViewsResponseDto {
+  error: boolean;
+  message?: string;
+  views?: RecruiterAnalyticsAccessDto[];
+}
+
 export interface InviteUserRequestDto {
   email: string;
   fullName: string;
