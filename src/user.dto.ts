@@ -159,6 +159,7 @@ export interface ExtendedUserDto extends UserDto {
   importedPositions: number;
   npm: boolean;
   totalRevenue: number;
+  completedPositions: number;
   totalYearsExperience: string;
   totalBdrExperience: string;
   totalLeadershipExperience: string;
