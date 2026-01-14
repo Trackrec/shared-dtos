@@ -2,6 +2,25 @@ import { PointsDto, ProjectApplicationDto } from './project_application.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 import { UserDto } from './user.dto';
 
+export enum LocationType {
+  ONSITE = 'onsite',
+  REMOTE = 'remote',
+  HYBRID = 'hybrid',
+}
+
+export enum ExperienceType {
+  INDIVIDUAL_CONTRIBUTOR = 'Individual contributor',
+  LEADERSHIP = 'Leadership',
+  BDR = 'BDR',
+}
+
+export enum ExperienceFilter {
+  ONE = 'one',          // Last 1 year
+  TWO = 'two',          // Last 2 years
+  THREE = 'three',      // Last 3 years
+  FIVE = 'five',        // Last 5 years
+  FIVE_PLUS = 'fivePlus', // More than 5 years
+}
 export interface RecruiterProjectDto {
   id: number;
   title: string;
@@ -15,9 +34,9 @@ export interface RecruiterProjectDto {
   commissionSplit: number | null;
   baseSplit: number | null;
   isOteVisible: boolean;
-  locationType: string | null;
+  locationType: LocationType | null;
   description: string | null;
-  experienceType: string | null;
+  experienceType: ExperienceType | null;
   location: string[] | null;
   existingBusinessRange: number | null;
   businessRange: number | null;
@@ -152,10 +171,10 @@ export interface RecruiterProjectRequestDto {
   baseSplit: string | null;
   isOteVisible: string;
   isEquityAvailable: string;
-  locationType: string | null;
+  locationType: LocationType | null;
   locationCategory: string | null;
   description: string | null;
-  experienceType: string | null;
+  experienceType: ExperienceType | null;
   location: string | null;
   existingBusinessRange: string | null;
   businessRange: string | null;
@@ -226,7 +245,7 @@ export interface RecruiterProjectRequestDto {
     persona: number;
     companyOverlap: number;
   };
-  experienceFilter: string | null;
+  experienceFilter: ExperienceFilter | null;
   useInternalTitle: string;
   useAnotherCompanyName: string;
   locationCityId: string | null

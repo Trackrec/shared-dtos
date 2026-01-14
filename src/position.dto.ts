@@ -1,7 +1,12 @@
 import { CompanyDto } from './company.dto';
 import { PositionDetailsDto } from './position_detail.dto';
 import { UserDto } from './user.dto';
-
+export enum RequestStatus {
+  REQUESTED = 'Requested',
+  APPROVED = 'Approved',
+  REJECTED = 'Rejected',
+  WITHDRAWN = 'Withdrawn',
+}
 export interface PositionDto {
   id: number;
   startMonth: number | null;
@@ -70,7 +75,7 @@ export interface VerifyPositionDto {
   position: PositionDto;
   user: UserDto | null;
   uniqueToken: string;
-  status: string;
+  status: RequestStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -90,7 +95,7 @@ export interface ResendPositionVerificationEmailRequestDto {
 
 export interface ChangeVerificationRequestDto {
   requestId: number;
-  status: string;
+  status: RequestStatus;
 }
 
 export interface ExtendedVerifyPositionDto extends VerifyPositionDto {

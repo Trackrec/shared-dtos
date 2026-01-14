@@ -8,6 +8,13 @@ export enum LocationPreference {
   REMOTE = 'remote',
   HYBRID = 'hybrid',
 }
+
+export enum UserRole {
+  APPLICANT = 'Applicant',
+  ADMIN = 'Admin',
+  USER = 'User',
+  SUPER_ADMIN = 'Super-Admin',
+}
 export interface UserDto {
   id: number;
   email: string | null;
@@ -65,7 +72,7 @@ export interface UserDto {
   otp: boolean;
   isPreferencesSave: boolean;
   isWelcome: boolean;
-  role: string;
+  role: UserRole;
   username: string | null;
   city: string | null; //TODO: to be removed
   cityPlaceId: string | null; //TODO: to be removed
