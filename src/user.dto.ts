@@ -2,6 +2,7 @@ import { CityDto } from './city.dto';
 import { CompanyDto } from './company.dto';
 import { PositionDto, VerifyPositionDto } from './position.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
+import { OteEstimationDetailsDto } from './ote-estimation-details.dto';
 
 export enum LocationPreference {
   ONSITE = 'onsite',
@@ -34,32 +35,7 @@ export interface UserDto {
   estimatedOteMid: number | null;
   estimatedOteHigh: number | null;
   estimatedOteCurrency: string | null;
-  estimatedOteDetails: {
-    role?: string;
-    baseline?: {
-      amount?: number;
-      tier?: string;
-      multiplier?: number;
-      finalAmount?: number;
-    };
-    compensationSplit?: {
-      base?: number;
-      variable?: number;
-      total?: number;
-    };
-    modifiers?: Array<{
-      type?: string;
-      impact?: number;
-      description?: string;
-    }>;
-    finalOte?: {
-      amount?: number;
-      currency?: string;
-      confidence?: string;
-      band?: string;
-    };
-    calculationDate?: string;
-  } | null;
+  estimatedOteDetails: OteEstimationDetailsDto | null;
   locationPreferences: LocationPreference[];
   password: string | null;
   otp: boolean;
