@@ -4,7 +4,7 @@
  * Shared type definition for the estimatedOteDetails JSON stored in the database.
  * Used by both backend (ote-estimator.listener.ts) and frontend (types.ts).
  *
- * Last Updated: 2025-01-25
+ * Last Updated: 2026-01-26
  */
 
 // =============================================================================
@@ -221,6 +221,9 @@ export interface OteModifierLegacy {
  * - status: 'skipped' with reasons why OTE couldn't be calculated
  */
 export interface OteEstimationDetailsDto {
+  /** Schema version for future migrations. Increment on breaking changes. */
+  __schemaVersion?: 1;
+
   status: OteStatus;
   calculationDate?: string;  // ISO 8601 timestamp
   positionsAnalyzed?: number;
