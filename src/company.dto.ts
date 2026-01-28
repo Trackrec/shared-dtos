@@ -12,6 +12,7 @@ export interface CompanyDto {
   createdAt: Date;
   updatedAt: Date;
   positions: PositionDto[];
+  currentEmployeeCount?: number | null
 }
 
 export interface CompanyDataDto {

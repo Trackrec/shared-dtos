@@ -248,7 +248,12 @@ export interface RecruiterProjectRequestDto {
   experienceFilter: ExperienceFilter | null;
   useInternalTitle: string;
   useAnotherCompanyName: string;
-  locationCityId: string | null
+  locationCityId: string | null;
+
+  companySizeMin: string | null;
+  companySizeMax: string | null;
+  companySizeScope: 'current' | 'recent_3_years' | 'all' | null;
+
 }
 
 export interface ProjectVisitorParamDto {
