@@ -7,6 +7,7 @@ export enum LocationType {
   REMOTE = 'remote',
   HYBRID = 'hybrid',
 }
+export type ScoringContext = 'suggested' | 'applicant';
 
 export enum ExperienceType {
   INDIVIDUAL_CONTRIBUTOR = 'Individual contributor',
