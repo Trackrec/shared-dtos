@@ -7,6 +7,10 @@ export enum RequestStatus {
   REJECTED = 'Rejected',
   WITHDRAWN = 'Withdrawn',
 }
+export enum PositionStatus {
+  ACTIVE = 'active',
+  EXCLUDED = 'excluded',
+}
 export interface PositionDto {
   id: number;
   startMonth: number | null;
@@ -19,6 +23,7 @@ export interface PositionDto {
   company: CompanyDto;
   details: PositionDetailsDto | null;
   verifyRequest: VerifyPositionDto[];
+  status: PositionStatus
 }
 
 export interface PositionRequestDto {
