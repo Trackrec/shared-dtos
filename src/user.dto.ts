@@ -219,6 +219,12 @@ export interface ExtendedPositionDto extends PositionDto {
   verifyRequest: VerifyPositionDto[]; // Updated verify requests with enriched user details
 }
 
+export interface GroupedPositionDto {
+  totalExperience: string;
+  company: CompanyDto;
+  positions: ExtendedPositionDto[];
+}
+
 export interface ExtendedUserDetailsDto extends UserDto {
   totalRevenue?: number;
   totalYearsExperience?: string;
@@ -237,7 +243,7 @@ export interface ExtendedUserDetailsDto extends UserDto {
   smbAverage?: number;
   midmarketAverage?: number;
   enterpriseAverage?: number;
-  groupPositions?: ExtendedPositionDto[];
+  groupPositions?: GroupedPositionDto[];
   positions: ExtendedPositionDto[];
   pendingVerificationRequests?: number;
   profileViewsCount?: number;
