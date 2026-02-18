@@ -20,7 +20,6 @@ export interface ProjectApplicationRequestDto {
   available: boolean;
   positionId: number;
   city?: string;
-  cityPlaceId?: string;
   locationCityId?: number;
   currency: string;
   currencyCountry: string;

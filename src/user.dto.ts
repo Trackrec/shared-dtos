@@ -75,7 +75,6 @@ export interface UserDto {
   role: UserRole;
   username: string | null;
   city: string | null; //TODO: to be removed
-  cityPlaceId: string | null; //TODO: to be removed
   locationCityId: number | null;
   locationCity: CityDto | null;
   publicProfileUsername: string | null;
@@ -305,7 +304,6 @@ export interface UsersInCompanyResponseDto {
 export interface UpdatePreferencesRequestDto {
   about: string | null;
   city: string; //TODO: to be removed
-  cityPlaceId: string; //TODO: to be removed
   locationCityId: number | null;
   locationCity: CityDto | null;
   currency: string;
