@@ -51,6 +51,7 @@ export interface UserDto {
   role: UserRole;
   username: string | null;
   city: string | null; //TODO: to be removed
+  cityPlaceId: string | null; //TODO: to be removed
   locationCityId: number | null;
   locationCity: CityDto | null;
   publicProfileUsername: string | null;
@@ -218,12 +219,6 @@ export interface ExtendedPositionDto extends PositionDto {
   verifyRequest: VerifyPositionDto[]; // Updated verify requests with enriched user details
 }
 
-export interface GroupedPositionDto {
-  totalExperience: string;
-  company: CompanyDto;
-  positions: ExtendedPositionDto[];
-}
-
 export interface ExtendedUserDetailsDto extends UserDto {
   totalRevenue?: number;
   totalYearsExperience?: string;
@@ -242,7 +237,7 @@ export interface ExtendedUserDetailsDto extends UserDto {
   smbAverage?: number;
   midmarketAverage?: number;
   enterpriseAverage?: number;
-  groupPositions?: GroupedPositionDto[];
+  groupPositions?: ExtendedPositionDto[];
   positions: ExtendedPositionDto[];
   pendingVerificationRequests?: number;
   profileViewsCount?: number;
@@ -286,6 +281,7 @@ export interface UsersInCompanyResponseDto {
 export interface UpdatePreferencesRequestDto {
   about: string | null;
   city: string; //TODO: to be removed
+  cityPlaceId: string; //TODO: to be removed
   locationCityId: number | null;
   locationCity: CityDto | null;
   currency: string;
