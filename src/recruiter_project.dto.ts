@@ -116,7 +116,7 @@ export interface CheckAppliedResponseDto {
 export interface GetCandidatesResponseDto {
   error: boolean;
   message?: string;
-  candidates?: UserDto[];
+  candidates?: Partial<UserDto>[];
   total?: number;
   page?: number;
   limit?: number;
