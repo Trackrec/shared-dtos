@@ -272,6 +272,7 @@ export interface ProjectIdQueryDto {
 export interface CandidatesListQueryDto {
   page?: number;
   limit?: number;
+  hideJobHoppers?: boolean;
 }
 
 export interface ProjectListQueryDto {
