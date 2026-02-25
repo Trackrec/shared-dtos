@@ -293,6 +293,8 @@ export interface ProjectByIdParamDto {
 
 export interface ProjectRankingQueryDto {
   minExperience?: string;
+  companySizeMin?: number;
+  companySizeMax?: number;
   page?: number;
   limit?: number;
   search?: string;
