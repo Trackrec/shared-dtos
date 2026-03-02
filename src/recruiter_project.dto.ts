@@ -20,10 +20,10 @@ export enum ExperienceType {
 }
 
 export enum ExperienceFilter {
-  ONE = 'one',          // Last 1 year
-  TWO = 'two',          // Last 2 years
-  THREE = 'three',      // Last 3 years
-  FIVE = 'five',        // Last 5 years
+  ONE = 'one', // Last 1 year
+  TWO = 'two', // Last 2 years
+  THREE = 'three', // Last 3 years
+  FIVE = 'five', // Last 5 years
   FIVE_PLUS = 'fivePlus', // More than 5 years
 }
 export interface RecruiterProjectDto {
@@ -104,7 +104,6 @@ export interface RecruiterProjectDto {
     persona: number;
     companyOverlap: number;
   };
-
 }
 
 export interface CheckAppliedResponseDto {
@@ -258,7 +257,6 @@ export interface RecruiterProjectRequestDto {
   companySizeMin: string | null;
   companySizeMax: string | null;
   companySizeScope: 'current' | 'recent_3_years' | 'all' | null;
-
 }
 
 export interface ProjectVisitorParamDto {
@@ -272,6 +270,7 @@ export interface ProjectIdQueryDto {
 export interface CandidatesListQueryDto {
   page?: number;
   limit?: number;
+  hideJobHoppers?: boolean;
 }
 
 export interface ProjectListQueryDto {
