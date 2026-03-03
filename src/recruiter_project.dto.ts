@@ -77,7 +77,6 @@ export interface RecruiterProjectDto {
   reportTo: string | null;
   hiringProcess: string | null;
   growthOpportunities: string | null;
-  visitsCount: number;
   projectCustomUrl: string | null;
   companyId: string | null;
   draft: boolean;
@@ -215,7 +214,6 @@ export interface RecruiterProjectRequestDto {
   reportTo: string | null;
   hiringProcess: string | null;
   growthOpportunities: string | null;
-  visitsCount: string;
   projectCustomUrl: string | null;
   companyId: string | null;
   draft: string;
