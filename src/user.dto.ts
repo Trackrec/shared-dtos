@@ -246,6 +246,7 @@ export interface ExtendedUserDetailsDto extends UserDto {
   positions: ExtendedPositionDto[];
   pendingVerificationRequests?: number;
   profileViewsCount?: number;
+  hiddenExperienceCount?: number;
 }
 
 export interface ProfileViewsResponseDto {
