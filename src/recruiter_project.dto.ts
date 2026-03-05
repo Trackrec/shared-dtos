@@ -77,7 +77,6 @@ export interface RecruiterProjectDto {
   reportTo: string | null;
   hiringProcess: string | null;
   growthOpportunities: string | null;
-  visitsCount: number;
   projectCustomUrl: string | null;
   companyId: string | null;
   draft: boolean;
@@ -222,12 +221,12 @@ export interface RecruiterProjectRequestDto {
   travelRequirementPercentage: string | null;
   startDate: string | null;
   currency: string | null;
+  visitsCount: string | null;
   currencyCountry: string | null;
   isTravelRequirements: string | null;
   reportTo: string | null;
   hiringProcess: string | null;
   growthOpportunities: string | null;
-  visitsCount: string;
   projectCustomUrl: string | null;
   companyId: string | null;
   draft: string;
@@ -307,6 +306,8 @@ export interface ProjectByIdParamDto {
 
 export interface ProjectRankingQueryDto {
   minExperience?: string;
+  companySizeMin?: number;
+  companySizeMax?: number;
   page?: number;
   limit?: number;
   search?: string;
@@ -335,4 +336,35 @@ export interface SuggestedCandidatesResponseDto {
   total: number;
   page: number;
   limit: number;
+}
+
+// OTE Estimation for Job Postings (Market Fit)
+export interface EstimateOteRequestDto {
+  experienceType: string; // "individual_contributor" | "leadership" | "bdr"
+  experience: number; // years of experience
+  locations: string[]; // e.g., ["San Francisco, CA"]
+  segment?: {
+    smb?: number;
+    midMarket?: number;
+    enterprise?: number;
+  };
+  dealSize?: number; // avg deal size in USD
+  newBusinessPct?: number; // percentage (0-100)
+  outboundPct?: number; // percentage (0-100)
+  industryWorksIn?: string[]; // e.g., ["SaaS", "Cybersecurity"]
+  currency?: string; // "USD" | "CAD"
+}
+
+export interface EstimateOteResponseDto {
+  low: number;
+  mid: number;
+  high: number;
+  role: string; // e.g., "AE_ENTERPRISE"
+  tierLabel: string; // e.g., "Tier 1 (San Francisco)"
+  split: {
+    base: number; // percentage
+    variable: number; // percentage
+  };
+  confidence: string; // "high" | "medium" | "low"
+  currency: string; // "USD" | "CAD"
 }

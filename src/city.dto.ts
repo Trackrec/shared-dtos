@@ -84,6 +84,7 @@ export interface LocationByPlaceIdRequestDto {
 export interface StandardizedLocationDto {
   cityId?: number;
   formattedAddress: string;
+  placeId?: string
 }
 
 export interface LocationByPlaceIdResponseDto {
