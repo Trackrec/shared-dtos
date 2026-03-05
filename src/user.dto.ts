@@ -16,6 +16,13 @@ export enum UserRole {
   USER = 'User',
   SUPER_ADMIN = 'Super-Admin',
 }
+
+export enum JobHopperStatus {
+  STABLE = 'STABLE',
+  YELLOW = 'YELLOW',
+  RED = 'RED',
+}
+
 export interface UserDto {
   id: number;
   email: string | null;
@@ -90,7 +97,7 @@ export interface UserDto {
    * Job hopper status badge level
    * @example "STABLE" | "YELLOW" | "RED"
    */
-  jobHopperStatus?: 'STABLE' | 'YELLOW' | 'RED';
+  jobHopperStatus?: JobHopperStatus;
   /**
    * Explanation for job hopper status
    * @example "3 roles under 12mo in last 3 years"
