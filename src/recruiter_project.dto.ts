@@ -322,3 +322,34 @@ export interface SuggestedCandidatesResponseDto {
   page: number;
   limit: number;
 }
+
+// OTE Estimation for Job Postings (Market Fit)
+export interface EstimateOteRequestDto {
+  experienceType: string; // "individual_contributor" | "leadership" | "bdr"
+  experience: number; // years of experience
+  locations: string[]; // e.g., ["San Francisco, CA"]
+  segment?: {
+    smb?: number;
+    midMarket?: number;
+    enterprise?: number;
+  };
+  dealSize?: number; // avg deal size in USD
+  newBusinessPct?: number; // percentage (0-100)
+  outboundPct?: number; // percentage (0-100)
+  industryWorksIn?: string[]; // e.g., ["SaaS", "Cybersecurity"]
+  currency?: string; // "USD" | "CAD"
+}
+
+export interface EstimateOteResponseDto {
+  low: number;
+  mid: number;
+  high: number;
+  role: string; // e.g., "AE_ENTERPRISE"
+  tierLabel: string; // e.g., "Tier 1 (San Francisco)"
+  split: {
+    base: number; // percentage
+    variable: number; // percentage
+  };
+  confidence: string; // "high" | "medium" | "low"
+  currency: string; // "USD" | "CAD"
+}
