@@ -209,6 +209,7 @@ export interface RecruiterProjectRequestDto {
   travelRequirementPercentage: string | null;
   startDate: string | null;
   currency: string | null;
+  visitsCount: string | null;
   currencyCountry: string | null;
   isTravelRequirements: string | null;
   reportTo: string | null;
@@ -270,6 +271,7 @@ export interface ProjectIdQueryDto {
 export interface CandidatesListQueryDto {
   page?: number;
   limit?: number;
+  hideJobHoppers?: boolean;
 }
 
 export interface ProjectListQueryDto {
