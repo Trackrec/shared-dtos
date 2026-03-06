@@ -112,10 +112,22 @@ export interface CheckAppliedResponseDto {
   applied?: boolean;
 }
 
+export type CandidateListItemDto = Pick<UserDto,
+  | 'id'
+  | 'fullName'
+  | 'profileImage'
+  | 'publicProfileUsername'
+  | 'customCurrentRole'
+  | 'jobHopperStatus'
+  | 'jobHopperExplanation'
+  | 'shortStintsCount'
+  | 'currentTenureMonths'
+>;
+
 export interface GetCandidatesResponseDto {
   error: boolean;
   message?: string;
-  candidates?: UserDto[];
+  candidates?: CandidateListItemDto[];
   total?: number;
   page?: number;
   limit?: number;
@@ -271,6 +283,7 @@ export interface ProjectIdQueryDto {
 export interface CandidatesListQueryDto {
   page?: number;
   limit?: number;
+  /** When true, exclude candidates with YELLOW or RED job hopper status */
   hideJobHoppers?: boolean;
 }
 
