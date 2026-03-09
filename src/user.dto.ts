@@ -16,6 +16,13 @@ export enum UserRole {
   USER = 'User',
   SUPER_ADMIN = 'Super-Admin',
 }
+
+export enum JobHopperStatus {
+  STABLE = 'STABLE',
+  YELLOW = 'YELLOW',
+  RED = 'RED',
+}
+
 export interface UserDto {
   id: number;
   email: string | null;
@@ -86,6 +93,26 @@ export interface UserDto {
    * @example "3y, 6m" or "N/A"
    */
   totalIndividualContributorExperience?: string;
+  /**
+   * Job hopper status badge level
+   * @example "STABLE" | "YELLOW" | "RED"
+   */
+  jobHopperStatus?: JobHopperStatus;
+  /**
+   * Explanation for job hopper status
+   * @example "3 roles under 12mo in last 3 years"
+   */
+  jobHopperExplanation?: string;
+  /**
+   * Number of short stints (< 12 months) in last 3 years
+   * @example 2
+   */
+  shortStintsCount?: number;
+  /**
+   * Current role tenure in months
+   * @example 8
+   */
+  currentTenureMonths?: number;
 }
 export interface RecruiterUserAuthRequestDto {
   email: string;
@@ -246,6 +273,7 @@ export interface ExtendedUserDetailsDto extends UserDto {
   positions: ExtendedPositionDto[];
   pendingVerificationRequests?: number;
   profileViewsCount?: number;
+  hiddenExperienceCount?: number;
 }
 
 export interface ProfileViewsResponseDto {
