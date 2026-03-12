@@ -124,6 +124,7 @@ export interface PositionDetailsRequestDto {
   domain: string;
   logoUrl: string;
   websiteUrl: string;
+  linkedinUrl: string;
 
   positionData?: {
     role: string;

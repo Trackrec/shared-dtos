@@ -38,6 +38,7 @@ export interface PositionRequestDto {
   websiteUrl: string | null;
   workingHere: boolean;
   domain: string | null;
+  linkedinUrl: string | null;
 }
 
 export interface PositionWithCompany {
