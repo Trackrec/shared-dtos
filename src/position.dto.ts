@@ -23,7 +23,7 @@ export interface PositionDto {
   company: CompanyDto;
   details: PositionDetailsDto | null;
   verifyRequest: VerifyPositionDto[];
-  status: PositionStatus
+  status: PositionStatus;
 }
 
 export interface PositionRequestDto {
@@ -84,6 +84,9 @@ export interface VerifyPositionDto {
   status: RequestStatus;
   createdAt: Date;
   updatedAt: Date;
+  snapshotJson: any;
+  snapshotHash: string;
+  verificationState?: string
 }
 
 export interface VerifyPositionRequestDto {
