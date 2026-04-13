@@ -23,12 +23,14 @@ export interface ProjectApplicationRequestDto {
   locationCityId?: number;
   currency: string;
   currencyCountry: string;
+  willingToRelocate?: boolean;
 }
 
 export interface ProjectApplicationWithPostions extends ProjectApplicationDto {
   id: number;
   ote: number;
   available: boolean;
+  willingToRelocate: boolean;
   positionId: number | null;
   project: RecruiterProjectDto;
   currency: string;
