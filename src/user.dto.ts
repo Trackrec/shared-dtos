@@ -113,6 +113,8 @@ export interface UserDto {
    * @example 8
    */
   currentTenureMonths?: number;
+  totalJobs?: number;
+  publishedJobs?: number;
 }
 export interface RecruiterUserAuthRequestDto {
   email: string;
