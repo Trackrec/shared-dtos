@@ -20,7 +20,9 @@ export type OteSkipCode =
   | 'no_ic_positions'
   | 'no_completed_ic_positions'
   | 'stale_data'
-  | 'recent_leadership_only';
+  | 'recent_leadership_only'
+  | 'no_bdr_positions'
+  | 'no_completed_bdr_positions';
 
 export type Segment = 'SMB' | 'MidMarket' | 'Enterprise' | 'Strategic';
 export type SegmentSource = 'declared' | 'inferred' | 'defaulted';
@@ -290,4 +292,12 @@ export function isOteSkipped(
   details: OteEstimationDetailsDto | null | undefined
 ): details is OteEstimationDetailsDto & { status: 'skipped' } {
   return details?.status === 'skipped';
+}
+
+
+export interface OteModifiersStructured {
+  bigLogo: OteModifierApplied;
+  outbound: OteModifierApplied;
+  industry: OteIndustryModifier;
+  combined: number;  // total multiplier (e.g., 1.175 for +17.5%)
 }

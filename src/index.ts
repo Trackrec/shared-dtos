@@ -55,4 +55,4 @@ export {
   type UserParamDto,
 } from './user.dto';
 // Re-export user.dto's CompaniesListDto under a disambiguated name
-export { CompaniesListDto as AdminCompaniesListDto } from './user.dto';
+export type { CompaniesListDto as AdminCompaniesListDto } from './user.dto';
