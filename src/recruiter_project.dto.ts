@@ -26,6 +26,19 @@ export enum ExperienceFilter {
   FIVE = 'five', // Last 5 years
   FIVE_PLUS = 'fivePlus', // More than 5 years
 }
+
+export enum ProductTypePreference {
+  ANY = 'any',
+  SOFTWARE = 'software',
+  HARDWARE = 'hardware',
+  SERVICES = 'services',
+}
+
+export enum ProductTypePreferenceWeight {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
 export interface RecruiterProjectDto {
   id: number;
   title: string;
@@ -197,6 +210,8 @@ export interface RecruiterProjectRequestDto {
   software: string | null;
   hardware: string | null;
   service: string | null;
+  productTypePreference: ProductTypePreference | null;
+  productTypePreferenceWeight: ProductTypePreferenceWeight | null;
   inboundRange: string | null;
   outboundRange: string | null;
   smb: string | null;
