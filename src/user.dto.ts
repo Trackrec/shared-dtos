@@ -50,6 +50,7 @@ export interface UserDto {
   estimatedOteHigh: number | null;
   estimatedOteCurrency: string | null;
   estimatedOteDetails: OteEstimationDetailsDto | null;
+  estimatedOteUpdatedAt: Date | null;
   locationPreferences: LocationPreference[];
   password: string | null;
   otp: boolean;

@@ -3,6 +3,7 @@ export * from './company.dto';
 export * from './country.dto';
 export * from './keywords.dto';
 export * from './ote-estimation-details.dto';
+export * from './ote-feedback.dto';
 export * from './position.dto';
 export * from './position_detail.dto';
 export * from './project_application.dto';
