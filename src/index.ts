@@ -32,6 +32,7 @@ export {
   type AnalyticsAccessDto,
   type AccountsVisitorsDto,
   type ExtendedPositionDto,
+  type CompletionRequirementDto,
   type GroupedPositionDto,
   type ExtendedUserDetailsDto,
   type ProfileViewsResponseDto,

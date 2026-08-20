@@ -242,9 +242,26 @@ export interface AccountsVisitorsDto {
   updatedAt: Date;
 }
 
+/**
+ * One requirement counting toward a position reaching 100% completion.
+ *
+ * Completion is all-or-nothing: a job posting captures the same field set as a position and
+ * matching compares them field by field, so anything short of 100% cannot be matched. The
+ * UI therefore needs to name the outstanding fields, not just show a percentage.
+ */
+export interface CompletionRequirementDto {
+  /** Stable identifier, e.g. `details.averageDealSize`. Safe to key or deep-link on. */
+  key: string;
+  /** User-facing label, phrased as the thing being asked for. */
+  label: string;
+  filled: boolean;
+}
+
 export interface ExtendedPositionDto extends PositionDto {
   isCompleted?: boolean;
   completionPercentage?: number;
+  /** Requirements still outstanding for this position. Empty when `isCompleted` is true. */
+  missingFields?: CompletionRequirementDto[];
   verifyRequest: VerifyPositionDto[]; // Updated verify requests with enriched user details
 }
 
