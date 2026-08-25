@@ -10,6 +10,16 @@ export enum RequestStatus {
 export enum PositionStatus {
   ACTIVE = 'active',
   EXCLUDED = 'excluded',
+  /**
+   * A placeholder Barney created and nobody has filled in yet: no role, no
+   * company, no dates. It exists because the conversation needs something to
+   * write answers onto, and it becomes ACTIVE the moment it has a real role.
+   *
+   * Victoria Lee's profile showed one of these as an experience reading
+   * 'NA / Since 126y and 9m', between two real jobs. It was created ACTIVE, so
+   * every query that trusts that flag counted an empty row as a job.
+   */
+  DRAFT = 'draft',
 }
 export interface PositionDto {
   id: number;
