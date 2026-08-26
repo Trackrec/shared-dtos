@@ -217,7 +217,10 @@ export interface DeleteUserRequestDto {
 
 export interface GetInTouchMailRequestDto {
   email: string;
-  emailTo: string;
+  /** Who the enquiry is for. Preferred over emailTo when present. */
+  profileUserId?: number;
+  /** The older identifier. Still honoured, so either half can deploy first. */
+  emailTo?: string | null;
   inquiry: string;
   name: string;
   phone: string;
