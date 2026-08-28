@@ -468,3 +468,112 @@ export interface CreateUpdateKeywordRequestDto {
 export interface UserParamDto {
   userId: number;
 }
+
+/**
+ * The published-profile response, at /p/:username.
+ *
+ * A SEPARATE TYPE ON PURPOSE, not a Pick of ExtendedUserDetailsDto.
+ *
+ * The leak this replaces existed partly because the type constrained nothing:
+ * ExtendedUserDetailsDto is an interface, so it is erased at runtime, and the
+ * service spread the whole entity into it. Every column added to UserAccounts
+ * since then rode along - the owner's email and phone, the parsed resume, `otp`,
+ * `lastAccessedAt`, the impersonable referral code - and no type ever objected.
+ *
+ * A Pick<> would inherit that problem in a quieter form: widen the source and the
+ * Pick widens with it. Spelling the fields out means a new column is invisible
+ * here until somebody adds it, and the compiler asks the question at the point
+ * where the answer matters.
+ *
+ * NO `positions`. The flat array was a second copy of every position and
+ * therefore of every verification request, and nothing on this path reads it: the
+ * card list flattens groupPositions itself. Required on ExtendedUserDetailsDto,
+ * which is the other reason this cannot be that type.
+ */
+export interface PublicVerifierDto {
+  fullName: string | null;
+  profileImage: string | null;
+  username: string | null;
+}
+
+/**
+ * One verification request, as a viewer of a profile may see it.
+ *
+ * Absent by design: `email`, the working contact address of a third party who
+ * published nothing; `uniqueToken`, a bcrypt hash of the one-click approval
+ * token; `snapshotJson` and `snapshotHash`, the position's values frozen at
+ * sign-off, which where the state is MODIFIED say exactly what changed
+ * afterwards; and `id`, which is useful only for probing.
+ */
+export interface PublicVerifyRequestDto {
+  status: string;
+  role: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  updatedAt: Date | null;
+  verificationState: string | null;
+  /** Null, not absent, when the verifier has no TrackRec account. */
+  user: PublicVerifierDto | null;
+}
+
+/**
+ * A company, as a viewer of a profile may see it: public identity only.
+ *
+ * Absent by design: `companyId` (Apollo's own org id), `apolloKeywords`,
+ * `apolloIndustries`, `enrichmentAttempts`, `enrichedAt`, `headcountRefreshedAt`,
+ * `employeeCount1yrAgo` and the enrichment status. That is data TrackRec pays
+ * for, and none of it is rendered.
+ */
+export interface PublicCompanyDto {
+  id: number;
+  name: string | null;
+  domain: string | null;
+  logoUrl: string | null;
+  websiteUrl: string | null;
+  apolloDescription: string | null;
+  apolloIndustry: string | null;
+  currentEmployeeCount: number | null;
+  yoyGrowthPercentage: string | null;
+}
+
+/** The whitelisted owner fields. No email, no phone, no resume, no internal state. */
+export interface PublicProfileUserDto {
+  id: number;
+  fullName: string | null;
+  profileImage: string | null;
+  customCurrentRole: string | null;
+  city: string | null;
+  languages: string[] | null;
+  username: string | null;
+  publicProfileUsername: string | null;
+  publishedAt: Date | null;
+  openToWork: boolean | null;
+  about: string | null;
+  nextDesiredTitles: string[] | null;
+  locationPreferences: string[] | null;
+  oteMin: number | null;
+  oteMax: number | null;
+  currency: string | null;
+}
+
+export interface PublicProfileDto extends PublicProfileUserDto {
+  totalRevenue?: number;
+  totalYearsExperience?: string;
+  totalOtherExperience?: string;
+  totalBdrExperience?: string;
+  totalLeadershipExperience?: string;
+  totalIndividualContributorExperience?: string;
+  weightedAverageExistingBusiness?: number;
+  weightedAverageNewBusiness?: number;
+  weightedAveragePartnershipBusiness?: number;
+  softwareProductTypeAverage?: number;
+  hardwareProductTypeAverage?: number;
+  serviceProductTypeAverage?: number;
+  outboundAverage?: number;
+  inboundAverage?: number;
+  smbAverage?: number;
+  midmarketAverage?: number;
+  enterpriseAverage?: number;
+  /** The only position source on this path. */
+  groupPositions?: unknown[];
+}
