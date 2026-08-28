@@ -596,7 +596,8 @@ export interface PublicProfilePositionDto {
   startYear: number | null;
   endMonth: number | null;
   endYear: number | null;
-  source: string | null;
+  /** Optional: not every position row carries one. */
+  source?: string | null;
   isCompleted?: boolean;
   completionPercentage?: number;
   company: PublicCompanyDto | null;
