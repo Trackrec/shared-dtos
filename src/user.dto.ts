@@ -577,3 +577,30 @@ export interface PublicProfileDto extends PublicProfileUserDto {
   /** The only position source on this path. */
   groupPositions?: unknown[];
 }
+
+/**
+ * A position as it appears on a published profile.
+ *
+ * The position and its details are unchanged from the wide DTO: both were read
+ * column by column and carry nothing sensitive. What is narrowed is what hangs
+ * off them - the company row and the verification requests - so this type exists
+ * to make the compiler check that neither is widened back.
+ *
+ * `details` stays loose because the profile page reads roughly thirty fields off
+ * it and every one is a sales metric the owner published on purpose.
+ */
+export interface PublicProfilePositionDto {
+  id: number;
+  role: string | null;
+  startMonth: number | null;
+  startYear: number | null;
+  endMonth: number | null;
+  endYear: number | null;
+  source: string | null;
+  isCompleted?: boolean;
+  completionPercentage?: number;
+  company: PublicCompanyDto | null;
+  verifyRequest: PublicVerifyRequestDto[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  details: any;
+}
