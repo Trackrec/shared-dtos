@@ -34,6 +34,22 @@ export interface ProjectApplicationWithPostions extends ProjectApplicationDto {
   positionId: number | null;
   project: RecruiterProjectDto;
   currency: string;
+  /**
+   * The currency by NAME, e.g. "Canadian Dollar (CAD)", as chosen in the apply
+   * dialog. Distinct from `currency`, which is the display SYMBOL and is
+   * ambiguous: the Mexican Peso's symbol is "$", exactly like the US Dollar.
+   *
+   * The column has existed on the application entity and been written by
+   * application.service all along, and this interface not declaring it is why it
+   * was read nowhere: the scorer could not reach it, so it fell back to the
+   * USER's country while using the APPLICATION's amount. A Barney-onboarded
+   * candidate, whose user row never gets this field, was therefore scored as USD
+   * whatever they picked, and a 300k CAD expectation read as 300k USD against
+   * the job's band.
+   *
+   * Nullable for rows written before the column was populated.
+   */
+  currencyCountry: string | null;
   createdAt: Date;
   updatedAt: Date;
   user: UserDto & {
