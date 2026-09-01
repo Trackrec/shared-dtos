@@ -31,7 +31,26 @@ export type LocationTier = 'Tier1' | 'Tier2' | 'Tier3' | 'Tier4';
 export type CountryCode = 'CA' | 'US';
 export type Currency = 'USD' | 'CAD';
 
-export type ExperienceBandName = 'entry' | 'early' | 'mid' | 'senior' | 'veteran';
+/**
+ * SIX BANDS. `principal` is over twenty years, added 2026-09-01.
+ *
+ * The curve used to stop at `veteran` for 10+ with nothing above it, and
+ * effective years were capped at 20, so a 12-year seller and a 31-year seller
+ * were the same number by construction. Measured on production, the over-20
+ * group earns 12 to 14% more than the 10-to-20 group on both definitions of
+ * tenure, so the model could not express a difference that is really there.
+ *
+ * ANY CONSUMER KEYED ON BAND NAME NEEDS AN ENTRY FOR THIS. The frontend keys its
+ * explanation copy off this union, and a band with no copy silently renders the
+ * empty state, which reads as the estimate having failed.
+ */
+export type ExperienceBandName =
+  | 'entry'
+  | 'early'
+  | 'mid'
+  | 'senior'
+  | 'veteran'
+  | 'principal';
 export type ConfidenceLevel = 'High' | 'Medium' | 'Low';
 
 export type RoleTitle =
@@ -73,8 +92,12 @@ export interface OteBaseline {
  */
 export interface OteExperienceBand {
   years: number;            // Effective years for calculation
-  band: ExperienceBandName; // entry (0-1y), early (2-3y), mid (3-5y), senior (5-10y), veteran (10+y)
-  multiplier: number;       // 0.85, 0.95, 1.0, 1.05, 1.1
+  // entry (<2y), early (2-3y), mid (3-5y), senior (5-10y), veteran (10-20y),
+  // principal (>20y)
+  band: ExperienceBandName;
+  // 0.80, 0.90, 1.00, 1.11, 1.29, 1.45. The upper three are measured medians
+  // from production rather than chosen figures.
+  multiplier: number;
   icYears?: number;         // Raw IC years from positions
   leadershipYears?: number; // Raw leadership years from positions
 }
