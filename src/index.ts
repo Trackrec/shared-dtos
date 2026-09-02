@@ -2,6 +2,7 @@ export * from './city.dto';
 export * from './company.dto';
 export * from './country.dto';
 export * from './keywords.dto';
+export * from './ote-estimate-explain';
 export * from './ote-estimation-details.dto';
 export * from './ote-feedback.dto';
 export * from './position.dto';
