@@ -161,6 +161,17 @@ export interface ProjectResponseDto {
   error: boolean;
   message?: string;
   project?: RecruiterProjectDto;
+  /**
+   * The edit saved AND took the job offline.
+   *
+   * An update to a published project whose result no longer passes
+   * hasRequiredFields demotes it to a draft. That used to return a plain
+   * success, so the edit page said "Job updated successfully!" and navigated
+   * away while the job had stopped being visible to candidates.
+   */
+  unpublished?: boolean;
+  /** What to fill in to put it back, in the recruiter's own words. */
+  missingFields?: string[];
 }
 
 export interface ProjectVisitorsDto {
