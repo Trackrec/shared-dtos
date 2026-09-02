@@ -282,7 +282,20 @@ const cityOf = (details: OteEstimationDetailsDto): string | undefined =>
  * about "sellers like you" is worse than no sentence: it is the exact register
  * that makes a benchmark feel invented.
  */
-const buildHeadline = (details: OteEstimationDetailsDto): string | null => {
+/**
+ * OMITTING THE FIGURE, when the figure is already on screen.
+ *
+ * The third sentence lands the number as a consequence, which is the whole
+ * shape of Victor's two examples and is right when the sentence stands alone.
+ * Rendered directly under the range display it repeats it: measured on the
+ * rebuilt My Market, the band showed the range twice and the split twice, and
+ * the second of each came from here. So the surface says whether it has already
+ * printed the number.
+ */
+const buildHeadline = (
+  details: OteEstimationDetailsDto,
+  includeFigure = true,
+): string | null => {
   const role = String(details.role ?? '');
   const roleNoun = ROLE_NOUN[role];
   if (!roleNoun) return null;
@@ -409,9 +422,11 @@ const buildHeadline = (details: OteEstimationDetailsDto): string | null => {
       ? 'split evenly between base and commission'
       : `weighted toward ${basePct >= 50 ? 'base' : 'commission'} at ${basePct}/${varPct}`;
 
-  sentences.push(
-    `That puts you at ${money(low, currency)} to ${money(high, currency)}, ${split}.`,
-  );
+  if (includeFigure) {
+    sentences.push(
+      `That puts you at ${money(low, currency)} to ${money(high, currency)}, ${split}.`,
+    );
+  }
 
   return sentences.join(' ');
 };
@@ -661,8 +676,17 @@ export const compensationSplitOf = (
  * comes back with a null headline and an empty list rather than a sentence
  * assembled out of defaults.
  */
+export interface ExplainOptions {
+  /**
+   * False when the caller has already printed the range and the split, so the
+   * closing sentence would be the same figures a second time.
+   */
+  includeFigure?: boolean;
+}
+
 export const explainEstimate = (
   details: OteEstimationDetailsDto | null | undefined,
+  options: ExplainOptions = {},
 ): EstimateExplanation => {
   if (!details || details.status !== 'calculated') {
     return { headline: null, drivers: [] };
@@ -701,7 +725,7 @@ export const explainEstimate = (
   const rest = movement.slice(0, segment ? 3 : 4);
 
   return {
-    headline: buildHeadline(details),
+    headline: buildHeadline(details, options.includeFigure !== false),
     drivers: segment ? [segment, ...rest] : rest,
   };
 };
