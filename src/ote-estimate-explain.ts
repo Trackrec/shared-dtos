@@ -85,7 +85,26 @@ export interface EstimateExplanation {
   drivers: EstimateDriver[];
 }
 
-const symbolFor = (currency: string): string => (currency === 'CAD' ? 'CA$' : '$');
+/**
+ * The currency prefix, matching the rest of the app.
+ *
+ * "CAD$", NOT "CA$", and the difference is not a preference. This function
+ * returned 'CA$' while the screen around it printed 'CAD$', so the live My
+ * Market showed "Your deals average CA$6,000" three lines under "CAD$ 149,949".
+ * One page, two notations for one currency, which is the exact bug the Rundown
+ * was fixed for a day earlier.
+ *
+ * 'CAD$' is what the app uses everywhere else: the currency list a candidate
+ * picks from (currency.constants.ts), the recruiter market-fit hint, the job
+ * post, and MyMarketValue's own `currencySymbol` two hundred lines from where
+ * this string lands. 'CA$' existed in exactly two places, both added on
+ * 2026-09-02, both here.
+ *
+ * It is redundant on its face, since CAD already says dollars. It is also the
+ * app's, and a reader noticing two spellings of their own currency stops
+ * trusting the number attached to them.
+ */
+const symbolFor = (currency: string): string => (currency === 'CAD' ? 'CAD$' : '$');
 
 /**
  * A salary, the way a person says one out loud. "$400k", "$1.2M".
