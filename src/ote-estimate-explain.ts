@@ -184,6 +184,33 @@ const PRODUCT_WORD: Record<string, string> = {
   real_estate: 'property',
 };
 
+/**
+ * Years selling, said the way the factor card beside it already says them.
+ *
+ * ROUNDING WAS CONTRADICTING THE SCREEN. This said "8 years selling" for 7.5,
+ * while `formatExperienceDisplay` on the same page said "7 years 6 months".
+ * Two numbers for one fact, and the reader has no way to tell which is the
+ * real one. Victor spotted the screen was "all over the place"; this is one of
+ * the reasons it read that way.
+ *
+ * Months are dropped when they round to zero, so a clean figure stays clean
+ * rather than becoming "7 years 0 months".
+ */
+const tenure = (years: number): string => {
+  const safe = Number.isFinite(years) && years > 0 ? years : 0;
+  let whole = Math.floor(safe);
+  let months = Math.round((safe % 1) * 12);
+  if (months === 12) {
+    months = 0;
+    whole += 1;
+  }
+
+  const yearPart = whole === 1 ? '1 year' : `${whole} years`;
+  if (months === 0) return yearPart;
+  const monthPart = months === 1 ? '1 month' : `${months} months`;
+  return whole === 0 ? monthPart : `${yearPart} ${monthPart}`;
+};
+
 const BAND_WORD: Record<string, string> = {
   entry: 'entry',
   early: 'early career',
@@ -193,13 +220,25 @@ const BAND_WORD: Record<string, string> = {
   principal: 'principal',
 };
 
-/** Joins a list the way somebody speaking would. */
+/**
+ * Joins a list the way somebody speaking would.
+ *
+ * COMMA WHEN AN ITEM ALREADY CARRIES AN "AND", which our own industry names do.
+ * On Victor's profile this produced "You sell marketing and advertising and web
+ * development software": two industries joined by "and", the first of which is
+ * "Marketing and Advertising". A reader cannot tell where one ends.
+ */
 const listOf = (items: string[]): string => {
   const clean = items.map((i) => i.trim()).filter(Boolean);
   if (clean.length === 0) return '';
   if (clean.length === 1) return clean[0];
-  if (clean.length === 2) return `${clean[0]} and ${clean[1]}`;
-  return `${clean.slice(0, -1).join(', ')} and ${clean[clean.length - 1]}`;
+  const carriesAnd = clean.some((item) => / and /i.test(item));
+  if (clean.length === 2) {
+    return carriesAnd ? `${clean[0]}, ${clean[1]}` : `${clean[0]} and ${clean[1]}`;
+  }
+  const head = clean.slice(0, -1).join(', ');
+  const tail = clean[clean.length - 1];
+  return carriesAnd ? `${head}, ${tail}` : `${head} and ${tail}`;
 };
 
 /** Structured modifiers only. A legacy array carries no per-modifier flags. */
@@ -494,8 +533,7 @@ const movementDrivers = (details: OteEstimationDetailsDto): EstimateDriver[] => 
   if (band?.multiplier != null && Math.abs(band.multiplier - 1) > 0.001) {
     const years = Math.round(band.years ?? 0);
     const word = BAND_WORD[String(band.band)] ?? String(band.band);
-    const yearsSaid =
-      years === 1 ? 'You have 1 year selling' : `You have ${years} years selling`;
+    const yearsSaid = `You have ${tenure(band.years ?? 0)} selling`;
     drivers.push({
       saw: yearsSaid,
       meant:
@@ -563,6 +601,56 @@ const movementDrivers = (details: OteEstimationDetailsDto): EstimateDriver[] => 
   }
 
   return drivers.sort((a, b) => b.weight - a.weight);
+};
+
+/**
+ * The base and the variable, guaranteed to add up to the estimate above them.
+ *
+ * WHAT WAS ON SCREEN. Victor's own profile showed base CA$90,720 plus variable
+ * CA$90,720, which is CA$181,440, printed under an estimate of CA$149,949. The
+ * breakdown overstated his own number by 21%, on the screen whose entire job is
+ * to be believed.
+ *
+ * WHY. The calculator derives the pair from the midpoint and caps it, then the
+ * refinement service rescales the low, mid and high in four separate places and
+ * never touches the pair. So on every profile refinement moved, the halves
+ * belonged to a midpoint that no longer existed, and the stored total was their
+ * sum rather than the published number.
+ *
+ * DERIVED HERE, so it is right on every row that already exists. The listener
+ * now writes a correct pair, but only for rows calculated after that shipped,
+ * and the recompute that would fix the rest is held behind the refinement
+ * blend. The stored pair is still the source of the RATIO, which is the part of
+ * it that was never wrong; the total comes from the published midpoint.
+ *
+ * The variable half is the remainder rather than a second multiplication. Two
+ * independent roundings can miss the total by a dollar, and a dollar is enough
+ * for somebody to notice and stop trusting the rest of the screen.
+ */
+export const compensationSplitOf = (
+  details: OteEstimationDetailsDto | null | undefined,
+): { base: number; variable: number; total: number; basePct: number } | null => {
+  const total = details?.finalOte?.mid;
+  if (!total || total <= 0) return null;
+
+  const storedBase = details?.compensationSplit?.base ?? 0;
+  const storedVariable = details?.compensationSplit?.variable ?? 0;
+  const storedTotal = storedBase + storedVariable;
+
+  /*
+   * Half and half when the stored pair cannot give a ratio, which is a row
+   * written before the split existed. Fifty is what the AE card quotes and the
+   * least wrong assumption available.
+   */
+  const fraction = storedTotal > 0 ? storedBase / storedTotal : 0.5;
+
+  const base = Math.round(total * fraction);
+  return {
+    base,
+    variable: total - base,
+    total,
+    basePct: Math.round(fraction * 100),
+  };
 };
 
 /**
