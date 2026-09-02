@@ -280,6 +280,18 @@ export interface OteEstimationDetailsDto {
   confidenceFactors?: OteConfidenceFactors;
   calculationSteps?: OteCalculationSteps;
 
+  /**
+   * Employee count at the current company, when the enrichment had one.
+   *
+   * The calculator already reads this (it is what sets the big logo modifier,
+   * at 1,000 and up) and it was dropped on the way out, so a stored row could
+   * say somebody works for a big name and could not say that somebody works for
+   * a fifteen-person team. Kept because the explanation says "for a small team"
+   * when it knows, and that cannot be recovered from the modifier: the flag is
+   * one bit and it is false for everybody under 1,000.
+   */
+  companySize?: number;
+
   // Debug/admin
   rationale?: string[];
 }

@@ -327,16 +327,19 @@ const buildHeadline = (details: OteEstimationDetailsDto): string | null => {
 
     const forWhom: string[] = [];
     /**
-     * BIG NAME FROM THE MODIFIER, not from a headcount.
+     * THE MODIFIER FIRST, then the headcount.
      *
-     * The old version read the employee count directly, and that count is not
-     * in the stored column. `bigLogo.applied` is the same fact by definition
-     * (it is set at 1,000 employees and up), so the clause survives. The old
-     * "for a small team" clause does not, because nothing stored distinguishes
-     * a fifteen-person startup from a mid-sized firm, and guessing it would put
-     * an invented fact in the sentence that exists to sound true.
+     * `bigLogo.applied` is by definition 1,000 employees and up, so it says
+     * "for a big name" on every row including the ones stored before the
+     * headcount was kept. The small team clause needs the number itself, and it
+     * is silent on a row that does not carry one rather than inferring anything
+     * from a false modifier flag: that flag is false for everybody under 1,000,
+     * which is most sellers, and it would put an invented fact in the sentence
+     * whose whole job is to sound true.
      */
     if (mods?.bigLogo?.applied) forWhom.push('for a big name');
+    else if (details.companySize != null && details.companySize > 0 && details.companySize < 50)
+      forWhom.push('for a small team');
 
     // The commodity discount, said without the word.
     if (mods?.industry?.type === 'commodity') forWhom.push('in a mature category');
