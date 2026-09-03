@@ -128,6 +128,10 @@ export interface FailedMustHave {
  * assessed. RadarCompare carries a third copy of the same pairs. Three copies
  * of one mapping is how this happened, and worth collapsing, but not in the
  * change that makes the feature work.
+ *
+ * Exported for `scoresByCriterion` below, and for a caller that needs to know
+ * where a criterion is stored. It is no longer applied inside
+ * `failedMustHaves`; see `scoresByCriterion` for why that was a trap.
  */
 export const POINTS_KEY: Record<CriterionKey, string> = {
   ote: 'otePoints',
@@ -146,23 +150,61 @@ export const POINTS_KEY: Record<CriterionKey, string> = {
   productType: 'pointsForProductType',
 };
 
+/** A score per criterion, which is the shape this module reasons in. */
+export type ScoresByCriterion = Partial<
+  Record<CriterionKey, number | string | null | undefined>
+>;
+
+/**
+ * The stored points object, translated into criterion keys.
+ *
+ * WHY THIS EXISTS, and it is a correction to how the must-have fix was first
+ * shipped on 2026-09-02. `failedMustHaves` was changed to apply POINTS_KEY
+ * internally, which fixed the frontend caller and would have broken the backend
+ * one, because the two callers pass DIFFERENT shapes:
+ *
+ *   the backend already holds `matchScoresMap`, keyed by criterion
+ *     (project.service.ts, ote / location / businessMix ...)
+ *   the frontend holds the stored points object, keyed by column
+ *     (otePoints / pointsForLocation / newBusinessPoints ...)
+ *
+ * Because shared-dtos is vendored as a submodule in both repos, that left an
+ * invariant nobody could guess: the two pointers had to stay on DIFFERENT
+ * commits forever, and aligning them, which is the documented normal thing to
+ * do after any change here, would silently make the backend's must haves inert
+ * again. A fix with a fuse in it.
+ *
+ * So the translation moves to the caller that needs translating, and this module
+ * reasons in one shape. The backend passes its map straight in.
+ */
+export const scoresByCriterion = (
+  storedPoints: Record<string, number | string | null | undefined> | null | undefined,
+): ScoresByCriterion => {
+  const out: ScoresByCriterion = {};
+  if (!storedPoints) return out;
+
+  for (const criterion of Object.keys(POINTS_KEY) as CriterionKey[]) {
+    out[criterion] = storedPoints[POINTS_KEY[criterion]];
+  }
+
+  return out;
+};
+
 export const failedMustHaves = (
   stored: Partial<Record<CriterionKey, number>> | null | undefined,
   /**
-   * The STORED points object, keyed the way the scorer writes it
-   * (`otePoints`, `pointsForLocation`, ...), not by criterion.
+   * Scores BY CRITERION, not the stored points object.
    *
-   * Typed loosely on purpose. It used to be typed `Record<CriterionKey, ...>`,
-   * which is what let the bug through: the type asserted a shape the caller
-   * never passes, so TypeScript confirmed a lie instead of catching it. A test
-   * written against that type would have passed while production returned
-   * nothing.
+   * A caller holding the stored shape runs it through `scoresByCriterion`
+   * first. The value type admits strings because the scorer really does write
+   * 'Unknown' into these fields, and null and undefined because a criterion the
+   * scorer never reached is absent. All three mean "not assessed" below.
    */
-  scores: Record<string, number | string | null | undefined> | null | undefined,
+  scores: ScoresByCriterion | null | undefined,
 ): FailedMustHave[] =>
   mustHavesOf(stored)
     .map((criterion) => {
-      const raw = scores?.[POINTS_KEY[criterion]];
+      const raw = scores?.[criterion];
       if (raw === null || raw === undefined || raw === 'Unknown') return null;
       const scored = Number(raw);
       if (!Number.isFinite(scored)) return null;
