@@ -107,12 +107,20 @@ export interface EstimateExplanation {
 const symbolFor = (currency: string): string => (currency === 'CAD' ? 'CAD$' : '$');
 
 /**
- * A salary, the way a person says one out loud. "$400k", "$1.2M".
+ * A salary, the way a person says one out loud. "$ 400k", "$ 1.2M".
+ *
+ * A SPACE AFTER THE SYMBOL, because every other figure on the page has one.
+ * Victor, 2026-09-02: "You're missing a space between currency and amount."
+ * OteRangeDisplay, CompensationBreakdown, GreatYear and the Rundown cards all
+ * render `{currency} {amount}`, and the Rundown's own comment states the
+ * convention: "the space matches how money is set everywhere else on the
+ * profile". This generator was the lone dissenter, so a bullet read
+ * "CAD$6,000" three lines under "CAD$ 149,949".
  */
 const money = (n: number, currency: string): string => {
   const symbol = symbolFor(currency);
-  if (n >= 1_000_000) return `${symbol}${(n / 1_000_000).toFixed(1)}M`;
-  return `${symbol}${Math.round(n / 1_000)}k`;
+  if (n >= 1_000_000) return `${symbol} ${(n / 1_000_000).toFixed(1)}M`;
+  return `${symbol} ${Math.round(n / 1_000)}k`;
 };
 
 /**
@@ -125,7 +133,7 @@ const money = (n: number, currency: string): string => {
  * the number, and an abbreviation of a figure they can check reads as evasion.
  */
 const exact = (n: number, currency: string): string =>
-  `${symbolFor(currency)}${Math.round(n).toLocaleString('en-US')}`;
+  `${symbolFor(currency)} ${Math.round(n).toLocaleString('en-US')}`;
 
 /**
  * "a" or "an", from how the next word is said rather than how it is spelled.
