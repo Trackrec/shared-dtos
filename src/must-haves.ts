@@ -108,13 +108,61 @@ export interface FailedMustHave {
  * in that direction lands on a person, and the cost in the other direction is
  * one recruiter reading one extra profile.
  */
+/**
+ * WHERE EACH CRITERION'S SCORE IS ACTUALLY STORED.
+ *
+ * WHY THIS EXISTS, and it is the whole reason must haves did nothing. The
+ * coefficients a recruiter sets are keyed by criterion: 'ote', 'businessMix',
+ * 'leadSource'. The scores are stored under entirely different names:
+ * 'otePoints', 'newBusinessPoints', 'outboundPoints'. Not one criterion key
+ * appears in that object.
+ *
+ * So `scores[criterion]` was undefined for every criterion, every undefined was
+ * correctly read as "not assessed", and `failedMustHaves` returned an empty
+ * list for everybody. A candidate scoring 1 out of 10 on the one criterion a
+ * recruiter marked non-negotiable sat near the top with no badge and no banner,
+ * which is exactly the outcome this module's header says was rejected.
+ *
+ * The mapping is copied from `matchScoresMap` in project.service, which is the
+ * authority: it is what the scorer itself uses to decide which dimensions were
+ * assessed. RadarCompare carries a third copy of the same pairs. Three copies
+ * of one mapping is how this happened, and worth collapsing, but not in the
+ * change that makes the feature work.
+ */
+export const POINTS_KEY: Record<CriterionKey, string> = {
+  ote: 'otePoints',
+  location: 'pointsForLocation',
+  experience: 'pointsForExperience',
+  businessMix: 'newBusinessPoints',
+  leadSource: 'outboundPoints',
+  dealSize: 'dealSizePoints',
+  salesCycle: 'salesCyclePoints',
+  segment: 'segmentPoints',
+  territory: 'pointsForTerritory',
+  industryWorksIn: 'workedInPoints',
+  industrySoldTo: 'soldToPoints',
+  persona: 'pointsForPersona',
+  companyOverlap: 'pointsForCompanyOverlap',
+  productType: 'pointsForProductType',
+};
+
 export const failedMustHaves = (
   stored: Partial<Record<CriterionKey, number>> | null | undefined,
-  scores: Partial<Record<CriterionKey, number | string | null | undefined>>,
+  /**
+   * The STORED points object, keyed the way the scorer writes it
+   * (`otePoints`, `pointsForLocation`, ...), not by criterion.
+   *
+   * Typed loosely on purpose. It used to be typed `Record<CriterionKey, ...>`,
+   * which is what let the bug through: the type asserted a shape the caller
+   * never passes, so TypeScript confirmed a lie instead of catching it. A test
+   * written against that type would have passed while production returned
+   * nothing.
+   */
+  scores: Record<string, number | string | null | undefined> | null | undefined,
 ): FailedMustHave[] =>
   mustHavesOf(stored)
     .map((criterion) => {
-      const raw = scores[criterion];
+      const raw = scores?.[POINTS_KEY[criterion]];
       if (raw === null || raw === undefined || raw === 'Unknown') return null;
       const scored = Number(raw);
       if (!Number.isFinite(scored)) return null;
