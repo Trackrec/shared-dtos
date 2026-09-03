@@ -284,6 +284,35 @@ const modifiersOf = (details: OteEstimationDetailsDto): OteModifiers | null =>
 const cityOf = (details: OteEstimationDetailsDto): string | undefined =>
   details.location?.city?.split(',')[0]?.trim() || undefined;
 
+/**
+ * WHAT THE CITY'S TIER IS, in words a seller would use.
+ *
+ * Victor on the old sentence, "which pays 18.2% over the same role elsewhere":
+ * "Over the same rule elsewhere is so cryptic. We need to be a lot more precise
+ * here. What's the context? Is it because Montreal is a tier one city?"
+ *
+ * It was cryptic because "elsewhere" named nothing. The multiplier is not
+ * measured against everywhere else, it is measured against ONE thing: the rate
+ * card's own baseline row, which is the secondary-market tier. Saying so
+ * answers all three of his questions at once, and it is the truth the
+ * arithmetic already contains.
+ *
+ * THE INTERNAL LABEL STAYS INTERNAL. "Tier1" is our word, not a seller's, and
+ * printing it would replace one piece of jargon with another. These phrases say
+ * what the tier IS.
+ */
+const TIER_PHRASE: Record<string, string> = {
+  Tier1: 'a top-paying metro',
+  Tier2: 'a major market',
+  Tier3: 'a secondary market',
+  Tier4: 'outside the major markets',
+};
+
+const tierPhraseOf = (details: OteEstimationDetailsDto): string | undefined => {
+  const tier = details.baseline?.tier ?? details.location?.tier;
+  return tier ? TIER_PHRASE[String(tier)] : undefined;
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // The headline
 // ─────────────────────────────────────────────────────────────────────────────
@@ -545,6 +574,7 @@ const movementDrivers = (details: OteEstimationDetailsDto): EstimateDriver[] => 
   const drivers: EstimateDriver[] = [];
   const mods = modifiersOf(details);
   const city = cityOf(details);
+  const tierPhrase = tierPhraseOf(details);
 
   // ── Geography ─────────────────────────────────────────────────────────────
   const geo = details.baseline?.multiplier ?? details.location?.tierMultiplier;
@@ -552,18 +582,31 @@ const movementDrivers = (details: OteEstimationDetailsDto): EstimateDriver[] => 
     drivers.push(
       geo > 1
         ? {
-            saw: city ? `You are in ${city}` : 'Your city is a top market',
-            meant: `which pays ${pct(geo)} over the same role elsewhere`,
+            /*
+             * THE CITY AND WHAT KIND OF MARKET IT IS, together, because the
+             * name alone assumes the reader knows how we rank it.
+             */
+            saw: city
+              ? `You are in ${city}${tierPhrase ? `, ${tierPhrase}` : ''}`
+              : 'Your city is a top market',
+            /*
+             * NAMED, not "elsewhere". The multiplier is measured against the
+             * rate card's baseline row, which is the secondary-market tier, so
+             * that is what the sentence compares against.
+             */
+            meant: `which pays ${pct(geo)} more than the same role in a secondary market`,
             effect: 'lifts',
             weight: Math.abs(geo - 1),
           }
         : {
-            saw: city ? `You are in ${city}` : 'Your city is outside the top markets',
+            saw: city
+              ? `You are in ${city}${tierPhrase ? `, ${tierPhrase}` : ''}`
+              : 'Your city is outside the top markets',
             /**
              * "prices under" rather than "pays less than". Same fact, and it
              * describes the market instead of the person reading it.
              */
-            meant: `which prices ${pct(geo)} under the big hubs`,
+            meant: `which prices ${pct(geo)} under the same role in a secondary market`,
             effect: 'trims',
             weight: Math.abs(geo - 1),
           },
