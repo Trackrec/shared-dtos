@@ -31,6 +31,23 @@ export interface UserDto {
   profileImage: string | null;
   customCurrentRole: string | null;
   publishedAt: Date | null;
+  /**
+   * Does reading this published profile require a login?
+   *
+   * The third visibility tier, beside publishedAt rather than replacing it,
+   * because thirty-five places across the two repos read that column.
+   * publishedAt still answers "is this published"; this answers "does a reader
+   * have to sign in".
+   *
+   *   private  publishedAt null
+   *   public   publishedAt set, openWithoutLogin false
+   *   open     publishedAt set, openWithoutLogin true
+   *
+   * With no login there is no viewer, so an open profile cannot tell its owner
+   * who read it and cannot hide from their employer. That is the trade, and the
+   * visibility control has to say so before somebody picks it.
+   */
+  openWithoutLogin: boolean;
   hasAvatar: boolean | null;
   isFirstExperienceMailSent: boolean;
   isChecklistOpen: boolean;
