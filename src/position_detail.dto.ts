@@ -55,6 +55,20 @@ export interface PositionDetailsDto {
   location: string | null;
   locationPlaceId: string | null,
   locationCityId: number | null
+  /**
+   * The currency this role's money fields are recorded in, spelled out.
+   *
+   * ADDED BECAUSE THE DEAL-SIZE COHORT NEEDED IT. That query pooled every
+   * currency, so a 50,000 deal ranked against 50,000 of anything. The entity
+   * has carried this column all along and PositionDetailsRequestDto below
+   * already declares it; this interface simply did not, so the one caller that
+   * needed it could not see it.
+   *
+   * Prefer this over `currency`, which holds a SYMBOL and defaults to $. USD
+   * and CAD both print $ and differ by about a third, and they are the two
+   * geographies the product targets, so the symbol cannot separate them.
+   */
+  currencyCountry: string | null;
 }
 
 interface NotableClient {
