@@ -75,6 +75,15 @@ export interface EstimateDriver {
   effect: 'sets' | 'lifts' | 'trims';
   /** Magnitude, for ordering only. Never rendered. */
   weight: number;
+  /**
+   * WHICH QUESTION THIS ANSWERS, for the ones that get a reserved slot.
+   *
+   * Only 'pipeline' so far. The list is capped, and a line about how somebody
+   * builds pipeline kept losing to whatever modifier happened to be larger,
+   * so it was written and never seen. Victor asked for that line by name, so
+   * it gets a slot rather than a weight it has not earned.
+   */
+  dimension?: 'pipeline';
   unlocks?: EstimateUnlock;
 }
 
@@ -646,6 +655,7 @@ const movementDrivers = (details: OteEstimationDetailsDto): EstimateDriver[] => 
       saw: 'You source most of your own pipeline',
       meant: `which adds ${pct(1 + (mods.outbound.value || 0))}`,
       effect: 'lifts',
+      dimension: 'pipeline',
       weight: Math.abs(mods.outbound.value || 0),
     });
   } else if (details.confidenceFactors?.missingOutboundPct === false) {
@@ -671,15 +681,29 @@ const movementDrivers = (details: OteEstimationDetailsDto): EstimateDriver[] => 
       saw: 'Most of your pipeline comes to you',
       meant: 'so it misses the premium paid to sellers who source their own',
       effect: 'trims',
-      // Below the modifiers that actually moved the figure, above nothing.
-      // This explains a number that did not change, so it should not lead.
-      weight: 0.01,
+      dimension: 'pipeline',
+      /*
+       * THE SAME WEIGHT AS ITS SIBLING BRANCH, and that is the point.
+       *
+       * The list is capped at three drivers beside the segment, so weight is
+       * not decoration, it decides whether a line exists. The first version of
+       * this used 0.01 on the reasoning that a number which did not move should
+       * not lead, and the line was sorted last and cut off every time. It was
+       * written, merged, and invisible.
+       *
+       * All three pipeline branches now carry 0.05, so the dimension gets one
+       * slot whichever of them applies. Whether we say you source your own,
+       * that leads come to you, or that we never asked, the reader learns
+       * something about pipeline.
+       */
+      weight: 0.05,
     });
   } else if (details.confidenceFactors?.missingOutboundPct) {
     drivers.push({
       saw: 'We do not know how you build pipeline',
       meant: 'so the number assumes leads come to you',
       effect: 'trims',
+      dimension: 'pipeline',
       weight: 0.05,
       unlocks: {
         field: 'outboundSplit',
@@ -819,10 +843,35 @@ export const explainEstimate = (
       ? movementDrivers(details)
       : movementDrivers(details).filter((driver) => driver.unlocks == null);
 
-  const rest = movement.slice(0, segment ? 3 : 4);
+  /*
+   * PIPELINE GETS A RESERVED SLOT, LIKE THE SEGMENT DOES.
+   *
+   * The list is four lines. Sorting by weight alone meant the pipeline line
+   * lost to whatever modifier happened to be bigger: on a real profile the
+   * three winners were 0.11, 0.10 and 0.10, so a line carrying no percentage
+   * at all could never place. It was written, merged, and invisible.
+   *
+   * The fix is not to give it a weight it has not earned. An inbound-led
+   * seller had nothing subtracted; the outbound premium was simply not added,
+   * and inventing a magnitude to win a sort would be a lie told to a sorting
+   * function. So it is pulled out and placed.
+   *
+   * IT IS AN EXTRA LINE, NOT A SWAP. The first attempt held the total at four
+   * and the pipeline line took the last slot, which on a real profile evicted
+   * "You are in Omaha, a secondary market" - a line Victor asked for by name in
+   * the same conversation as this one. Everything that was in the list before
+   * is still in it; this is added on top.
+   *
+   * LAST, not second. It explains a number that did not move, so it reads as
+   * a closing note rather than a headline.
+   */
+  const pipeline = movement.find((driver) => driver.dimension === 'pipeline');
+  const others = movement.filter((driver) => driver !== pipeline);
+
+  const rest = others.slice(0, segment ? 3 : 4);
 
   return {
     headline: buildHeadline(details, options.includeFigure !== false),
-    drivers: segment ? [segment, ...rest] : rest,
+    drivers: [segment, ...rest, pipeline].filter(Boolean) as EstimateDriver[],
   };
 };
