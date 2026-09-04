@@ -648,6 +648,33 @@ const movementDrivers = (details: OteEstimationDetailsDto): EstimateDriver[] => 
       effect: 'lifts',
       weight: Math.abs(mods.outbound.value || 0),
     });
+  } else if (details.confidenceFactors?.missingOutboundPct === false) {
+    /*
+     * THE THIRD CASE, WHICH DID NOT EXIST. VICTOR, 2026-09-03: "In the bullet
+     * point list we need to explain that majority inbound usually pays less
+     * than pure outbound."
+     *
+     * There were two branches. One for a seller who sources their own pipeline
+     * and earns the premium, one for a seller we never asked. Somebody who told
+     * us they are inbound-led fell between them and got no line at all, which
+     * is what Victor saw on his own profile: the headline called him
+     * inbound-led and nothing in the list said what that did to the number.
+     *
+     * NO PERCENTAGE, because none was taken. The outbound modifier was simply
+     * not applied. Saying "which trims 8%" would invent an arithmetic that did
+     * not happen; the true statement is that a premium exists and this profile
+     * does not earn it. That is also why `effect` is 'trims': it renders as the
+     * muted marker rather than the accent, and drawing the eye to this would be
+     * drawing it to an absence.
+     */
+    drivers.push({
+      saw: 'Most of your pipeline comes to you',
+      meant: 'so it misses the premium paid to sellers who source their own',
+      effect: 'trims',
+      // Below the modifiers that actually moved the figure, above nothing.
+      // This explains a number that did not change, so it should not lead.
+      weight: 0.01,
+    });
   } else if (details.confidenceFactors?.missingOutboundPct) {
     drivers.push({
       saw: 'We do not know how you build pipeline',
