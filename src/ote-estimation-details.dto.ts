@@ -292,8 +292,60 @@ export interface OteEstimationDetailsDto {
    */
   companySize?: number;
 
+  /**
+   * WHICH ROLE THE NUMBER WAS PRICED ON, when there was more than one it could
+   * have been.
+   *
+   * Victor, 2026-09-03, holding two current jobs: "I feel like your
+   * calculations for my OTE are strictly based on what I do with TrackRec, but
+   * again, I have two jobs."
+   *
+   * `chooseCurrentRole` now decides that by duration rather than by accident,
+   * and the decision was invisible: the estimate reads the deal size, the
+   * segment, the product type and the company size off ONE role, and nothing on
+   * the screen said which. So a reader with two jobs cannot tell whether the
+   * number describes the career they think it does, and the honest answer was
+   * sitting in a variable nobody stored.
+   *
+   * ONLY SET WHEN THERE WAS A CHOICE. Somebody with one current role does not
+   * need to be told which one it was, and a line saying so on every profile is
+   * noise that teaches people to skip the lines around it. So this is absent
+   * for a single current role, and absent when nothing is current at all, which
+   * the Rundown already covers with its own "drawn from your role between X and
+   * Y" line.
+   */
+  pricedOn?: OtePricedOn;
+
   // Debug/admin
   rationale?: string[];
+}
+
+/**
+ * The role an estimate was priced on, and why that one.
+ *
+ * The role and company are STORED RATHER THAN LOOKED UP, because this row is
+ * read months after it was written and the point of it is to say what the
+ * number described AT THE TIME. A join would rename the role under the reader
+ * whenever they edit their profile, and then the explanation would claim the
+ * estimate was priced on a job title that did not exist when it ran.
+ */
+export interface OtePricedOn {
+  /** So a caller can link to the role, and so a stale name can be spotted. */
+  positionId: number | string;
+  role: string | null;
+  company: string | null;
+  /**
+   * Why this role and not the other.
+   *
+   * `dominant-by-duration` means one role holds at least 70% of the combined
+   * current tenure and prices the person alone. `blended-by-duration` means two
+   * or more are of comparable length, the blend of the numeric inputs is not
+   * built yet, and the longest was used. Only these two reasons appear here:
+   * the others describe cases where there was nothing to choose between.
+   */
+  reason: 'dominant-by-duration' | 'blended-by-duration';
+  /** How many current roles were in play, so the wording can say "two" or "three". */
+  currentRoles: number;
 }
 
 // =============================================================================
