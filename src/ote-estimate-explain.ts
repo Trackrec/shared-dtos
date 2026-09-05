@@ -832,6 +832,14 @@ const spelled = (n: number): string =>
  * is the case the product cannot yet do properly, and the sentence says that
  * plainly rather than implying a mix was computed. Claiming a blend that does
  * not exist is the version of this line that would be worth not shipping.
+ *
+ * AND THE BLEND SENTENCE DOES NOT SAY "SIMILAR LENGTH", which is what it said
+ * first and which is not what the rule tests. `chooseCurrentRole` reaches this
+ * reason when the LONGEST role holds under 70% of the COMBINED tenure. With two
+ * roles that does imply they are comparable. With three it does not: 50, 30 and
+ * 20 months puts the longest at 50%, so the reason fires, and 50 against 20 is
+ * not similar by any reading. The sentence states the test instead, which is
+ * true at every count: none of them dominates.
  */
 const pricedOnSentence = (details: OteEstimationDetailsDto): string | null => {
   const pricedOn = details.pricedOn;
@@ -851,8 +859,9 @@ const pricedOnSentence = (details: OteEstimationDetailsDto): string | null => {
   }
 
   return (
-    `Priced on ${named}. You hold ${spelled(pricedOn.currentRoles)} current roles of ` +
-    `similar length, so this describes that one rather than a mix of them.`
+    `Priced on ${named}, your longest current role. You hold ` +
+    `${spelled(pricedOn.currentRoles)} and none of them dominates, so this describes ` +
+    `that one rather than a mix of them.`
   );
 };
 
