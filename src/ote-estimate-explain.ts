@@ -92,6 +92,23 @@ export interface EstimateExplanation {
   headline: string | null;
   /** The inputs that moved it, biggest first, four at most. */
   drivers: EstimateDriver[];
+  /**
+   * WHICH ROLE THIS DESCRIBES, and null unless there was a choice to make.
+   *
+   * Victor, holding two current jobs: "I feel like your calculations for my OTE
+   * are strictly based on what I do with TrackRec, but again, I have two jobs."
+   * He was right, and worse than a wrong rule: at the time there was no rule,
+   * and both call sites picked whichever row the database returned first.
+   *
+   * The rule exists now and prices on duration. This is the sentence that says
+   * so, so somebody with two careers can tell whether the number is about the
+   * one they were thinking of.
+   *
+   * NULL FOR ONE CURRENT ROLE, because a person with one job does not need
+   * telling which job. A surface that prints a line on every profile teaches
+   * people to skip the lines beside it.
+   */
+  pricedOn: string | null;
 }
 
 /**
@@ -797,6 +814,57 @@ export const compensationSplitOf = (
  * comes back with a null headline and an empty list rather than a sentence
  * assembled out of defaults.
  */
+/** "three" up to a number a person would write as a word, then the digits. */
+const spelled = (n: number): string =>
+  ['zero', 'one', 'two', 'three', 'four', 'five', 'six'][n] ?? String(n);
+
+/**
+ * WHICH OF SOMEBODY'S CURRENT ROLES THE NUMBER DESCRIBES.
+ *
+ * NAMED BY COMPANY WHERE THERE IS ONE, because that is how a person tells their
+ * own two jobs apart. Victor's are Founder at Sell Me This Pen and a role at
+ * TrackRec; "priced on your Founder role" would be ambiguous to somebody who
+ * has been a founder twice, and the employer never is.
+ *
+ * THE TWO REASONS READ DIFFERENTLY ON PURPOSE. A dominant role holds at least
+ * 70% of the combined tenure, so saying it holds most of the time is both true
+ * and reassuring: the number is about the job they spend their time in. A blend
+ * is the case the product cannot yet do properly, and the sentence says that
+ * plainly rather than implying a mix was computed. Claiming a blend that does
+ * not exist is the version of this line that would be worth not shipping.
+ *
+ * AND THE BLEND SENTENCE DOES NOT SAY "SIMILAR LENGTH", which is what it said
+ * first and which is not what the rule tests. `chooseCurrentRole` reaches this
+ * reason when the LONGEST role holds under 70% of the COMBINED tenure. With two
+ * roles that does imply they are comparable. With three it does not: 50, 30 and
+ * 20 months puts the longest at 50%, so the reason fires, and 50 against 20 is
+ * not similar by any reading. The sentence states the test instead, which is
+ * true at every count: none of them dominates.
+ */
+const pricedOnSentence = (details: OteEstimationDetailsDto): string | null => {
+  const pricedOn = details.pricedOn;
+  if (!pricedOn) return null;
+
+  const role = pricedOn.role?.trim();
+  const company = pricedOn.company?.trim();
+
+  // With neither a title nor an employer there is nothing to name, and "priced
+  // on one of your current roles" tells the reader less than silence does.
+  if (!role && !company) return null;
+
+  const named = company ? (role ? `${role} at ${company}` : company) : (role as string);
+
+  if (pricedOn.reason === 'dominant-by-duration') {
+    return `Priced on ${named}, which holds most of your current time.`;
+  }
+
+  return (
+    `Priced on ${named}, your longest current role. You hold ` +
+    `${spelled(pricedOn.currentRoles)} and none of them dominates, so this describes ` +
+    `that one rather than a mix of them.`
+  );
+};
+
 export interface ExplainOptions {
   /**
    * False when the caller has already printed the range and the split, so the
@@ -810,7 +878,7 @@ export const explainEstimate = (
   options: ExplainOptions = {},
 ): EstimateExplanation => {
   if (!details || details.status !== 'calculated') {
-    return { headline: null, drivers: [] };
+    return { headline: null, drivers: [], pricedOn: null };
   }
 
   /**
@@ -873,5 +941,11 @@ export const explainEstimate = (
   return {
     headline: buildHeadline(details, options.includeFigure !== false),
     drivers: [segment, ...rest, pipeline].filter(Boolean) as EstimateDriver[],
+    /*
+     * NOT A DRIVER. It moved nothing: it says which career the number is about.
+     * Putting it in the list would make it compete for one of four slots
+     * against things that actually changed the figure, and lose.
+     */
+    pricedOn: pricedOnSentence(details),
   };
 };
