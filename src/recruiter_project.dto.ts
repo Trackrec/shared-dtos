@@ -391,4 +391,17 @@ export interface EstimateOteResponseDto {
   };
   confidence: string; // "high" | "medium" | "low"
   currency: string; // "USD" | "CAD"
+
+  /**
+   * Locations on the job that could not be priced, by name.
+   *
+   * The estimator covers the United States and Canada. A job naming a city
+   * outside both used to have that city dropped in a bare `continue`, and the
+   * remaining city's range was returned as the answer for the whole job with
+   * nothing to say a location had been left out.
+   *
+   * Optional because the common case is that nothing was skipped, and because
+   * every existing caller predates the field.
+   */
+  skippedLocations?: string[];
 }
