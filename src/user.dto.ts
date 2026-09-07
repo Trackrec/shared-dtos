@@ -1,6 +1,11 @@
 import { CityDto } from './city.dto';
 import { CompanyDto } from './company.dto';
-import { PositionDto, VerifyPositionDto } from './position.dto';
+import {
+  PositionDto,
+  VerificationChange,
+  VerifiedSnapshotEntry,
+  VerifyPositionDto,
+} from './position.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 import { OteEstimationDetailsDto } from './ote-estimation-details.dto';
 
@@ -518,9 +523,15 @@ export interface PublicVerifierDto {
  *
  * Absent by design: `email`, the working contact address of a third party who
  * published nothing; `uniqueToken`, a bcrypt hash of the one-click approval
- * token; `snapshotJson` and `snapshotHash`, the position's values frozen at
- * sign-off, which where the state is MODIFIED say exactly what changed
- * afterwards; and `id`, which is useful only for probing.
+ * token; the raw `snapshotJson` and `snapshotHash`; and `id`, which is useful
+ * only for probing.
+ *
+ * PRESENT ON PURPOSE: `verifiedSnapshot` and `changes`. Victor's rule is to
+ * "keep a record of the version that was verified and show the difference to
+ * people consulting a profile". A recruiter who sees a badge and a number that
+ * moved since deserves to know which number, what it was, and what it is now.
+ * Every value in the snapshot is already on the public position, so this adds
+ * history to what a viewer can see, and nothing new about the person.
  */
 export interface PublicVerifyRequestDto {
   status: string;
@@ -529,6 +540,10 @@ export interface PublicVerifyRequestDto {
   lastName: string | null;
   updatedAt: Date | null;
   verificationState: string | null;
+  /** The values the verifier signed off on. Null when the approval predates snapshots. */
+  verifiedSnapshot: VerifiedSnapshotEntry[] | null;
+  /** Every field that moved since the sign-off, with the verified and current values. */
+  changes: VerificationChange[];
   /** Null, not absent, when the verifier has no TrackRec account. */
   user: PublicVerifierDto | null;
 }
