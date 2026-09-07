@@ -116,6 +116,20 @@ export interface RecruiterProjectDto {
     persona: number;
     companyOverlap: number;
   };
+
+  /**
+   * How many people are attached to this job, for the Open positions list.
+   *
+   * With application emails parked, the list is the only place a recruiter can
+   * learn that anybody applied, and it showed nothing. Set by findAll through
+   * subqueries; absent on every other path that returns a project, hence
+   * optional.
+   */
+  applicationsCount?: number;
+  /** Applications still PENDING, which is what "new" means to a recruiter. */
+  pendingApplicationsCount?: number;
+  /** Suggested candidates not yet rejected by the recruiter. */
+  suggestedCount?: number;
 }
 
 export interface CheckAppliedResponseDto {
