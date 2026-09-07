@@ -405,3 +405,61 @@ export interface EstimateOteResponseDto {
    */
   skippedLocations?: string[];
 }
+
+/*
+ * SUPPLY: HOW MANY SELLERS ON TRACKREC CLEAR A JOB'S FLOORS, AS A WORD.
+ *
+ * Victor, on showing recruiters the size of the pool: "I don't want people to
+ * realize that we don't have that many users right now. So we can maybe not
+ * give precise numbers, but we can say high, mid, low." So the answer to
+ * "how many clear this floor" is one of three words and never a count. The
+ * response type below carries no numeric field on purpose, and a test on the
+ * backend serialises it and asserts that no digit appears anywhere in it.
+ *
+ * The bands are RELATIVE to the pool, so they stay true as the product grows:
+ * high means at least three sellers in ten clear the floor, low means fewer
+ * than one in ten, mid is everything between. The thresholds are named
+ * constants in the backend (supply-bands.ts).
+ */
+export type SupplyBand = 'high' | 'mid' | 'low';
+
+/**
+ * The draft job's floors, as the form holds them while the recruiter types.
+ *
+ * Every floor is optional because the recruiter fills the form in whatever
+ * order they like, and the chips answer for whatever is filled in so far. A
+ * blank floor comes back as null, so the chip beside it stays hidden.
+ */
+export interface SupplyRequestDto {
+  /** Minimum average deal size, in `currency`. */
+  minimumDealSize?: number | null;
+  /** ISO code of the currency the job is posted in, e.g. 'USD'. Defaults to USD. */
+  currency?: string;
+  /** Minimum average sales cycle, in `minimumSalecycleType` units. */
+  minimumSaleCycle?: number | null;
+  /** 'Months', 'Weeks' or 'Less than a month', as the form's picker holds it. */
+  minimumSalecycleType?: string | null;
+  /** Minimum years of sales experience. */
+  experience?: number | null;
+  /** The segment split the job asks for, in percentages. */
+  segment?: {
+    smb?: number | null;
+    midMarket?: number | null;
+    enterprise?: number | null;
+  };
+}
+
+/**
+ * One band per floor, and one for the intersection of every floor that is set.
+ *
+ * null means the floor was blank, so there is nothing to clear. There is no
+ * count, no percentage and no pool size here, and there must never be one.
+ */
+export interface SupplyResponseDto {
+  dealSize: SupplyBand | null;
+  salesCycle: SupplyBand | null;
+  experience: SupplyBand | null;
+  segment: SupplyBand | null;
+  /** Sellers who clear every floor that is set at once. */
+  overall: SupplyBand | null;
+}
