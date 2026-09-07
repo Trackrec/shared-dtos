@@ -81,6 +81,49 @@ export interface RecentYearPositionFilterDto {
   fivePlus: null;
 }
 
+/** A value the verifier signed off on: a number, a string, a flag, a list, or nothing. */
+export type VerifiedSnapshotValue = string | number | boolean | string[] | null;
+
+/**
+ * One value the verifier signed off on, with its key spelled out for a person.
+ *
+ * `field` is the snapshot key (averageDealSize), `label` is what a reader sees
+ * (Deal size). The label is computed server-side so every screen calls the same
+ * number the same thing.
+ */
+export interface VerifiedSnapshotEntry {
+  field: string;
+  label: string;
+  value: VerifiedSnapshotValue;
+}
+
+/** One field that has moved since the sign-off, however little. */
+export interface VerificationChange {
+  field: string;
+  label: string;
+  verified: VerifiedSnapshotValue;
+  current: VerifiedSnapshotValue;
+}
+
+/**
+ * What an approved verification is worth today, and the evidence behind it.
+ *
+ * verificationState  VERIFIED, MODIFIED or LEGACY. VERIFIED can carry a
+ *                    non-empty `changes`: a number drifted but stayed inside
+ *                    the tolerance, so the badge stands and the verified figures
+ *                    are shown quietly beside it.
+ * verifiedSnapshot   the values the verifier signed off on, or null when the
+ *                    approval predates snapshots. On a pending request it is
+ *                    what the verifier is being asked to vouch for.
+ * changes            every field that moved since, with both values, so a
+ *                    reader can see the verified version and the difference.
+ */
+export interface VerificationOutcomeDto {
+  verificationState: string | null;
+  verifiedSnapshot: VerifiedSnapshotEntry[] | null;
+  changes: VerificationChange[];
+}
+
 export interface VerifyPositionDto {
   id: number;
   email: string;
@@ -102,7 +145,10 @@ export interface VerifyPositionDto {
    * word for word.
    */
   declineReason: string | null;
-  verificationState?: string
+  verificationState?: string;
+  /** See VerificationOutcomeDto. Present on approved and pending requests. */
+  verifiedSnapshot?: VerifiedSnapshotEntry[] | null;
+  changes?: VerificationChange[];
 }
 
 export interface VerifyPositionRequestDto {
