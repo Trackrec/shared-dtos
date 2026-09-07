@@ -1,5 +1,5 @@
 import { PositionDto } from './position.dto';
-import { RecruiterProjectDto } from './recruiter_project.dto';
+import { PublicBrandDto, RecruiterProjectDto } from './recruiter_project.dto';
 import { UserDto } from './user.dto';
 
 export interface ProjectApplicationDto {
@@ -9,6 +9,12 @@ export interface ProjectApplicationDto {
   user: UserDto;
   positionId: number | null;
   project: RecruiterProjectDto;
+  /**
+   * The brand of the company behind `project`, beside it the way
+   * ProjectResponseDto carries it beside its project. Set on GET
+   * /applications/my only; null on a cover post; absent on recruiter reads.
+   */
+  brand?: PublicBrandDto | null;
   createdAt: Date;
   updatedAt: Date;
 }
