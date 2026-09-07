@@ -139,6 +139,12 @@ export interface VerifyPositionDto {
   updatedAt: Date;
   snapshotJson: any;
   snapshotHash: string;
+  /**
+   * Why the verifier declined, in their words. Null on every approval and on
+   * every request decided before reasons existed. The candidate is emailed it
+   * word for word.
+   */
+  declineReason: string | null;
   verificationState?: string;
   /** See VerificationOutcomeDto. Present on approved and pending requests. */
   verifiedSnapshot?: VerifiedSnapshotEntry[] | null;
@@ -158,9 +164,18 @@ export interface ResendPositionVerificationEmailRequestDto {
   requestId: number;
 }
 
+/**
+ * A verifier has two moves: approve, or decline and say why.
+ *
+ * `status` is Approved or Rejected; the API refuses anything else. On a
+ * decline `declineReason` is required, 10 to 1000 characters after trimming,
+ * and it is sent to the candidate exactly as written. On an approval it is
+ * ignored.
+ */
 export interface ChangeVerificationRequestDto {
   requestId: number;
   status: RequestStatus;
+  declineReason?: string;
 }
 
 export interface ExtendedVerifyPositionDto extends VerifyPositionDto {
