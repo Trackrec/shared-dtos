@@ -582,6 +582,11 @@ export interface PublicCompanyDto {
   apolloIndustry: string | null;
   currentEmployeeCount: number | null;
   yoyGrowthPercentage: string | null;
+  /**
+   * The company's LinkedIn page, for the small link on the identity card.
+   * Optional so a backend that has not yet started sending it still typechecks.
+   */
+  linkedinUrl?: string | null;
 }
 
 /** The whitelisted owner fields. No email, no phone, no resume, no internal state. */
