@@ -171,10 +171,43 @@ export interface AllUsersProjectsResponseDto {
   projects?: RecruiterProjectDto[];
 }
 
+/**
+ * WHAT A CANDIDATE MAY SEE OF THE COMPANY BEHIND A POST.
+ *
+ * Built by the backend from the recruiter company's brand columns and nothing
+ * else: the row's Stripe identifiers and seat counts never reach this shape.
+ * Null on a cover post (useAnotherCompanyName), where the recruiter's company
+ * must not appear beside the cover identity.
+ *
+ * `name`, `logoUrl` and `websiteUrl` describe the POSTING company. When the
+ * post is about that company too (its companyName equals the company's, trimmed
+ * and case-folded) `tagline` and `accentColor` are present as well, null when
+ * the admin has not set them. When an agency posts transparently for a client
+ * the two keys are ABSENT: the client's own name and logo stay on the post, and
+ * the agency's tagline and colour do not decorate it. So merge this over the
+ * post's own companyName and logo only when `name` matches the post's
+ * companyName; otherwise show it as who posted the job.
+ */
+export interface PublicBrandDto {
+  name: string | null;
+  /** Absolute. The company logo lives under its own bucket prefix; this is already resolved. */
+  logoUrl: string | null;
+  websiteUrl: string | null;
+  tagline?: string | null;
+  /** #RRGGBB, for identity surfaces only. Never on Apply, focus rings or text. */
+  accentColor?: string | null;
+}
+
 export interface ProjectResponseDto {
   error: boolean;
   message?: string;
   project?: RecruiterProjectDto;
+  /**
+   * The brand of the company behind the post, on the candidate-facing read
+   * (project-view by URL). Null on a cover post or when the post has no
+   * company; absent on recruiter-side reads, which get the company itself.
+   */
+  brand?: PublicBrandDto | null;
   /**
    * The edit saved AND took the job offline.
    *
