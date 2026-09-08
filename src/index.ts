@@ -1,6 +1,7 @@
 export * from './city.dto';
 export * from './company.dto';
 export * from './country.dto';
+export * from './industry.dto';
 export * from './keywords.dto';
 export * from './must-haves';
 export * from './ote-estimate-explain';
