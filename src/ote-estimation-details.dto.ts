@@ -200,11 +200,37 @@ export interface OteWeightedDealSize {
 }
 
 /**
+ * One entry the industry multiplier was averaged over.
+ *
+ * Since Label and Key the multiplier belongs to the MARKET GROUP, not the word:
+ * Cloud Computing and Software Development price the same because they share a
+ * group, where before a synonym moved a 250k estimate by about 18k. So the
+ * average runs over one entry per distinct group among the person's industry
+ * keys, valued at the group's multiplier, plus one entry per row carrying its
+ * own override, valued at the override under the row's name (an overridden row
+ * does not also count toward its group).
+ */
+export interface OteIndustryGroupMultiplier {
+  /** The group name, or the row name when `source` is 'override'. */
+  name: string;
+  /** Percentage, e.g., 7.5 for +7.5%. */
+  multiplier: number;
+  source: 'group' | 'override';
+}
+
+/**
  * Industry-specific adjustment
  */
 export interface OteIndustryAdjustment {
+  /** The canonical row names the person's labels resolved to. */
   industries: string[];
   multiplier: number;  // percentage, e.g., 7.5 for +7.5%
+  /**
+   * What `multiplier` is the average of, so an explanation can say
+   * "Software and Internet: 0%" rather than naming a row. Absent on every
+   * estimate stored before the estimator priced by group.
+   */
+  groups?: OteIndustryGroupMultiplier[];
 }
 
 /**

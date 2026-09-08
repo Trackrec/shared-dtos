@@ -421,7 +421,23 @@ export interface ParsedResume {
     };
 
     notableClients?: string[];
+    /**
+     * The industry a role was in, as the CV reader used to return it: one
+     * free-text string. Every resumeParsedData row stored so far carries this
+     * key, so it stays exactly as it is.
+     */
     industry?: string;
+    /**
+     * The same fact from the array prompt: several industries, each meant to
+     * land on the canonical list, with anything that does not kept as a label.
+     *
+     * A SECOND KEY RATHER THAN A WIDER `industry`. `string | string[]` on the
+     * old key fails the backend build today (the insert path spreads
+     * `experience.industry` into a `string[]`), and the point of adding types
+     * before either app uses them is that both keep compiling. Readers take
+     * `industries ?? (industry ? [industry] : [])`.
+     */
+    industries?: string[];
     soldToIndustry?: string;
     personas?: string[];
     quotaAchievements?: number;

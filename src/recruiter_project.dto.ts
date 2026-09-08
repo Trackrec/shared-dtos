@@ -1,3 +1,4 @@
+import { IndustryKeyDto } from './industry.dto';
 import { PointsDto, ProjectApplicationDto } from './project_application.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 import { UserDto } from './user.dto';
@@ -72,6 +73,14 @@ export interface RecruiterProjectDto {
   hybridDays: number | null;
   industryWorksIn: string[] | null;
   industrySoldTo: string[] | null;
+  /**
+   * LABEL AND KEY. The two arrays above are the recruiter's words; these are
+   * the canonical rows they resolved to, which is what the industry FIT
+   * dimension compares against a candidate's keys. Optional: filled where a
+   * screen asks, absent on every path that predates them.
+   */
+  industryWorksInKeys?: IndustryKeyDto[];
+  industrySoldToKeys?: IndustryKeyDto[];
   selectedPersona: string[] | null;
   territory: string[] | null;
   languages: string[] | null;

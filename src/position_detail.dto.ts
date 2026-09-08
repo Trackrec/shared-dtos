@@ -1,4 +1,5 @@
 import { CompanyDto } from './company.dto';
+import { IndustryKeyDto } from './industry.dto';
 import { PositionDto } from './position.dto';
 
 export interface PositionDetailsDto {
@@ -48,6 +49,21 @@ export interface PositionDetailsDto {
   longDealSize: number | null;
   workedIn: string[] | null;
   soldTo: string[] | null;
+  /**
+   * LABEL AND KEY. `workedIn` and `soldTo` above are the LABELS: the words the
+   * person chose, displayed verbatim and never rewritten. These four are the
+   * KEYS and the residue: which canonical rows those words resolved to, and
+   * which words resolved to nothing.
+   *
+   * Optional, because every caller predates them and the read path fills them
+   * only where a screen asks. An unresolved label still displays; it scores
+   * nothing and earns no multiplier, and a screen may mark it "Not yet on our
+   * list" so the person can see the gap is ours.
+   */
+  workedInKeys?: IndustryKeyDto[];
+  soldToKeys?: IndustryKeyDto[];
+  workedInUnresolved?: string[];
+  soldToUnresolved?: string[];
   territories: string[] | null;
   createdAt: Date;
   updatedAt: Date;
