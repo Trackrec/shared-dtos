@@ -159,12 +159,20 @@ export interface RundownBenchmarkCohortDto {
 /**
  * The one field that turns a locked card into a figure.
  *
- * `field` is the answerable key the backend already whitelists for
+ * `field` is the answerable key the backend whitelists for
  * POST /rundown/answer ('quotaAttainment', 'averageDealSize', 'currentOte',
- * 'segmentSplit', and whatever that whitelist grows to), so the inline answer
- * box and this card are naming the same thing. Without it the client would
- * infer the field from the wording, which is one copy edit away from writing
- * the wrong column.
+ * 'segmentSplit', 'averageSalesCycle', 'newBusiness', and whatever that
+ * whitelist grows to), so the inline answer box and this card are naming the
+ * same thing. Without it the client would infer the field from the wording,
+ * which is one copy edit away from writing the wrong column.
+ *
+ * `field` IS NULL WHEN ONLY BARNEY CAN TAKE THE ANSWER. A start date or a
+ * whole role is not a number the inline box accepts and is not on that
+ * whitelist, so the card carries no field and the client shows the Barney
+ * door alone. The rule: a non-null `field` is always a key the route accepts,
+ * and a key the route does not accept is never sent as a string, because the
+ * client would offer a box the route then refuses. At least one of `field`
+ * and `barneyField` is set on every locked card.
  *
  * `label` is the ask, in Victor's voice: "Tell us what you earn today". Never
  * a promise of direction. An unlock that says "answer this and gain 10%" is an
@@ -176,7 +184,7 @@ export interface RundownBenchmarkCohortDto {
  * has no field for it and the inline box is the only path.
  */
 export interface RundownBenchmarkUnlockDto {
-  field: string;
+  field: string | null;
   label: string;
   barneyField: string | null;
 }
