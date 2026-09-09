@@ -22,7 +22,21 @@ export type OteSkipCode =
   | 'stale_data'
   | 'recent_leadership_only'
   | 'no_bdr_positions'
-  | 'no_completed_bdr_positions';
+  | 'no_completed_bdr_positions'
+  /**
+   * LEADERS SKIP THE SALARY PART. Victor, 2026-09-09: they are in a leadership
+   * role and we do not price those right now. The estimator emits this rather
+   * than pricing the role, and rather than falling back to the BDR row, and
+   * band 1 of the Rundown replaces the figure with that one line while every
+   * other band still shows.
+   *
+   * Distinct from `recent_leadership_only`, which fires only when the last IC
+   * role ended more than three years ago and a leadership role is recent. This
+   * one is the plain case: the current role is leadership, whatever came before
+   * it. The Rundown benchmarks reuse the same spelling as a card reason, so the
+   * frontend keys Victor's leadership line off one string.
+   */
+  | 'leadership_not_priced';
 
 export type Segment = 'SMB' | 'MidMarket' | 'Enterprise' | 'Strategic';
 export type SegmentSource = 'declared' | 'inferred' | 'defaulted';
