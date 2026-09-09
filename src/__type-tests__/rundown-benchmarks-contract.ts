@@ -5,10 +5,10 @@
  *
  * WHAT THIS GUARDS. Two builders code against this file in two repos that move
  * the submodule pointer in separate merge commits. The ticket spells the
- * eighteen keys, the three bands, the three states, the seven reasons and the
- * card's property set, and a later edit that renamed one would compile fine
- * here and break one app at its next build with no test of its own to say
- * why. These lines say why.
+ * eighteen keys, the three bands, the three states, the seven reasons, the
+ * three confidence levels and the card's property set, and a later edit that
+ * renamed one would compile fine here and break one app at its next build with
+ * no test of its own to say why. These lines say why.
  */
 import type { OteSkipCode } from '../ote-estimation-details.dto';
 import type {
@@ -16,6 +16,7 @@ import type {
   RundownBenchmarkCardDto,
   RundownBenchmarkCardKey,
   RundownBenchmarkCohortDto,
+  RundownBenchmarkConfidence,
   RundownBenchmarkDetail,
   RundownBenchmarkReason,
   RundownBenchmarkSource,
@@ -66,6 +67,11 @@ export type ThreeStates = Assert<
 export type FourSources = Assert<
   Same<RundownBenchmarkSource, 'your_numbers' | 'rate_card' | 'pool' | 'jobs'>
 >;
+// The three confidence levels, spelled as the 2026-09-09 rule spells them. A
+// fourth level, or a number in their place, breaks the footer in both apps.
+export type ThreeConfidenceLevels = Assert<
+  Same<RundownBenchmarkConfidence, 'high' | 'medium' | 'low'>
+>;
 
 // 3. The card's property set is the ticket's, no more and no less.
 export type CardHasTheTicketsKeys = Assert<
@@ -96,7 +102,14 @@ export type CardsAreCards = Assert<Same<RundownBenchmarksDto['cards'], RundownBe
 //    a `| null`: this package, and both apps, compile with strictNullChecks
 //    off, where `string | null` and `string` are one type. The null-ness in the
 //    doc comments is documentation, and these lines are not evidence for it.
-export type CohortShape = Assert<Same<RundownBenchmarkCohortDto, { label: string; size: number }>>;
+//    The cohort carries what the card prints (`who`, `confidence`) and what
+//    only the admin report reads (`label`, `size`). All four, spelled so.
+export type CohortShape = Assert<
+  Same<
+    RundownBenchmarkCohortDto,
+    { who: string; confidence: RundownBenchmarkConfidence; label: string; size: number }
+  >
+>;
 export type UnlockShape = Assert<
   Same<RundownBenchmarkUnlockDto, { field: string; label: string; barneyField: string | null }>
 >;
