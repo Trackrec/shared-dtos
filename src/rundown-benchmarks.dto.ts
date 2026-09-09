@@ -28,6 +28,18 @@
  * from the person's roles, the pool and the rate card when asked for, so it
  * cannot go stale against the profile it describes and needs no migration.
  *
+ * CONFIDENCE, NOT COUNTS. Victor, 2026-09-09, reading a card that said "Among
+ * 200 plus account executives in mid-market paid in USD, widened from your
+ * industry because too few people match you closely": "I don't want to give
+ * precise numbers. I want to give a level of confidence." So a pool card names
+ * the people it was measured against in words and gives one of three levels.
+ * High: no axis dropped and 100 or more people. Medium: one axis dropped, or
+ * 50 to 99 people. Low: two or more axes dropped, or 25 to 49 people. Under 25
+ * the card stays locked or not_applicable, as before. No card text says how
+ * many people were compared and no card text says the comparison was widened.
+ * The count and the widening live in the admin report, and nowhere a
+ * candidate can see.
+ *
  * WHY IT LIVES HERE. The backend computes, the frontend formats, and this
  * package is a submodule in both, so a shape lands here first and both apps
  * compile against it before either fills it. Every name below is prefixed
@@ -110,6 +122,23 @@ export type RundownBenchmarkState = 'ready' | 'locked' | 'not_applicable';
 export type RundownBenchmarkSource = 'your_numbers' | 'rate_card' | 'pool' | 'jobs';
 
 /**
+ * How closely the cohort matches the person, in one word the card can print.
+ *
+ * The backend sets it from two things pickCohort knows and the card does not
+ * say: how many axes it dropped to reach 25 people, and how many people were
+ * left. The rule is in the header. `high` is a close match with enough people
+ * behind it. `medium` is one step wider, or a close match with fewer people.
+ * `low` is two steps wider, or a small cohort, and reads as a direction
+ * rather than a measure.
+ *
+ * The frontend prints the word with a three bar mark, in ink, and explains the
+ * level in one sentence with no number in it. The level is never a colour for
+ * good or bad, because a low confidence is a fact about the pool and says
+ * nothing about the person.
+ */
+export type RundownBenchmarkConfidence = 'high' | 'medium' | 'low';
+
+/**
  * Why a card is `not_applicable`, carried as `detail.reason` so both apps spell
  * it the same. Typed as a union here and stored as a string in `detail`, so a
  * new reason is a one-line addition rather than a shape change.
@@ -143,33 +172,60 @@ export type RundownBenchmarkReason =
 // =============================================================================
 
 /**
- * The people a pool card was measured against, named and counted.
+ * The people a pool card was measured against, in words, with a level of
+ * confidence.
  *
  * THE COHORT. Same role type (from the position_details flags: booking,
  * individual contributor, leadership), same dominant segment (the largest
  * share of SMB, mid-market and enterprise), same currency country (USD or
  * CAD), then narrowed by industry group and by city tier while 25 or more
  * people remain. When a step would drop it under 25 the step is skipped and
- * the label says so: "enterprise AEs paid in USD" rather than "enterprise
- * AEs in cybersecurity in a Tier 1 city". Medians, never means.
+ * the confidence comes down a level. Medians, never means.
  *
- * THE SIZE IS ROUNDED DOWN BEFORE IT GETS HERE, and the frontend prints it as
- * "N plus". Below 100 to the nearest 25, below 500 to the nearest 50, above
- * that to the nearest 100: 312 arrives as 300 and the card reads "among 300
- * plus enterprise AEs paid in USD". Never under 25, because a cohort that
- * small never becomes a card at any widening step.
+ * `who` IS WHAT THE CARD PRINTS. The people compared, in words, with no size
+ * and no widening clause: "account executives in mid-market paid in USD". The
+ * frontend sets it after "Against" in the card footer, so it has to read as a
+ * plain noun phrase. The 200 plus and the "widened from your industry because
+ * too few people match you closely" that used to follow it are gone from every
+ * card string, `claim` and `short` included.
  *
- * THIS REVERSES A RULE THE FIRST RUNDOWN HAD. That surface let no count leave
- * the server, and the backend still carries tests that serialise GET /rundown
- * and grep the response for one. Victor's 2026-09-09 brief for these cards
- * names the cohort and its rounded size on the card itself, so this route
- * carries the count and those tests stay scoped to the old response. Anyone
- * extending that grep to this route is undoing a decision.
+ * `confidence` IS THE ONE MEASURE OF THE COHORT A CANDIDATE SEES. High, medium
+ * or low, per the rule in the header. The frontend prints the word and one
+ * sentence that explains it without a number.
+ *
+ * `label` AND `size` STAY FOR THE ADMIN REPORT ONLY. benchmark-report.js still
+ * prints the cohort as it was named at the widest step ("enterprise AEs paid
+ * in USD") and how many people it held, rounded down as before: below 100 to
+ * the nearest 25, below 500 to the nearest 50, above that to the nearest 100,
+ * never under 25. The frontend does not read either field, and no frontend
+ * surface prints them. A card, a footer, a disclosure or a share line that
+ * shows a count is undoing Victor's 2026-09-09 decision.
+ *
+ * THE COUNT STILL TRAVELS. The first Rundown let no count leave the server,
+ * and the backend carries tests that serialise GET /rundown and grep the
+ * response for one. This route carries `size` for the report, so those tests
+ * stay scoped to the old response. The line that moved is the screen: the
+ * frontend's own test asserts that no rendered card text has a digit followed
+ * by "plus" or the word "widened".
  */
 export interface RundownBenchmarkCohortDto {
-  /** Who was measured, as it reads on the card: "enterprise AEs paid in USD". */
+  /**
+   * The people compared, as the card prints them after "Against": "account
+   * executives in mid-market paid in USD". No size, no widening clause.
+   */
+  who: string;
+  /** How closely they match the person. The rule is in the header. */
+  confidence: RundownBenchmarkConfidence;
+  /**
+   * Admin report only. The cohort as it was named at the widest step, with
+   * the steps it skipped: "enterprise AEs paid in USD". The frontend does not
+   * read it.
+   */
   label: string;
-  /** Already rounded down per the rule above. Never under 25. */
+  /**
+   * Admin report only. Rounded down per the rule above, never under 25. The
+   * frontend does not read it, and no frontend surface prints it.
+   */
   size: number;
 }
 
@@ -284,10 +340,12 @@ export interface RundownBenchmarkCardDto {
    */
   unit: string | null;
   /**
-   * One sentence. Names the cohort when there is one, says median and never
-   * average, and puts the person's figure before the pool's: "AEs typically
-   * move after 2.8 years; you are at 3.5." On a `locked` card, what the
-   * figure would tell them, with no promise of which way it goes.
+   * One sentence. May name the people in the words of `who`, says median and
+   * never average, and puts the person's figure before the pool's: "AEs
+   * typically move after 2.8 years; you are at 3.5." It carries no cohort
+   * size and no widening clause; the footer says who and how confident from
+   * `cohort`. On a `locked` card, what the figure would tell them, with no
+   * promise of which way it goes.
    */
   claim: string;
   /**
