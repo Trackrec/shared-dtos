@@ -11,9 +11,9 @@
  * range, the base and variable split, five short lines on how we got here, the
  * great year as one line. That band is served by the estimate the profile
  * already carries (OteEstimationDetailsDto and the explanation next door) and
- * nothing in this file describes it. Everything under it is here: ten cards in
- * three bands, and a fifth band, Unlock more, where the frontend gathers every
- * locked card with the Barney door beside it.
+ * nothing in this file describes it. Everything under it is here: eighteen
+ * cards in three bands, and a fifth band, Unlock more, where the frontend
+ * gathers every locked card with the Barney door beside it.
  *
  * OWN USER ONLY. The route reads the person off the verified session, takes no
  * id, and answers a candidate about nobody but themselves. Nothing in this
@@ -42,23 +42,34 @@ import type { Currency } from './ote-estimation-details.dto';
 // =============================================================================
 
 /**
- * The ten cards. The number beside each is Victor's numbering from the brief,
- * kept because that is how the cards get talked about ("card 16").
+ * The eighteen cards. The number beside each is Victor's numbering from the
+ * brief, kept because that is how the cards get talked about ("card 16").
  *
- * Victor picked these ten out of a longer list on 2026-09-09. The rest of that
- * list is backlog, and a new card is a new key here first.
+ * Victor picked ten of these out of the 22 on the 2026-09-08 list on
+ * 2026-09-09, then widened the cut to eighteen the same day. Two of the eight
+ * he added, time_per_role and years_selling, were not on that list and take
+ * the next two numbers so they can be talked about the same way. The rest of
+ * the list is backlog, and a new card is a new key here first.
  */
 export type RundownBenchmarkCardKey =
   | 'bdr_to_closer' // 1
+  | 'closer_to_enterprise' // 2
+  | 'time_to_leadership' // 3
   | 'next_move' // 4
   | 'time_in_title' // 5
   | 'next_band' // 6
   | 'quota_percentile' // 7
   | 'deal_size_percentile' // 8
   | 'cycle_vs_segment' // 9
+  | 'revenue_per_year' // 10
   | 'new_business_share' // 11
+  | 'outbound_share' // 12
+  | 'city_premium' // 15
   | 'earn_vs_worth' // 16
-  | 'open_roles'; // 19
+  | 'ask_vs_offers' // 17
+  | 'open_roles' // 19
+  | 'time_per_role' // 23
+  | 'years_selling'; // 24
 
 /**
  * Which band of the page a card computes into.
@@ -104,14 +115,19 @@ export type RundownBenchmarkSource = 'your_numbers' | 'rate_card' | 'pool' | 'jo
  * new reason is a one-line addition rather than a shape change.
  *
  * `never_made_the_move`: bdr_to_closer for somebody with no booking role
- * followed by a closing role. `leadership_not_priced`: the money cards for
- * somebody in a leadership role, the same spelling as the OteSkipCode, so the
- * frontend renders Victor's leadership line once and keys it off one string.
- * `unsupported_country`: money cards outside USD and CAD. `no_estimate`: the
- * cards that need an estimate (next_band, earn_vs_worth) when the estimator
- * skipped for any other reason; band 1 already says why. `thin_cohort`: under
- * 25 people at the widest step. `no_current_title`: next_move and
- * time_in_title for somebody whose current title resolves to no family.
+ * followed by a closing role, closer_to_enterprise for somebody who never held
+ * an enterprise role, time_to_leadership for somebody who never led.
+ * `leadership_not_priced`: the money cards for somebody in a leadership role,
+ * the same spelling as the OteSkipCode, so the frontend renders Victor's
+ * leadership line once and keys it off one string. `unsupported_country`:
+ * money cards outside USD and CAD. `no_estimate`: the cards that need an
+ * estimate (next_band, earn_vs_worth, city_premium) when the estimator skipped
+ * for any other reason; band 1 already says why. `thin_cohort`: under 25
+ * people at the widest step. `no_current_title`: next_move and time_in_title
+ * for somebody whose current title resolves to no family. `no_ask`:
+ * ask_vs_offers for somebody with no ask on file. The ask is the one question
+ * the Rundown lets a person decline, so a missing one is never a lock: a lock
+ * would name the field and ask again.
  */
 export type RundownBenchmarkReason =
   | 'never_made_the_move'
@@ -119,7 +135,8 @@ export type RundownBenchmarkReason =
   | 'unsupported_country'
   | 'no_estimate'
   | 'thin_cohort'
-  | 'no_current_title';
+  | 'no_current_title'
+  | 'no_ask';
 
 // =============================================================================
 // PARTS OF A CARD
@@ -192,28 +209,47 @@ export interface RundownBenchmarkUnlockDto {
 /**
  * The raw figures behind the headline, for the frontend to format.
  *
- * A loose record on purpose: the ten cards carry ten different sets of
- * numbers and a typed shape per card would make every new figure a submodule
- * round trip. Both builders spell the keys from this table instead.
+ * A loose record on purpose: the eighteen cards carry eighteen different sets
+ * of numbers and a typed shape per card would make every new figure a
+ * submodule round trip. Both builders spell the keys from this table instead.
  *
  *   bdr_to_closer         months, median, delta (months; negative is faster)
+ *   closer_to_enterprise  months (first closing role to first enterprise
+ *                         role), median, delta
+ *   time_to_leadership    months (first role to first leadership role),
+ *                         median, delta
  *   next_move             first, firstShare, second, secondShare, third,
  *                         thirdShare (title families and shares as 0..1)
  *   time_in_title         months (yours, so far), median, delta
+ *   time_per_role         months (your median across your roles), median (the
+ *                         pool's), delta, roles (how many of yours were read)
+ *   years_selling         years (yours, one decimal), median, delta
  *   next_band             band, nextBand, monthsToNext, oteNow, oteNext, delta
  *   quota_percentile      value (attainment as a %), median, percentile
  *   deal_size_percentile  value, median, percentile
  *   cycle_vs_segment      value (days), median, delta (days; negative is shorter)
+ *   revenue_per_year      value (revenue per year in role), median, percentile
  *   new_business_share    value (0..1), median, delta
+ *   outbound_share        value (0..1), median, delta, worth (the outbound
+ *                         modifier on today's card, in money; null when the
+ *                         split does not earn it. The one rate card figure on
+ *                         a pool card, and the card says where it came from)
+ *   city_premium          tier, multiplier, baseline (the Tier3 row), value
+ *                         (after the tier), delta (value minus baseline;
+ *                         negative where the city pays under it), city
  *   earn_vs_worth         currentOte, estimate, low, high, delta
  *                         (currentOte minus estimate)
+ *   ask_vs_offers         ask, median (what recruiters posted for the role
+ *                         you want), low, high, count (jobs read), delta (ask
+ *                         minus median), titleFamily
  *   open_roles            count, low, high (the OTE range recruiters posted),
  *                         titleFamily, segment
  *
  * `percentile` runs 0 to 100 and higher is better, so "top 18%" is percentile
- * 82. Money is in the response's `currency`, in whole units. The four cards
- * that read one role (quota, deal size, cycle, new business) also carry
- * `positionId`, `role` and `company` so the card can say which role it read.
+ * 82. Money is in the response's `currency`, in whole units. The six cards
+ * that read one role (quota, deal size, cycle, revenue, new business,
+ * outbound) also carry `positionId`, `role` and `company` so the card can say
+ * which role it read.
  * A card that is not `ready` may carry `reason` (see RundownBenchmarkReason).
  * `detail` is never empty on a `ready` card and may be `{}` on the others.
  */
@@ -228,9 +264,17 @@ export interface RundownBenchmarkCardDto {
   band: RundownBenchmarkBand;
   state: RundownBenchmarkState;
   /**
+   * The bold card title, the same words in every state: "Time to closing",
+   * "Your quota rank", "What your city adds". Two to four words and never a
+   * figure, so the figure has one place to be, `headline`. Set here so both
+   * apps print one name for one card and a copy edit lands in one file.
+   */
+  title: string;
+  /**
    * The big figure as text: "3.5 years", "top 18%", "None right now". On a
-   * `locked` card, the short name of what they would learn ("Your quota rank").
-   * On a `not_applicable` card, the one line that says so.
+   * `locked` card, the short name of what they would learn ("Your quota rank"),
+   * which may repeat `title`. On a `not_applicable` card, the one line that
+   * says so.
    */
   headline: string;
   /**
@@ -246,6 +290,17 @@ export interface RundownBenchmarkCardDto {
    * figure would tell them, with no promise of which way it goes.
    */
   claim: string;
+  /**
+   * One sentence of at most 90 characters: the person's number and the
+   * comparison, and no cohort. "You closed 118% of quota; the median is 96%."
+   * "You are at 3.5 years; AEs move after a median 2.8." Where `claim` names
+   * the people and runs long, `short` fits a tight card or a share line, and
+   * the frontend never trims `claim` to make one. Medians, never averages, and
+   * money as the app prints it ("CAD$ 42,000"). On a `locked` card, what the
+   * figure would tell them in the same length, with no promise of which way
+   * it goes.
+   */
+  short: string;
   /**
    * Set on `ready` cards whose `source` is 'pool'. Null everywhere else,
    * including locked pool cards, because a cohort nobody was measured against
@@ -263,11 +318,18 @@ export interface RundownBenchmarkCardDto {
  * the backend stamps `band` and `source` from here and the frontend lays the
  * bands out from here, and a card cannot sit in one band on the server and
  * another on the screen.
+ *
+ * city_premium is priced on the card rather than measured over the pool. The
+ * tier step is the figure band 1 already applies to this person, so the two
+ * can never disagree, and it needs no cohort of 25 to compute.
  */
 export interface RundownBenchmarkCardSpec {
   band: RundownBenchmarkBand;
   source: RundownBenchmarkSource;
-  /** Victor's number for the card in the 2026-09-08 brief. */
+  /**
+   * Victor's number for the card in the 2026-09-08 brief, or the next number
+   * after that list for a card added since (23 and 24).
+   */
   brief: number;
 }
 
@@ -279,31 +341,47 @@ export const RUNDOWN_BENCHMARK_CARD_SPEC: Record<
   deal_size_percentile: { band: 'standing', source: 'pool', brief: 8 },
   cycle_vs_segment: { band: 'standing', source: 'pool', brief: 9 },
   new_business_share: { band: 'standing', source: 'pool', brief: 11 },
+  revenue_per_year: { band: 'standing', source: 'pool', brief: 10 },
+  outbound_share: { band: 'standing', source: 'pool', brief: 12 },
   earn_vs_worth: { band: 'standing', source: 'your_numbers', brief: 16 },
   bdr_to_closer: { band: 'path', source: 'pool', brief: 1 },
+  closer_to_enterprise: { band: 'path', source: 'pool', brief: 2 },
+  time_to_leadership: { band: 'path', source: 'pool', brief: 3 },
   next_move: { band: 'path', source: 'pool', brief: 4 },
   time_in_title: { band: 'path', source: 'pool', brief: 5 },
+  time_per_role: { band: 'path', source: 'pool', brief: 23 },
+  years_selling: { band: 'path', source: 'pool', brief: 24 },
   next_band: { band: 'path', source: 'rate_card', brief: 6 },
+  city_premium: { band: 'market', source: 'rate_card', brief: 15 },
+  ask_vs_offers: { band: 'market', source: 'jobs', brief: 17 },
   open_roles: { band: 'market', source: 'jobs', brief: 19 },
 };
 
 /**
  * The order the cards appear on the page, top to bottom, which is also the
  * order the backend returns them in. Victor set it on 2026-09-09: Where you
- * stand runs 7, 8, 9, 11 then 16; Your path runs 1, 4, 5, 6; Your market is
- * 19. A locked card keeps its place in this order when the frontend gathers
- * the locked ones under Unlock more.
+ * stand runs 7, 8, 9, 11, 10, 12 then 16; Your path runs 1, 2, 3, 4, 5, 23,
+ * 24 then 6; Your market runs 15, 17 then 19. A locked card keeps its place
+ * in this order when the frontend gathers the locked ones under Unlock more.
  */
 export const RUNDOWN_BENCHMARK_CARD_ORDER = [
   'quota_percentile',
   'deal_size_percentile',
   'cycle_vs_segment',
   'new_business_share',
+  'revenue_per_year',
+  'outbound_share',
   'earn_vs_worth',
   'bdr_to_closer',
+  'closer_to_enterprise',
+  'time_to_leadership',
   'next_move',
   'time_in_title',
+  'time_per_role',
+  'years_selling',
   'next_band',
+  'city_premium',
+  'ask_vs_offers',
   'open_roles',
 ] as const;
 
@@ -326,10 +404,10 @@ export interface RundownBenchmarksDto {
    */
   currency: Currency | null;
   /**
-   * ALL TEN, ALWAYS, one card per key, in RUNDOWN_BENCHMARK_CARD_ORDER. A card
-   * that cannot compute arrives as `locked` or `not_applicable` rather than
-   * going missing, so the frontend never has to ask whether a key was left out
-   * or merely could not be answered.
+   * ALL EIGHTEEN, ALWAYS, one card per key, in RUNDOWN_BENCHMARK_CARD_ORDER. A
+   * card that cannot compute arrives as `locked` or `not_applicable` rather
+   * than going missing, so the frontend never has to ask whether a key was
+   * left out or merely could not be answered.
    */
   cards: RundownBenchmarkCardDto[];
 }

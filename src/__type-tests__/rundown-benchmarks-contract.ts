@@ -4,10 +4,11 @@
  * on the line that names it.
  *
  * WHAT THIS GUARDS. Two builders code against this file in two repos that move
- * the submodule pointer in separate merge commits. The ticket spells the ten
- * keys, the three bands, the three states and the card's property set, and a
- * later edit that renamed one would compile fine here and break one app at its
- * next build with no test of its own to say why. These lines say why.
+ * the submodule pointer in separate merge commits. The ticket spells the
+ * eighteen keys, the three bands, the three states, the seven reasons and the
+ * card's property set, and a later edit that renamed one would compile fine
+ * here and break one app at its next build with no test of its own to say
+ * why. These lines say why.
  */
 import type { OteSkipCode } from '../ote-estimation-details.dto';
 import type {
@@ -16,6 +17,7 @@ import type {
   RundownBenchmarkCardKey,
   RundownBenchmarkCohortDto,
   RundownBenchmarkDetail,
+  RundownBenchmarkReason,
   RundownBenchmarkSource,
   RundownBenchmarkState,
   RundownBenchmarksDto,
@@ -31,19 +33,27 @@ type Assert<T extends true> = T;
 /** True when A and B accept exactly the same values. */
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 
-// 1. Exactly the ten keys, spelled as the ticket spells them.
-export type TenKeys = Assert<
+// 1. Exactly the eighteen keys, spelled as the ticket spells them.
+export type EighteenKeys = Assert<
   Same<
     RundownBenchmarkCardKey,
     | 'bdr_to_closer'
+    | 'closer_to_enterprise'
+    | 'time_to_leadership'
     | 'next_move'
     | 'time_in_title'
+    | 'time_per_role'
+    | 'years_selling'
     | 'next_band'
     | 'quota_percentile'
     | 'deal_size_percentile'
     | 'cycle_vs_segment'
+    | 'revenue_per_year'
     | 'new_business_share'
+    | 'outbound_share'
+    | 'city_premium'
     | 'earn_vs_worth'
+    | 'ask_vs_offers'
     | 'open_roles'
   >
 >;
@@ -64,9 +74,11 @@ export type CardHasTheTicketsKeys = Assert<
     | 'key'
     | 'band'
     | 'state'
+    | 'title'
     | 'headline'
     | 'unit'
     | 'claim'
+    | 'short'
     | 'cohort'
     | 'source'
     | 'unlock'
@@ -108,10 +120,25 @@ export type OrderCoversEveryKey = Assert<
   Same<(typeof RUNDOWN_BENCHMARK_CARD_ORDER)[number], RundownBenchmarkCardKey>
 >;
 type Length<T extends readonly unknown[]> = T['length'];
-export type OrderListsEachKeyOnce = Assert<Same<Length<typeof RUNDOWN_BENCHMARK_CARD_ORDER>, 10>>;
+export type OrderListsEachKeyOnce = Assert<Same<Length<typeof RUNDOWN_BENCHMARK_CARD_ORDER>, 18>>;
 
 // 7. Leaders skip the salary part. The estimator has a code for it, spelled
 //    the way the Rundown's own reason spells it.
 export type LeadershipIsASkipCode = Assert<
   'leadership_not_priced' extends OteSkipCode ? true : false
+>;
+
+// 8. The seven reasons, no_ask among them, so the card a declined ask lands on
+//    has one spelling in both apps.
+export type SevenReasons = Assert<
+  Same<
+    RundownBenchmarkReason,
+    | 'never_made_the_move'
+    | 'leadership_not_priced'
+    | 'unsupported_country'
+    | 'no_estimate'
+    | 'thin_cohort'
+    | 'no_current_title'
+    | 'no_ask'
+  >
 >;
