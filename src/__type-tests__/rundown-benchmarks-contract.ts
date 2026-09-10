@@ -5,10 +5,10 @@
  *
  * WHAT THIS GUARDS. Two builders code against this file in two repos that move
  * the submodule pointer in separate merge commits. The ticket spells the
- * eighteen keys, the three bands, the three states, the seven reasons, the
- * three confidence levels and the card's property set, and a later edit that
- * renamed one would compile fine here and break one app at its next build with
- * no test of its own to say why. These lines say why.
+ * twenty-two keys, the three bands, the three states, the eight reasons, the
+ * three confidence levels, the page order and the card's property set, and a
+ * later edit that renamed one would compile fine here and break one app at its
+ * next build with no test of its own to say why. These lines say why.
  */
 import type { OteSkipCode } from '../ote-estimation-details.dto';
 import type {
@@ -18,6 +18,8 @@ import type {
   RundownBenchmarkCohortDto,
   RundownBenchmarkConfidence,
   RundownBenchmarkDetail,
+  RundownBenchmarkDetailBand,
+  RundownBenchmarkDetailValue,
   RundownBenchmarkReason,
   RundownBenchmarkSource,
   RundownBenchmarkState,
@@ -34,8 +36,9 @@ type Assert<T extends true> = T;
 /** True when A and B accept exactly the same values. */
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 
-// 1. Exactly the eighteen keys, spelled as the ticket spells them.
-export type EighteenKeys = Assert<
+// 1. Exactly the twenty-two keys, spelled as the tickets spell them: the
+//    eighteen of the 2026-09-09 cut and the four fork cards added the same day.
+export type TwentyTwoKeys = Assert<
   Same<
     RundownBenchmarkCardKey,
     | 'bdr_to_closer'
@@ -56,6 +59,10 @@ export type EighteenKeys = Assert<
     | 'earn_vs_worth'
     | 'ask_vs_offers'
     | 'open_roles'
+    | 'fork_so_far'
+    | 'fork_timing'
+    | 'leaders_return'
+    | 'title_ladder'
   >
 >;
 
@@ -113,8 +120,20 @@ export type CohortShape = Assert<
 export type UnlockShape = Assert<
   Same<RundownBenchmarkUnlockDto, { field: string; label: string; barneyField: string | null }>
 >;
+// The detail stays a loose record. Its one non-scalar value is the array of
+// bands fork_timing draws its distribution from; a second array type, or an
+// object in a value's place, is a shape change both apps have to see.
 export type DetailIsALooseRecord = Assert<
-  Same<RundownBenchmarkDetail, Record<string, string | number | null>>
+  Same<RundownBenchmarkDetail, Record<string, RundownBenchmarkDetailValue>>
+>;
+export type DetailValueIsScalarOrBands = Assert<
+  Same<RundownBenchmarkDetailValue, string | number | null | RundownBenchmarkDetailBand[]>
+>;
+export type BandShape = Assert<
+  Same<
+    RundownBenchmarkDetailBand,
+    { label: string; fromYears: number; toYears: number | null; share: number }
+  >
 >;
 export type CohortIsTheCohort = Assert<
   Same<NonNullable<RundownBenchmarkCardDto['cohort']>, RundownBenchmarkCohortDto>
@@ -133,7 +152,41 @@ export type OrderCoversEveryKey = Assert<
   Same<(typeof RUNDOWN_BENCHMARK_CARD_ORDER)[number], RundownBenchmarkCardKey>
 >;
 type Length<T extends readonly unknown[]> = T['length'];
-export type OrderListsEachKeyOnce = Assert<Same<Length<typeof RUNDOWN_BENCHMARK_CARD_ORDER>, 18>>;
+export type OrderListsEachKeyOnce = Assert<Same<Length<typeof RUNDOWN_BENCHMARK_CARD_ORDER>, 22>>;
+
+// 6b. The page order is the one Victor set, card by card: the three fork cards
+//     right after time_to_leadership, the title ladder after years_selling and
+//     before next_band. The backend returns in this order and the frontend lays
+//     out in it, so a card moved on one side alone is a card in two places.
+export type OrderIsTheTicketsOrder = Assert<
+  Same<
+    typeof RUNDOWN_BENCHMARK_CARD_ORDER,
+    readonly [
+      'quota_percentile',
+      'deal_size_percentile',
+      'cycle_vs_segment',
+      'new_business_share',
+      'revenue_per_year',
+      'outbound_share',
+      'earn_vs_worth',
+      'bdr_to_closer',
+      'closer_to_enterprise',
+      'time_to_leadership',
+      'fork_so_far',
+      'fork_timing',
+      'leaders_return',
+      'next_move',
+      'time_in_title',
+      'time_per_role',
+      'years_selling',
+      'title_ladder',
+      'next_band',
+      'city_premium',
+      'ask_vs_offers',
+      'open_roles',
+    ]
+  >
+>;
 
 // 7. Leaders skip the salary part. The estimator has a code for it, spelled
 //    the way the Rundown's own reason spells it.
@@ -141,9 +194,10 @@ export type LeadershipIsASkipCode = Assert<
   'leadership_not_priced' extends OteSkipCode ? true : false
 >;
 
-// 8. The seven reasons, no_ask among them, so the card a declined ask lands on
-//    has one spelling in both apps.
-export type SevenReasons = Assert<
+// 8. The eight reasons, no_ask among them so the card a declined ask lands on
+//    has one spelling in both apps, and too_early so the fork card a seller
+//    under three years sees is one card and not a lock with no field.
+export type EightReasons = Assert<
   Same<
     RundownBenchmarkReason,
     | 'never_made_the_move'
@@ -153,5 +207,6 @@ export type SevenReasons = Assert<
     | 'thin_cohort'
     | 'no_current_title'
     | 'no_ask'
+    | 'too_early'
   >
 >;
