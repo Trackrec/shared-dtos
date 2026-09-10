@@ -13,6 +13,7 @@ export * from './project_application.dto';
 export * from './recruiter_company';
 export * from './recruiter_project.dto';
 export * from './rundown-benchmarks.dto';
+export * from './rundown-share.dto';
 export * from './simple-array';
 export * from './state.dto';
 export {
