@@ -11,7 +11,7 @@
  * range, the base and variable split, five short lines on how we got here, the
  * great year as one line. That band is served by the estimate the profile
  * already carries (OteEstimationDetailsDto and the explanation next door) and
- * nothing in this file describes it. Everything under it is here: eighteen
+ * nothing in this file describes it. Everything under it is here: twenty-two
  * cards in three bands, and a fifth band, Unlock more, where the frontend
  * gathers every locked card with the Barney door beside it.
  *
@@ -54,7 +54,7 @@ import type { Currency } from './ote-estimation-details.dto';
 // =============================================================================
 
 /**
- * The eighteen cards. The number beside each is Victor's numbering from the
+ * The twenty-two cards. The number beside each is Victor's numbering from the
  * brief, kept because that is how the cards get talked about ("card 16").
  *
  * Victor picked ten of these out of the 22 on the 2026-09-08 list on
@@ -62,6 +62,41 @@ import type { Currency } from './ote-estimation-details.dto';
  * he added, time_per_role and years_selling, were not on that list and take
  * the next two numbers so they can be talked about the same way. The rest of
  * the list is backlog, and a new card is a new key here first.
+ *
+ * THE FORK CARDS, 25 to 28, came later the same day out of the fork research
+ * (MY-MARKET-FORK-RESEARCH-2026-09-09.md) and Victor's rule for them: "ok
+ * don't make up anything just stick to the data." Each one is computed from
+ * the pool with that document's definitions (accounts with role Applicant,
+ * active positions with a start year, a missing end counts as current, role
+ * type from the position flags, US and CA by city falling back to currency,
+ * month index = year * 12 + month, medians, nothing under 25 shown) and its
+ * numbers are checked against that document's tables. No fork card infers a
+ * cause, a trait or a forecast; the frame on every one is what happened to
+ * people who started where you did. The How we got here of each fork card,
+ * and of the leadership fork inside next_move, carries these three limits in
+ * plain words and with no numbers beyond the card's own: "Everyone here is
+ * still in or near sales, so people who left are not counted." "The
+ * leadership flag treats a manager of two like a VP over two hundred." "This
+ * is what happened to people who started where you did, not a forecast."
+ *
+ * fork_so_far, "Your fork so far": for a person whose first dated sales role
+ * was closing or booking, at the largest of the 3, 5, 8 and 10 year marks they
+ * have reached since their first closing role, the share of sellers who
+ * started the same way and reached that mark who had held a leadership role
+ * by it, the share still an individual contributor who never led, and the
+ * rest. fork_timing, "When the move happens": among people who moved into
+ * leadership within ten years of their first closing role, the share who did
+ * it within 2, 5 and 8 years, the median years, and where a mover's own gap
+ * sits. leaders_return, "The door swings both ways": among people who have
+ * held a leadership role, the share who held an individual contributor role
+ * again afterwards, the share in an IC seat today, and the median years from
+ * the first leadership role to the return. title_ladder, "Title ladder pace":
+ * from the first plain Account Executive title (no Senior, Sr, Enterprise or
+ * Strategic), the median months to a Senior AE title, to an Enterprise or
+ * Strategic AE title and to a leadership role, and the share of AEs with
+ * eight or more years behind them who reached each within eight years. The
+ * fifth card the research supports, where leaders go next, is the leadership
+ * fork inside next_move and is not a key of its own.
  */
 export type RundownBenchmarkCardKey =
   | 'bdr_to_closer' // 1
@@ -81,7 +116,11 @@ export type RundownBenchmarkCardKey =
   | 'ask_vs_offers' // 17
   | 'open_roles' // 19
   | 'time_per_role' // 23
-  | 'years_selling'; // 24
+  | 'years_selling' // 24
+  | 'fork_so_far' // 25
+  | 'fork_timing' // 26
+  | 'leaders_return' // 27
+  | 'title_ladder'; // 28
 
 /**
  * Which band of the page a card computes into.
@@ -145,8 +184,16 @@ export type RundownBenchmarkConfidence = 'high' | 'medium' | 'low';
  *
  * `never_made_the_move`: bdr_to_closer for somebody with no booking role
  * followed by a closing role, closer_to_enterprise for somebody who never held
- * an enterprise role, time_to_leadership for somebody who never led.
- * `leadership_not_priced`: the money cards for somebody in a leadership role,
+ * an enterprise role, time_to_leadership and leaders_return for somebody who
+ * never led, fork_so_far for somebody who started in leadership ("You started
+ * in leadership, so there is no fork to measure from a closing seat."),
+ * title_ladder for somebody with no plain Account Executive title on file
+ * ("This ladder starts at an Account Executive title, which is not on your
+ * profile."). `too_early`: fork_so_far for somebody under three years from
+ * their first closing role. The card is locked on time and only time lifts it,
+ * so it is not a `locked` card (a lock names a field to answer) and the
+ * headline says when to come back: "Come back after three years in a closing
+ * role". `leadership_not_priced`: the money cards for somebody in a leadership role,
  * the same spelling as the OteSkipCode, so the frontend renders Victor's
  * leadership line once and keys it off one string. `unsupported_country`:
  * money cards outside USD and CAD. `no_estimate`: the cards that need an
@@ -165,7 +212,8 @@ export type RundownBenchmarkReason =
   | 'no_estimate'
   | 'thin_cohort'
   | 'no_current_title'
-  | 'no_ask';
+  | 'no_ask'
+  | 'too_early';
 
 // =============================================================================
 // PARTS OF A CARD
@@ -263,10 +311,29 @@ export interface RundownBenchmarkUnlockDto {
 }
 
 /**
+ * One bar of a distribution a card draws. Today only fork_timing carries one,
+ * under `bands`: the gap from the first closing role to the first leadership
+ * role, in the six bands the fork research reported (under 1, 1 to 2, 2 to 3,
+ * 3 to 5, 5 to 8, 8 to 10 years). `label` is the words the bar is labelled
+ * with ("under 1", "1 to 2"). `fromYears` is inclusive and `toYears`
+ * exclusive, so a gap of exactly two years sits in 2 to 3; `toYears` is null
+ * only on a band with no top, and none of fork_timing's is. `share` runs 0 to
+ * 1 over the movers, and the shares of one card's bands sum to 1. A band
+ * carries no count, per the confidence rule; the frontend marks the person's
+ * own band from the card's `personYears`.
+ */
+export interface RundownBenchmarkDetailBand {
+  label: string;
+  fromYears: number;
+  toYears: number | null;
+  share: number;
+}
+
+/**
  * The raw figures behind the headline, for the frontend to format.
  *
- * A loose record on purpose: the eighteen cards carry eighteen different sets
- * of numbers and a typed shape per card would make every new figure a
+ * A loose record on purpose: the twenty-two cards carry twenty-two different
+ * sets of numbers and a typed shape per card would make every new figure a
  * submodule round trip. Both builders spell the keys from this table instead.
  *
  *   bdr_to_closer         months, median, delta (months; negative is faster)
@@ -300,16 +367,59 @@ export interface RundownBenchmarkUnlockDto {
  *                         minus median), titleFamily
  *   open_roles            count, low, high (the OTE range recruiters posted),
  *                         titleFamily, segment
+ *   fork_so_far           markYears (3, 5, 8 or 10: the largest mark the
+ *                         person has reached since their first closing role),
+ *                         eligible (sellers who started in a closing or booking
+ *                         seat and have reached that mark; the cohort floor of
+ *                         25 applies to it, the admin report reads it and no
+ *                         card prints it), ledShare (held a leadership role by
+ *                         the mark), stillIcShare (in an IC seat at the mark
+ *                         and never led), restShare (booking, another titled
+ *                         role, or no dated role covering the mark; the three
+ *                         shares sum to 1), personState ('led' | 'stillIc' |
+ *                         'other')
+ *   fork_timing           medianYears (first closing role to first leadership
+ *                         role, over movers within ten years), within2Share,
+ *                         within5Share, within8Share (movers who made the move
+ *                         inside that many years), personYears (the person's
+ *                         own gap in years; null when they have not moved),
+ *                         bands (RundownBenchmarkDetailBand[], the six bands
+ *                         of the gap with their shares)
+ *   leaders_return        returnedShare (leaders who held an IC role at any
+ *                         point after their first leadership role),
+ *                         icTodayShare (leaders in an IC seat today with no
+ *                         open leadership role), medianYearsToReturn (first
+ *                         leadership role start to the IC role start),
+ *                         personYearsLeading (years since the person's first
+ *                         leadership role started), personReturnedAfterYears
+ *                         (years from their first leadership role to their
+ *                         return to an IC role; null until they have)
+ *   title_ladder          seniorMedianMonths, enterpriseMedianMonths,
+ *                         leadershipMedianMonths (from the first plain Account
+ *                         Executive title, medians over everyone who reached
+ *                         the step), seniorWithin8Share, enterpriseWithin8Share,
+ *                         leadershipWithin8Share (AEs whose anchor is eight or
+ *                         more years old who reached the step inside eight
+ *                         years), personSeniorMonths, personEnterpriseMonths,
+ *                         personLeadershipMonths (the person's own months from
+ *                         their anchor to each step; null for a step not taken)
  *
  * `percentile` runs 0 to 100 and higher is better, so "top 18%" is percentile
- * 82. Money is in the response's `currency`, in whole units. The six cards
- * that read one role (quota, deal size, cycle, revenue, new business,
- * outbound) also carry `positionId`, `role` and `company` so the card can say
- * which role it read.
+ * 82. Every `Share` runs 0 to 1, as on next_move. Money is in the response's
+ * `currency`, in whole units. The six cards that read one role (quota, deal
+ * size, cycle, revenue, new business, outbound) also carry `positionId`,
+ * `role` and `company` so the card can say which role it read.
  * A card that is not `ready` may carry `reason` (see RundownBenchmarkReason).
  * `detail` is never empty on a `ready` card and may be `{}` on the others.
+ *
+ * Every value is a string, a number or null, except the one distribution:
+ * `bands` on fork_timing is an array of RundownBenchmarkDetailBand. Both apps
+ * read a detail value through a `typeof` check, so the array is invisible to
+ * every reader that does not ask for it.
  */
-export type RundownBenchmarkDetail = Record<string, string | number | null>;
+export type RundownBenchmarkDetailValue = string | number | null | RundownBenchmarkDetailBand[];
+
+export type RundownBenchmarkDetail = Record<string, RundownBenchmarkDetailValue>;
 
 // =============================================================================
 // THE CARD
@@ -386,7 +496,8 @@ export interface RundownBenchmarkCardSpec {
   source: RundownBenchmarkSource;
   /**
    * Victor's number for the card in the 2026-09-08 brief, or the next number
-   * after that list for a card added since (23 and 24).
+   * after that list for a card added since (23 and 24 on 2026-09-09, then 25
+   * to 28 for the fork cards the same day).
    */
   brief: number;
 }
@@ -405,10 +516,14 @@ export const RUNDOWN_BENCHMARK_CARD_SPEC: Record<
   bdr_to_closer: { band: 'path', source: 'pool', brief: 1 },
   closer_to_enterprise: { band: 'path', source: 'pool', brief: 2 },
   time_to_leadership: { band: 'path', source: 'pool', brief: 3 },
+  fork_so_far: { band: 'path', source: 'pool', brief: 25 },
+  fork_timing: { band: 'path', source: 'pool', brief: 26 },
+  leaders_return: { band: 'path', source: 'pool', brief: 27 },
   next_move: { band: 'path', source: 'pool', brief: 4 },
   time_in_title: { band: 'path', source: 'pool', brief: 5 },
   time_per_role: { band: 'path', source: 'pool', brief: 23 },
   years_selling: { band: 'path', source: 'pool', brief: 24 },
+  title_ladder: { band: 'path', source: 'pool', brief: 28 },
   next_band: { band: 'path', source: 'rate_card', brief: 6 },
   city_premium: { band: 'market', source: 'rate_card', brief: 15 },
   ask_vs_offers: { band: 'market', source: 'jobs', brief: 17 },
@@ -418,9 +533,13 @@ export const RUNDOWN_BENCHMARK_CARD_SPEC: Record<
 /**
  * The order the cards appear on the page, top to bottom, which is also the
  * order the backend returns them in. Victor set it on 2026-09-09: Where you
- * stand runs 7, 8, 9, 11, 10, 12 then 16; Your path runs 1, 2, 3, 4, 5, 23,
- * 24 then 6; Your market runs 15, 17 then 19. A locked card keeps its place
- * in this order when the frontend gathers the locked ones under Unlock more.
+ * stand runs 7, 8, 9, 11, 10, 12 then 16; Your path runs 1, 2, 3, then the
+ * three fork cards 25, 26, 27, then 4, 5, 23, 24, the title ladder 28, then 6;
+ * Your market runs 15, 17 then 19. The fork cards sit right after time to
+ * leadership because they answer the question that card raises, and the title
+ * ladder sits with the other title cards before the band card. A locked card
+ * keeps its place in this order when the frontend gathers the locked ones
+ * under Unlock more.
  */
 export const RUNDOWN_BENCHMARK_CARD_ORDER = [
   'quota_percentile',
@@ -433,10 +552,14 @@ export const RUNDOWN_BENCHMARK_CARD_ORDER = [
   'bdr_to_closer',
   'closer_to_enterprise',
   'time_to_leadership',
+  'fork_so_far',
+  'fork_timing',
+  'leaders_return',
   'next_move',
   'time_in_title',
   'time_per_role',
   'years_selling',
+  'title_ladder',
   'next_band',
   'city_premium',
   'ask_vs_offers',
@@ -462,7 +585,7 @@ export interface RundownBenchmarksDto {
    */
   currency: Currency | null;
   /**
-   * ALL EIGHTEEN, ALWAYS, one card per key, in RUNDOWN_BENCHMARK_CARD_ORDER. A
+   * ALL TWENTY-TWO, ALWAYS, one card per key, in RUNDOWN_BENCHMARK_CARD_ORDER. A
    * card that cannot compute arrives as `locked` or `not_applicable` rather
    * than going missing, so the frontend never has to ask whether a key was
    * left out or merely could not be answered.
