@@ -13,10 +13,10 @@
  * year as one line. That band is served by the estimate the profile already
  * carries (OteEstimationDetailsDto and the explanation next door) plus the
  * ladder keys the next_band card carries in its detail, and nothing else in
- * this file describes it. Everything under it is here: twenty-six cards in
- * four bands (Where you stand, Your path, Did you know, Your market), and a
- * sixth band, Unlock more, where the frontend gathers every locked card with
- * the Barney door beside it.
+ * this file describes it. Everything under it is here: thirty cards in five
+ * bands (Where you stand, Your path, Company size, Did you know, Your
+ * market), and a seventh band, Unlock more, where the frontend gathers every
+ * locked card with the Barney door beside it.
  *
  * OWN USER ONLY. The route reads the person off the verified session, takes no
  * id, and answers a candidate about nobody but themselves. Nothing in this
@@ -58,6 +58,24 @@
  * to the person's own fields. No card face prints a percentile, a count, a
  * forecast, or money in a currency other than the page's.
  *
+ * COMPANY SIZE, 2026-09-10. Victor: "Company size tells us a lot. Maybe
+ * someone only wants to work for large organizations and we can easily see
+ * that on their profile. Or someone only likes startups or mid-market
+ * companies." The plan (COMPANY-SIZE-ON-MY-MARKET-2026-09-10.md) measured the
+ * pool and found the pattern visible on most profiles and flat against the
+ * money: pay, quota and deal size do not move across the five size bands, and
+ * 40% of enterprise lean closers work at companies under 200. So the four
+ * company size cards, 33 to 36, show the person their own pattern back and
+ * ask one question; they never infer a preference. THE DOCTRINE: a pattern is
+ * what the person did, never a stated preference. The card shows it back in
+ * the exact sentence shapes of the plan's table (company-size.dto.ts spells
+ * them beside CompanySizePattern) and the table's never say column is
+ * binding. The one question, "Is that by choice?", has three answers and
+ * stores CompanySizePreferenceDto in the person's own words; the inferred
+ * pattern is never sent to a recruiter and never scored. Every headcount on
+ * these cards is today's count, and every one of them says so in How we got
+ * here. The cohort floor is 25 people on every cell, as everywhere.
+ *
  * WHY IT LIVES HERE. The backend computes, the frontend formats, and this
  * package is a submodule in both, so a shape lands here first and both apps
  * compile against it before either fills it. Every name below is prefixed
@@ -66,13 +84,14 @@
  */
 
 import type { Currency } from './ote-estimation-details.dto';
+import type { CompanySizeBand } from './company-size.dto';
 
 // =============================================================================
 // LITERAL TYPES
 // =============================================================================
 
 /**
- * The twenty-six cards. The number beside each is Victor's numbering from the
+ * The thirty cards. The number beside each is Victor's numbering from the
  * brief, kept because that is how the cards get talked about ("card 16").
  *
  * Victor picked ten of these out of the 22 on the 2026-09-08 list on
@@ -168,6 +187,99 @@ import type { Currency } from './ote-estimation-details.dto';
  * the top quarter of {noun}." and under p25 "In the earliest quarter of
  * {noun}." for a duration. The How we got here of each carries the same three
  * limits as the fork cards, and no card says what will happen next.
+ *
+ * THE COMPANY SIZE CARDS, 33 to 36, came on 2026-09-10 out of the company
+ * size plan (the header): its cards A to D, the four that need only today's
+ * headcount and clear the floor everywhere. They sit in the `company` band,
+ * between Your path and Did you know, and are computed from the pool with the
+ * plan's definitions: US and Canada by the person's city, falling back to a
+ * USD or CAD currency; headcount = the company row's count today, placed in
+ * a band by companySizeBandOf; a company stint = the distinct company on a
+ * dated typed sales role, roles at the same company merged; medians and
+ * quartiles, never means; every cell at 25 people or more; confidence by the
+ * rule in the header. Nothing on them infers a preference, forecasts a move
+ * or says that a size pays, because the plan's tables say it does not.
+ *
+ * size_pattern, "Where you have sold" (card A): the person's companies on
+ * file as squares on a log ruler from 10 to 100,000, oldest to newest, each
+ * labeled with its headcount and never with the employer, the five band edges
+ * as hairlines, the person's most frequent band shaded. The figure is the
+ * count in one band ("4", "companies, all under 200 people") or, for mixed,
+ * the span ("12 to 40,000", "people, smallest to largest company"). The
+ * sentence is the pattern sentence in the plan's exact shape (see
+ * CompanySizePattern), then the pool line over sellers with two or more
+ * companies on file. Then the question, inline: "Is that by choice?" with
+ * the three answers of CompanySizePreferenceDto, written through
+ * COMPANY_SIZE_PREFERENCE_FIELD; after an answer the card prints "You said:
+ * {answer}" with a change link and asks no more. Needs two or more distinct
+ * companies with a headcount on each; with two or more companies and a
+ * headcount missing on some, the card shows the squares it can draw, says
+ * how many companies have no headcount on file, and prints no pattern label.
+ * One company on file: not_applicable never_made_the_move ("You have one
+ * company on file, so there is no pattern to read yet."). No headcount on
+ * any company: not_applicable no_headcount. Never `locked`: nothing the
+ * person can type puts a headcount on a company. Did you know: where you are
+ * now usually matches where you have mostly been. company_size_standing,
+ * "Your company against your peers" (card B): the current company's headcount
+ * against sellers of the same role type (closers, bookers, leaders) with an
+ * open typed sales role: their median and quartiles and the share of them in
+ * each of the five bands, drawn as a five band strip with the values printed
+ * and the person's band solid. Role type is the one axis; no currency or city
+ * axis on top of it, because the leader and booker cells would fall under
+ * 25. Leader cells never share a sentence with closers: the leadership flag
+ * treats a founder of five like a VP at a public company. Needs an open typed
+ * sales role whose company has a headcount. Locked with no company on the
+ * open role, Barney door: "Add the company on your current role and this
+ * card shows how its size compares with {role plural}."; not_applicable
+ * no_headcount when the company carries none. Did you know: quota attainment
+ * did not move with company size; for leaders, half of those under 50 who
+ * gave a team size lead at least half the company. last_move_size, "Your
+ * last move, by company size" (card C): the person's latest move between two
+ * companies with a headcount on both, the later one started 2019 or later,
+ * as a ratio of today's counts ("8x", "bigger than the company before"; "a
+ * tenth", "the size of the company before"), against sellers whose last move
+ * was from a company in the same band: the shares that went bigger, about
+ * the same and smaller, drawn as the fork card's three segment bar with the
+ * person's segment solid, and the median years they had spent there before
+ * moving as the range line. Needs two distinct company stints with a
+ * headcount on both. One company: not_applicable never_made_the_move. Later
+ * company before 2019: not_applicable before_coverage. Headcount missing on
+ * either side: not_applicable no_headcount, and size_pattern's How we got
+ * here counts the missing company. Did you know: the five year crossings
+ * between under 200 and 1,000 or more, both ways. stint_by_size, "How long
+ * you have been at a company your size" (card D): the person's years so far
+ * on their open role against sellers with an open role at a company in the
+ * same band: the median and quartiles of years so far and the share past
+ * three years, drawn as the duo bars with the middle half behind the gray
+ * bar. The comparison is always open stint against open stints, never
+ * against finished role medians. Needs an open typed sales role with a start
+ * date and a headcount. Locked with no start date, Barney door: "Add the
+ * start date of your current role and this card shows how long sellers at
+ * companies your size have been in theirs."; locked with no company, the
+ * same door as card B; not_applicable no_headcount when the company carries
+ * none. Did you know: finished roles ran a median 15 months at companies
+ * under 50 and 22 months at 10,000 or more.
+ *
+ * The verdict on a company size card is the frontend's, from the detail.
+ * company_size_standing and stint_by_size read the person's figure against
+ * the median by the insight rule above: above 1.05 "Bigger than most {role
+ * plural}' companies." and "Longer than most sellers at companies your
+ * size.", under 0.95 the mirror ("Smaller than most", "Shorter than most"),
+ * within "Close to the median." and "Right on the median." last_move_size
+ * reads the shares: a direction at 0.6 or more of the movers is "most", and
+ * the words are "Most sellers who left a company your size went {bigger or
+ * smaller} too." when it is the person's own direction, "Most sellers who
+ * left a company your size went {that way}; you went {the other}." when it
+ * is not, and "About even at your size." when no direction reaches 0.6 (only
+ * 50 to 199 today). The range lines: "Half of {role plural} sit between {p25}
+ * and {p75} people.", "Half of them had spent {medianYearsBefore} years
+ * there before moving.", "Half of them have been there between {p25} and
+ * {p75} years." size_pattern carries no verdict: the pattern sentence is the
+ * verdict, and the backend writes it. The How we got here of every company
+ * size card carries, in these words: "Company sizes are today's headcount,
+ * so a company that has grown since you left reads bigger than it was." and
+ * on size_pattern, with the real number, "Two of your companies have no
+ * headcount on file."
  */
 export type RundownBenchmarkCardKey =
   | 'bdr_to_closer' // 1
@@ -195,21 +307,34 @@ export type RundownBenchmarkCardKey =
   | 'largest_deal_ratio' // 29
   | 'deal_after_move' // 30
   | 'quota_record' // 31
-  | 'buyer_reach'; // 32
+  | 'buyer_reach' // 32
+  | 'size_pattern' // 33, the plan's card A
+  | 'company_size_standing' // 34, card B
+  | 'last_move_size' // 35, card C
+  | 'stint_by_size'; // 36, card D
 
 /**
  * Which band of the page a card computes into.
  *
  * `standing` is band 2, Where you stand. `path` is band 3, Your path.
- * `insight` is band 4, Did you know (aside "What happened to sellers who
- * started where you did"), the four insight cards of 2026-09-10. `market` is
- * band 5, Your market. Band 1 is the estimate and is served elsewhere. Band
- * 6, Unlock more, is where the frontend gathers every `locked` card whatever
- * band it would have computed into, so no card carries it as a band. The
- * frontend numbers only the bands that render (bandIndices), so a page with
- * no insight card still reads 01, 02, 03 with no gap.
+ * `company` is band 4, Company size, its own band on the page between Your
+ * path and Did you know: the four company size cards of 2026-09-10, which
+ * read one axis of the person's record (the size of the companies they sold
+ * at) and end on the one question the page asks about it. `insight` is band
+ * 5, Did you know (aside "What happened to sellers who started where you
+ * did"), the four insight cards of 2026-09-10. `market` is band 6, Your
+ * market. Band 1 is the estimate and is served elsewhere. Band 7, Unlock
+ * more, is where the frontend gathers every `locked` card whatever band it
+ * would have computed into, so no card carries it as a band. The frontend
+ * numbers only the bands that render (bandIndices), so a page with no
+ * company card still reads 01, 02, 03 with no gap.
+ *
+ * The company band is not among RUNDOWN_SHARE_BANDS (rundown-share.dto.ts)
+ * on purpose: the pattern card is a candidate only mirror by the plan's
+ * doctrine, and a share image is a public record. Opening it later is one
+ * band added to that list, and the question is asked there, once.
  */
-export type RundownBenchmarkBand = 'standing' | 'path' | 'insight' | 'market';
+export type RundownBenchmarkBand = 'standing' | 'path' | 'company' | 'insight' | 'market';
 
 /**
  * `ready` carries a figure.
@@ -304,6 +429,22 @@ export type RundownBenchmarkConfidence = 'high' | 'medium' | 'low';
  * The backend has emitted this reason since the ladder shipped, typed locally
  * as a widening of this union; it is listed here so the contract spells what
  * the wire carries.
+ *
+ * `before_coverage` (2026-09-10, the company size plan): last_move_size for
+ * somebody whose later company started before 2019, where fewer than three
+ * companies in four carry a headcount, so the move cannot be read against a
+ * fair pool. "Your last move was before 2019, where fewer than three
+ * companies in four carry a headcount." No field lifts it and only a newer
+ * move changes it, so it is not a lock; the plan keeps the 2019 line until a
+ * headcount history has at least a year behind it. `no_headcount`: a company
+ * size card whose company carries no headcount on file: size_pattern with no
+ * count on any company, last_move_size with a count missing on either side,
+ * company_size_standing and stint_by_size when the current company carries
+ * none. The count is ours, from the company row, and nothing the person can
+ * type puts one there, so this is never a lock and the card names no field.
+ * never_made_the_move is reused for size_pattern and last_move_size with one
+ * company on file ("You have one company on file, so there is no pattern to
+ * read yet.").
  */
 export type RundownBenchmarkReason =
   | 'never_made_the_move'
@@ -316,7 +457,9 @@ export type RundownBenchmarkReason =
   | 'too_early'
   | 'folded_into_band_1'
   | 'no_buyer_list'
-  | 'top_band';
+  | 'top_band'
+  | 'before_coverage'
+  | 'no_headcount';
 
 // =============================================================================
 // PARTS OF A CARD
@@ -384,11 +527,17 @@ export interface RundownBenchmarkCohortDto {
  * The one field that turns a locked card into a figure.
  *
  * `field` is the answerable key the backend whitelists for
- * POST /rundown/answer ('quotaAttainment', 'averageDealSize', 'currentOte',
- * 'segmentSplit', 'averageSalesCycle', 'newBusiness', and whatever that
- * whitelist grows to), so the inline answer box and this card are naming the
- * same thing. Without it the client would infer the field from the wording,
- * which is one copy edit away from writing the wrong column.
+ * POST /rundown/answer ('quotaAttainment', 'averageDealSize', 'longDealSize',
+ * 'currentOte', 'segmentSplit', 'averageSalesCycle', 'newBusiness',
+ * 'persona', and whatever that whitelist grows to), so the inline answer box
+ * and this card are naming the same thing. Without it the client would infer
+ * the field from the wording, which is one copy edit away from writing the
+ * wrong column. Since 2026-09-10 the list grows to
+ * COMPANY_SIZE_PREFERENCE_FIELD ('company_size_preference',
+ * company-size.dto.ts), the fourth shape, a CompanySizePreferenceDto written
+ * to the user: the pattern card's question writes through it from a `ready`
+ * card, the one answer on the page that is not an unlock, so it carries the
+ * key in its detail (`preference`) and not here.
  *
  * `field` IS NULL WHEN ONLY BARNEY CAN TAKE THE ANSWER. A start date or a
  * whole role is not a number the inline box accepts and is not on that
@@ -461,6 +610,44 @@ export interface RundownBenchmarkDetailRole {
   positionId: number;
   role: string;
   company: string;
+  value: number;
+}
+
+/**
+ * One company of the person's own, as size_pattern draws it: a square on the
+ * log ruler labeled with its headcount. One row per distinct company on the
+ * person's dated typed sales roles, oldest first, roles at the same company
+ * merged. `positionId` and `role` are the latest role there (the id for the
+ * admin report and the Barney door, the title as typed for a label); the
+ * employer's name is not on the row on purpose, because the card labels
+ * squares with headcounts and never with names, and a row that carried the
+ * name would be one render away from printing it. `headcount` is today's
+ * count and `band` its band by companySizeBandOf; both null on a company
+ * with no count on file, which draws no square and is counted in the card's
+ * `missingHeadcount`. `startYear` is the year the person started there, for
+ * the ruler's order and the climbing and descending sentences.
+ */
+export interface RundownBenchmarkDetailCompany {
+  positionId: number;
+  role: string;
+  headcount: number | null;
+  startYear: number | null;
+  band: CompanySizeBand | null;
+}
+
+/**
+ * One of the five size bands with one figure on it, in band order, five rows
+ * per list. size_pattern carries `bandCounts` (value = how many of the
+ * person's own companies sit in the band, so the drawing shades the band or
+ * bands with the highest value); company_size_standing carries `bandShares`
+ * (value = the share 0..1 of same role peers whose company sits in the band,
+ * the five summing to 1, the strip's bar heights). `label` is the band's
+ * words from COMPANY_SIZE_BANDS, served so both apps print one label. A row
+ * carries no count of people, per the confidence rule.
+ */
+export interface RundownBenchmarkDetailSizeBand {
+  band: CompanySizeBand;
+  label: string;
   value: number;
 }
 
@@ -615,6 +802,58 @@ export interface RundownBenchmarkDetailRole {
  *                         While locked the strip keys carry the CISO example
  *                         (family 'ciso' with its median and quartiles) so the
  *                         frontend draws the ghost pin from served figures
+ *   size_pattern          companies (RundownBenchmarkDetailCompany[], one row
+ *                         per distinct company on the person's dated typed
+ *                         sales roles, oldest first; headcount and band null
+ *                         on a company with no count, which draws no square),
+ *                         count (companies on file), pattern
+ *                         (CompanySizePattern as a string; null when any
+ *                         company lacks a headcount, and the card prints no
+ *                         label), bandCounts (RundownBenchmarkDetailSizeBand[],
+ *                         the five bands in order, value = how many of the
+ *                         person's companies sit in each; the band or bands
+ *                         with the highest value are the ones the drawing
+ *                         shades), smallest, largest (the smallest and largest
+ *                         headcount among the person's companies, the span the
+ *                         mixed figure prints), missingHeadcount (how many of
+ *                         the person's companies carry none, for "Two of your
+ *                         companies have no headcount on file."), preference
+ *                         ('only' | 'prefer' as stored, 'none' for the
+ *                         answered "It just happened", null while unanswered,
+ *                         so the card knows whether to ask or to print "You
+ *                         said:"), preferenceBands (the chosen band ids joined
+ *                         with commas in band order, the empty string for
+ *                         none, null while unanswered). No pool figure travels
+ *                         in this detail: the pool line and the Did you know
+ *                         are sentences the backend writes
+ *   company_size_standing headcount (the current company's, today), band,
+ *                         roleType ('closing' | 'booking' | 'leadership', the
+ *                         role type of the peers), bandShares
+ *                         (RundownBenchmarkDetailSizeBand[], the five bands in
+ *                         order, value = the share 0..1 of same role peers
+ *                         whose company sits in each; the five sum to 1),
+ *                         median, p25, p75 (headcounts over the same role
+ *                         peers), positionId, role (the open role read)
+ *   last_move_size        fromHeadcount, toHeadcount (both today's counts),
+ *                         ratio (toHeadcount over fromHeadcount, so 8 reads
+ *                         "8x" and 0.1 reads "a tenth"), direction ('bigger' |
+ *                         'same' | 'smaller': at least a quarter bigger,
+ *                         within a quarter, at least a quarter smaller),
+ *                         moveYear (the later company's start year), fromBand
+ *                         (the band of the company left), biggerShare,
+ *                         sameShare, smallerShare (over movers whose last move
+ *                         was from the person's fromBand, later company 2019
+ *                         or later, one move per person; the three sum to 1),
+ *                         medianYearsBefore (years the movers had spent at the
+ *                         company left, median, the range line),
+ *                         fromPositionId, toPositionId (the two roles read)
+ *   stint_by_size         yearsSoFar (the person's, one decimal, roles at the
+ *                         same company merged, the latest start winning when
+ *                         two are open), headcount, band (the current
+ *                         company's), median, p25, p75 (years so far over
+ *                         sellers with an open role at a company in the same
+ *                         band), pastThreeShare (of them, past three years),
+ *                         positionId, role (the open role read)
  *
  * `percentile` runs 0 to 100 and higher is better, so "top 18%" is percentile
  * 82. Every `Share` runs 0 to 1, as on next_move. Money is in the response's
@@ -625,18 +864,23 @@ export interface RundownBenchmarkDetailRole {
  * A card that is not `ready` may carry `reason` (see RundownBenchmarkReason).
  * `detail` is never empty on a `ready` card and may be `{}` on the others.
  *
- * Every value is a string, a number or null, except two lists: `bands` on
- * fork_timing is an array of RundownBenchmarkDetailBand, and `roles` on
- * quota_record is an array of RundownBenchmarkDetailRole. Both apps read a
- * detail value through a `typeof` check, so an array is invisible to every
- * reader that does not ask for it.
+ * Every value is a string, a number or null, except four lists: `bands` on
+ * fork_timing is an array of RundownBenchmarkDetailBand, `roles` on
+ * quota_record is an array of RundownBenchmarkDetailRole, `companies` on
+ * size_pattern is an array of RundownBenchmarkDetailCompany, and `bandCounts`
+ * on size_pattern and `bandShares` on company_size_standing are arrays of
+ * RundownBenchmarkDetailSizeBand. Both apps read a detail value through a
+ * `typeof` check, so an array is invisible to every reader that does not ask
+ * for it.
  */
 export type RundownBenchmarkDetailValue =
   | string
   | number
   | null
   | RundownBenchmarkDetailBand[]
-  | RundownBenchmarkDetailRole[];
+  | RundownBenchmarkDetailRole[]
+  | RundownBenchmarkDetailCompany[]
+  | RundownBenchmarkDetailSizeBand[];
 
 export type RundownBenchmarkDetail = Record<string, RundownBenchmarkDetailValue>;
 
@@ -736,7 +980,8 @@ export interface RundownBenchmarkCardSpec {
    * Victor's number for the card in the 2026-09-08 brief, or the next number
    * after that list for a card added since (23 and 24 on 2026-09-09, then 25
    * to 28 for the fork cards the same day, then 29 to 32 for the insight cards
-   * on 2026-09-10).
+   * on 2026-09-10, then 33 to 36 for the company size cards the same day, the
+   * plan's cards A to D).
    */
   brief: number;
 }
@@ -768,6 +1013,10 @@ export const RUNDOWN_BENCHMARK_CARD_SPEC: Record<
   deal_after_move: { band: 'insight', source: 'pool', brief: 30 },
   quota_record: { band: 'insight', source: 'pool', brief: 31 },
   buyer_reach: { band: 'insight', source: 'pool', brief: 32 },
+  size_pattern: { band: 'company', source: 'pool', brief: 33 },
+  company_size_standing: { band: 'company', source: 'pool', brief: 34 },
+  last_move_size: { band: 'company', source: 'pool', brief: 35 },
+  stint_by_size: { band: 'company', source: 'pool', brief: 36 },
   city_premium: { band: 'market', source: 'rate_card', brief: 15 },
   ask_vs_offers: { band: 'market', source: 'jobs', brief: 17 },
   open_roles: { band: 'market', source: 'jobs', brief: 19 },
@@ -779,11 +1028,16 @@ export const RUNDOWN_BENCHMARK_CARD_SPEC: Record<
  * stand runs 7, 8, 9, 11, 10, 12 then 16; Your path runs 1, 2, 3, then the
  * three fork cards 25, 26, 27, then 4, 5, 23, 24, the title ladder 28, then 6;
  * Did you know runs 29, 30, 31, 32, after the path cards and before the
- * market; Your market runs 15, 17 then 19. The fork cards sit right after time
- * to leadership because they answer the question that card raises, and the
- * title ladder sits with the other title cards before the band card. A locked
- * card keeps its place in this order when the frontend gathers the locked ones
- * under Unlock more.
+ * market; Company size runs 33, 34, 35 then 36, after the insight cards in
+ * this list (the plan's order: the pattern and its question first, then
+ * standing, the last move, the stint); Your market runs 15, 17 then 19. The
+ * fork cards sit right after time to leadership because they answer the
+ * question that card raises, and the title ladder sits with the other title
+ * cards before the band card. This is the order inside a band and the order
+ * the backend returns; the bands themselves stand in the order the band type
+ * gives, so the company band renders between Your path and Did you know
+ * though its keys follow the insight keys here. A locked card keeps its place
+ * in this order when the frontend gathers the locked ones under Unlock more.
  */
 export const RUNDOWN_BENCHMARK_CARD_ORDER = [
   'quota_percentile',
@@ -809,6 +1063,10 @@ export const RUNDOWN_BENCHMARK_CARD_ORDER = [
   'deal_after_move',
   'quota_record',
   'buyer_reach',
+  'size_pattern',
+  'company_size_standing',
+  'last_move_size',
+  'stint_by_size',
   'city_premium',
   'ask_vs_offers',
   'open_roles',
@@ -833,7 +1091,7 @@ export interface RundownBenchmarksDto {
    */
   currency: Currency | null;
   /**
-   * ALL TWENTY-SIX, ALWAYS, one card per key, in RUNDOWN_BENCHMARK_CARD_ORDER. A
+   * ALL THIRTY, ALWAYS, one card per key, in RUNDOWN_BENCHMARK_CARD_ORDER. A
    * card that cannot compute arrives as `locked` or `not_applicable` rather
    * than going missing, so the frontend never has to ask whether a key was
    * left out or merely could not be answered.
