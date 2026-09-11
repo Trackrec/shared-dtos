@@ -8,6 +8,7 @@ import {
 } from './position.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 import { OteEstimationDetailsDto } from './ote-estimation-details.dto';
+import { CompanySizePreferenceDto } from './company-size.dto';
 
 export enum LocationPreference {
   ONSITE = 'onsite',
@@ -106,6 +107,25 @@ export interface UserDto {
   isCompensated: boolean;
   growsurfParticipantId: string | null;
   referredByCode: string | null;
+  /**
+   * THE COMPANY SIZE PREFERENCE, in the person's own words (2026-09-10, the
+   * company size plan). The bands they want next and how firmly (only these,
+   * or these first), written once by the pattern card's question "Is that by
+   * choice?" or by Barney at the end of intake, through the answer key
+   * COMPANY_SIZE_PREFERENCE_FIELD, into the company_size_preference JSON
+   * column on the user row. Null until the person answers; an empty band list
+   * with strength 'prefer' is the answered "It just happened", which is no
+   * preference and no further question. The one company size fact the FIT
+   * score and a recruiter may read; the pattern the card inferred from the
+   * person's companies is never stored here and never leaves their own page.
+   *
+   * OPTIONAL SO BOTH APPS COMPILE AT THE POINTER MOVE. The backend assigns the
+   * user entity to this type in a dozen places (`const user: UserDto = await
+   * this.userRepository.findOne(...)`), so a required field here fails its
+   * build until the column lands on the entity. Readers take
+   * `companySizePreference ?? null`.
+   */
+  companySizePreference?: CompanySizePreferenceDto | null;
   /**
    * Total relevant work experience across all positions
    * @example "5y, 3m" or "N/A"

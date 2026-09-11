@@ -5,11 +5,12 @@
  *
  * WHAT THIS GUARDS. Two builders code against this file in two repos that move
  * the submodule pointer in separate merge commits. The tickets spell the
- * twenty-six keys, the four bands, the three states, the eleven reasons, the
+ * thirty keys, the five bands, the three states, the thirteen reasons, the
  * three confidence levels, the page order and the card's property set, and a
  * later edit that renamed one would compile fine here and break one app at its
  * next build with no test of its own to say why. These lines say why.
  */
+import type { CompanySizeBand } from '../company-size.dto';
 import type { OteSkipCode } from '../ote-estimation-details.dto';
 import type {
   RundownBenchmarkBand,
@@ -19,7 +20,9 @@ import type {
   RundownBenchmarkConfidence,
   RundownBenchmarkDetail,
   RundownBenchmarkDetailBand,
+  RundownBenchmarkDetailCompany,
   RundownBenchmarkDetailRole,
+  RundownBenchmarkDetailSizeBand,
   RundownBenchmarkDetailValue,
   RundownBenchmarkReason,
   RundownBenchmarkSource,
@@ -37,10 +40,11 @@ type Assert<T extends true> = T;
 /** True when A and B accept exactly the same values. */
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 
-// 1. Exactly the twenty-six keys, spelled as the tickets spell them: the
-//    eighteen of the 2026-09-09 cut, the four fork cards added the same day,
-//    and the four insight cards of the bold page (2026-09-10).
-export type TwentySixKeys = Assert<
+// 1. Exactly the thirty keys, spelled as the tickets spell them: the eighteen
+//    of the 2026-09-09 cut, the four fork cards added the same day, the four
+//    insight cards of the bold page (2026-09-10), and the four company size
+//    cards of the same day (the plan's cards A to D).
+export type ThirtyKeys = Assert<
   Same<
     RundownBenchmarkCardKey,
     | 'bdr_to_closer'
@@ -69,13 +73,18 @@ export type TwentySixKeys = Assert<
     | 'deal_after_move'
     | 'quota_record'
     | 'buyer_reach'
+    | 'size_pattern'
+    | 'company_size_standing'
+    | 'last_move_size'
+    | 'stint_by_size'
   >
 >;
 
-// 2. The four bands (insight is the Did you know band of 2026-09-10), the
-//    three states and the four sources.
-export type FourBands = Assert<
-  Same<RundownBenchmarkBand, 'standing' | 'path' | 'insight' | 'market'>
+// 2. The five bands (insight is the Did you know band of 2026-09-10; company
+//    is the Company size band of the same day, between path and insight on
+//    the page), the three states and the four sources.
+export type FiveBands = Assert<
+  Same<RundownBenchmarkBand, 'standing' | 'path' | 'company' | 'insight' | 'market'>
 >;
 export type ThreeStates = Assert<
   Same<RundownBenchmarkState, 'ready' | 'locked' | 'not_applicable'>
@@ -139,18 +148,49 @@ export type UnlockShape = Assert<
     { field: string; label: string; barneyField: string | null; positionId: number | null }
   >
 >;
-// The detail stays a loose record. Its non-scalar values are two lists: the
-// bands fork_timing draws its distribution from, and the roles quota_record
-// draws one bar each for. A third array type, or an object in a value's place,
-// is a shape change both apps have to see.
+// The detail stays a loose record. Its non-scalar values are four lists: the
+// bands fork_timing draws its distribution from, the roles quota_record draws
+// one bar each for, the companies size_pattern draws one square each for, and
+// the five size bands size_pattern and company_size_standing put a figure on.
+// A fifth array type, or an object in a value's place, is a shape change both
+// apps have to see.
 export type DetailIsALooseRecord = Assert<
   Same<RundownBenchmarkDetail, Record<string, RundownBenchmarkDetailValue>>
 >;
-export type DetailValueIsScalarOrOneOfTwoLists = Assert<
+export type DetailValueIsScalarOrOneOfFourLists = Assert<
   Same<
     RundownBenchmarkDetailValue,
-    string | number | null | RundownBenchmarkDetailBand[] | RundownBenchmarkDetailRole[]
+    | string
+    | number
+    | null
+    | RundownBenchmarkDetailBand[]
+    | RundownBenchmarkDetailRole[]
+    | RundownBenchmarkDetailCompany[]
+    | RundownBenchmarkDetailSizeBand[]
   >
+>;
+// A company row carries a headcount and never the employer: the card labels
+// squares with counts, and a row with a name is one render away from
+// printing it.
+export type CompanyRowShape = Assert<
+  Same<
+    RundownBenchmarkDetailCompany,
+    {
+      positionId: number;
+      role: string;
+      headcount: number | null;
+      startYear: number | null;
+      band: CompanySizeBand | null;
+    }
+  >
+>;
+export type CompanyRowHasNoEmployer = Assert<
+  'company' extends keyof RundownBenchmarkDetailCompany ? false : true
+>;
+// A size band row is the band, its words and one figure, and no count of
+// people.
+export type SizeBandRowShape = Assert<
+  Same<RundownBenchmarkDetailSizeBand, { band: CompanySizeBand; label: string; value: number }>
 >;
 export type BandShape = Assert<
   Same<
@@ -184,13 +224,15 @@ export type OrderCoversEveryKey = Assert<
   Same<(typeof RUNDOWN_BENCHMARK_CARD_ORDER)[number], RundownBenchmarkCardKey>
 >;
 type Length<T extends readonly unknown[]> = T['length'];
-export type OrderListsEachKeyOnce = Assert<Same<Length<typeof RUNDOWN_BENCHMARK_CARD_ORDER>, 26>>;
+export type OrderListsEachKeyOnce = Assert<Same<Length<typeof RUNDOWN_BENCHMARK_CARD_ORDER>, 30>>;
 
 // 6b. The page order is the one Victor set, card by card: the three fork cards
 //     right after time_to_leadership, the title ladder after years_selling and
-//     before next_band, the four insight cards after the path cards and before
-//     the market. The backend returns in this order and the frontend lays out
-//     in it, so a card moved on one side alone is a card in two places.
+//     before next_band, the four insight cards after the path cards, the four
+//     company size cards after them (the pattern and its question first, then
+//     standing, the last move, the stint) and before the market. The backend
+//     returns in this order and the frontend lays out in it, so a card moved
+//     on one side alone is a card in two places.
 export type OrderIsTheTicketsOrder = Assert<
   Same<
     typeof RUNDOWN_BENCHMARK_CARD_ORDER,
@@ -218,6 +260,10 @@ export type OrderIsTheTicketsOrder = Assert<
       'deal_after_move',
       'quota_record',
       'buyer_reach',
+      'size_pattern',
+      'company_size_standing',
+      'last_move_size',
+      'stint_by_size',
       'city_premium',
       'ask_vs_offers',
       'open_roles',
@@ -231,14 +277,17 @@ export type LeadershipIsASkipCode = Assert<
   'leadership_not_priced' extends OteSkipCode ? true : false
 >;
 
-// 8. The eleven reasons: no_ask so the card a declined ask lands on has one
+// 8. The thirteen reasons: no_ask so the card a declined ask lands on has one
 //    spelling in both apps; too_early so the fork card a seller under three
 //    years sees is one card and not a lock with no field; folded_into_band_1
 //    so the pay card an old client still lays out reads as one quiet line;
-//    no_buyer_list so the buyer card's ask state is keyed off one string; and
+//    no_buyer_list so the buyer card's ask state is keyed off one string;
 //    top_band, which the backend has emitted since the ladder shipped, listed
-//    so the contract spells what the wire carries.
-export type ElevenReasons = Assert<
+//    so the contract spells what the wire carries; before_coverage so a move
+//    before 2019 is one quiet line and not a lock with no field; and
+//    no_headcount so a company with no count on file is one quiet line too,
+//    since nothing the person can type puts a headcount on a company.
+export type ThirteenReasons = Assert<
   Same<
     RundownBenchmarkReason,
     | 'never_made_the_move'
@@ -252,5 +301,7 @@ export type ElevenReasons = Assert<
     | 'folded_into_band_1'
     | 'no_buyer_list'
     | 'top_band'
+    | 'before_coverage'
+    | 'no_headcount'
   >
 >;
