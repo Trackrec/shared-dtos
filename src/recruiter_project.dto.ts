@@ -7,6 +7,12 @@ export enum LocationType {
   ONSITE = 'onsite',
   REMOTE = 'remote',
   HYBRID = 'hybrid',
+  /**
+   * No office, but the seller lives in one of the listed places because that
+   * is where the buyers are (Victor, 2026-09-18). The places are in
+   * `location`, as for a remote job; officeAddress and hybridDays stay empty.
+   */
+  BASED_IN = 'based_in',
 }
 
 export enum ScoringContext {
