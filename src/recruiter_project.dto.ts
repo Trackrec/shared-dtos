@@ -1,4 +1,5 @@
 import { IndustryKeyDto } from './industry.dto';
+import { NextCompanyStageDto } from './next-company-stage.dto';
 import { PointsDto, ProjectApplicationDto } from './project_application.dto';
 import { RecruiterCompanyDto } from './recruiter_company';
 import { UserDto } from './user.dto';
@@ -413,6 +414,12 @@ export interface SuggestedCandidateDto {
     customCurrentRole: string;
     profileImage: string;
     points: { points: Partial<PointsDto>; percentage: number };
+    /**
+     * The company the seller wants next, read by name for the suggested row
+     * (2026-09-19): the same quiet line the applied row prints, since the
+     * outreach comes before the application. Null until the seller answers.
+     */
+    nextCompanyStage?: NextCompanyStageDto | null;
   };
 }
 

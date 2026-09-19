@@ -9,6 +9,7 @@ import {
 import { RecruiterCompanyDto } from './recruiter_company';
 import { OteEstimationDetailsDto } from './ote-estimation-details.dto';
 import { CompanySizePreferenceDto } from './company-size.dto';
+import { NextCompanyStageDto } from './next-company-stage.dto';
 
 export enum LocationPreference {
   ONSITE = 'onsite',
@@ -126,6 +127,23 @@ export interface UserDto {
    * `companySizePreference ?? null`.
    */
   companySizePreference?: CompanySizePreferenceDto | null;
+  /**
+   * THE COMPANY THE SELLER WANTS NEXT (Victor, 2026-09-19: "an option for
+   * users to tell us the company stage they want to join next ... or open to
+   * anything"). The stage bands they would take and how firmly, written once
+   * by Barney's next role chapter or the profile's Next role block through the
+   * answer key NEXT_COMPANY_STAGE_FIELD, into the next_company_stage JSON
+   * column on the user row. Null until the seller answers. Its own column,
+   * apart from companySizePreference above: that one is My Market's past
+   * pattern and its "Is that by choice?" answer, this one is the want. Read by
+   * name for the owner (/me), the applied ranking row, the suggested row and
+   * the opened profile; a recruiter reads it as a quiet line and nothing
+   * filters, sorts, hides or scores on it.
+   *
+   * Optional for the same reason as the field above: the backend assigns its
+   * entity to this type and must keep compiling at the pointer move.
+   */
+  nextCompanyStage?: NextCompanyStageDto | null;
   /**
    * Total relevant work experience across all positions
    * @example "5y, 3m" or "N/A"
@@ -627,6 +645,13 @@ export interface PublicProfileUserDto {
   oteMin: number | null;
   oteMax: number | null;
   currency: string | null;
+  /**
+   * The company the seller wants next, under Next role on the opened profile
+   * (2026-09-19). Read by name on the signed-in view and dropped from the
+   * locked one, beside nextDesiredTitles. Optional so the locked view's
+   * picker keeps compiling.
+   */
+  nextCompanyStage?: NextCompanyStageDto | null;
 }
 
 export interface PublicProfileDto extends PublicProfileUserDto {
