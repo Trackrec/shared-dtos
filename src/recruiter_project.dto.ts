@@ -410,6 +410,10 @@ export interface SuggestedCandidateDto {
   user: {
     id: number;
     fullName: string;
+    /** Manual outreach on the authorized recruiter's job screen. */
+    email?: string | null;
+    /** LinkedIn handle, displayed using the same contact controls as applicants. */
+    username?: string | null;
     publicProfileUsername: string;
     customCurrentRole: string;
     profileImage: string;
