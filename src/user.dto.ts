@@ -458,6 +458,8 @@ export interface ParsedResume {
       enterprise: number; // 0–100 (sum = 100)
     };
 
+    productSplit?: { software: number; service: number; hardware: number }; // whole numbers, 0 to 100, the three sum to 100; what the job sold (the resume parser writes it since backend #1376)
+
     notableClients?: string[];
     /**
      * The industry a role was in, as the CV reader used to return it: one
