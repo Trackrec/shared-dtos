@@ -10,6 +10,8 @@ export interface PositionDetailsDto {
   isIndividualContributor: boolean | null;
   segmentId: number | null;
   revenueGenerated: number | null;
+  /** A BDR's pipeline generated in the role, the total across the whole time there. */
+  pipelineGenerated: number | null;
   isBookingMeeting: boolean | null;
   meetingBooked: number | null;
   segmentSmb: number | null;
@@ -105,6 +107,8 @@ export interface PositionDetailsRequestDto {
   currencyCountry: string | null;
   segmentId: number | null;
   revenueGenerated: number | null;
+  /** A BDR's pipeline generated in the role, the total across the whole time there. */
+  pipelineGenerated: number | null;
   isBookingMeeting: boolean | null;
   meetingBooked: number | null;
   segmentSmb: number | null;
