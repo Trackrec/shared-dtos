@@ -30,7 +30,14 @@
  * visible here rather than papered over.
  */
 
-/** The scorer's fourteen keys, in its own order. */
+/**
+ * The scorer's keys, in its own order: the fourteen, then `team` (TR-558,
+ * 2026-10-01), the team a Leadership job asks for against the teams the seller
+ * led. Every job that is not a Leadership job, and every Leadership job saved
+ * before it asked its three team questions, scores `team` as 'Unknown', so it
+ * drops out of their scores and they read exactly as before. A recruiter can
+ * mark it Critical like any other key.
+ */
 export type CriterionKey =
   | 'ote'
   | 'location'
@@ -45,7 +52,8 @@ export type CriterionKey =
   | 'industrySoldTo'
   | 'persona'
   | 'companyOverlap'
-  | 'productType';
+  | 'productType'
+  | 'team';
 
 /** The top of Victor's nought-to-five scale. */
 export const MUST_HAVE = 5;
@@ -76,6 +84,7 @@ export const CRITERION_LABEL: Record<CriterionKey, string> = {
   persona: 'buyer personas',
   companyOverlap: 'company overlap',
   productType: 'product type',
+  team: 'team',
 };
 
 /**
@@ -148,6 +157,7 @@ export const POINTS_KEY: Record<CriterionKey, string> = {
   persona: 'pointsForPersona',
   companyOverlap: 'pointsForCompanyOverlap',
   productType: 'pointsForProductType',
+  team: 'pointsForTeam',
 };
 
 /** A score per criterion, which is the shape this module reasons in. */

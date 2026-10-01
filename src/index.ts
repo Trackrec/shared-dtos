@@ -5,6 +5,7 @@ export * from './next-company-stage.dto';
 export * from './country.dto';
 export * from './industry.dto';
 export * from './keywords.dto';
+export * from './managed-teams';
 export * from './must-haves';
 export * from './ote-estimate-explain';
 export * from './ote-estimation-details.dto';

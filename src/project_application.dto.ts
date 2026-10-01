@@ -85,6 +85,15 @@ export interface PointsDto {
   pointsForLocation?: number;
   pointsForCompanyOverlap?: number;
   pointsForProductType?: number;
+  /**
+   * The team axis (TR-558, 2026-10-01): the size and the teams a Leadership
+   * job asks for against the seller's own leadership roles, out of ten.
+   * 'Unknown' on every job that is not a Leadership job and on a Leadership
+   * job that states no team, so it leaves the score; absent on every points
+   * object stored before it existed, and on the discovery scorer's, which
+   * does not compute it.
+   */
+  pointsForTeam?: number | 'Unknown';
 }
 
 export interface PointsCalculationDto {

@@ -104,6 +104,22 @@ export interface RecruiterProjectDto {
   currencyCountry: string | null;
   isTravelRequirements: boolean | null;
   reportTo: string | null;
+  /**
+   * THE TEAM A LEADERSHIP JOB LEADS (TR-558, Victor 2026-10-01: "direct
+   * reports, people rolling up, teams managed"). Asked on a Leadership job
+   * only and null on every other: a job switched away from Leadership drops
+   * its team on save. Direct reports and people rolling up are head counts
+   * (rolling up is the whole team under the role, managers included, so it is
+   * never under the direct count); teams managed holds values of
+   * MANAGED_TEAMS (managed-teams.ts), the list the seller side answers from.
+   * Publishing a Leadership job needs all three. Optional because a
+   * Leadership job saved before the questions carries none, and so do the
+   * reads that predate the columns. Facts the recruiter wrote, like Report
+   * to, so the public job page may show them.
+   */
+  teamDirectReports?: number | null;
+  teamRollingUp?: number | null;
+  teamManaged?: string[] | null;
   hiringProcess: string | null;
   growthOpportunities: string | null;
   projectCustomUrl: string | null;
@@ -131,6 +147,8 @@ export interface RecruiterProjectDto {
     industrySoldTo: number;
     persona: number;
     companyOverlap: number;
+    /** The team axis (must-haves.ts CriterionKey). Unset reads the scorer's default of 5. */
+    team?: number;
   };
 
   /**
@@ -313,6 +331,15 @@ export interface RecruiterProjectRequestDto {
   currencyCountry: string | null;
   isTravelRequirements: string | null;
   reportTo: string | null;
+  /**
+   * The team a Leadership job leads (TR-558), as the multipart form posts it:
+   * the two head counts as strings of digits, teams managed as a JSON array
+   * string or a comma list of MANAGED_TEAMS names. '' clears a field. Read on
+   * a Leadership job only; any other job stores null in all three.
+   */
+  teamDirectReports?: string | null;
+  teamRollingUp?: string | null;
+  teamManaged?: string | null;
   hiringProcess: string | null;
   growthOpportunities: string | null;
   projectCustomUrl: string | null;
@@ -348,6 +375,7 @@ export interface RecruiterProjectRequestDto {
     industrySoldTo: number;
     persona: number;
     companyOverlap: number;
+    team?: number;
   };
   experienceFilter: ExperienceFilter | null;
   useInternalTitle: string;
