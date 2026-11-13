@@ -73,6 +73,8 @@ export interface ProjectWithUserPostions {
 export interface PointsDto {
   otePoints?: number;
   workedInPoints?: number;
+  /** A catalogue industry near the job's market, when worked-in earns partial credit. */
+  workedInFitLine?: string;
   soldToPoints?: number;
   segmentPoints?: number;
   salesCyclePoints?: number;
